@@ -1,0 +1,73 @@
+name: Render Thai Toon Diorama
+
+on:
+  workflow_dispatch:
+    inputs:
+      fps:
+        description: Frames per second
+        default: '24'
+      ss:
+        description: Supersampling (1 = fast preview, 1.5 = normal, 2 = best)
+        default: '1.5'
+  push:
+    branches: [claude/jolly-dirac-e48lrf]
+    paths: ['thai-toon-diorama-test/**', '.github/workflows/render-thai-toon.yml']
+
+concurrency:
+  group: render-thai-toon-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get the Lemo-Opuscar library
+        uses: actions/checkout@v4
+        with:
+          repository: Banchon999/lemo-opuscar
+          path: lib
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ffmpeg 7 (static build)
+        run: |
+          mkdir -p "$RUNNER_TEMP/ffmpeg"
+          curl -sSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar xJ -C "$RUNNER_TEMP/ffmpeg" --strip-components=1
+          echo "$RUNNER_TEMP/ffmpeg" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/ffmpeg/ffmpeg" -version | head -1
+
+      - name: Install library packages (npm, headless browser, Python venv)
+        run: |
+          cd lib
+          sh plugin/skills/lemo-opuscar/scripts/setup.sh deps
+          sudo node node_modules/playwright-core/cli.js install-deps chromium-headless-shell
+
+      - name: Render (software WebGL)
+        env:
+          LIB: ${{ github.workspace }}/lib
+          OUT: ${{ github.workspace }}/render
+          LEMO_ANGLE: swiftshader
+          FPS: ${{ inputs.fps || '24' }}
+          SS: ${{ inputs.ss || '1.5' }}
+          WORKERS: '3'
+        run: sh thai-toon-diorama-test/build.sh
+
+      - name: Upload film, stills and contact sheet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thai-toon-diorama-${{ github.run_number }}
+          path: |
+            render/*.mp4
+            render/*.jpg
+            render/stills/
+          if-no-files-found: warn

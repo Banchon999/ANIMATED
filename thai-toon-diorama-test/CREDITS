@@ -1,0 +1,7 @@
+ตะเกียงยาย — demo film of the Thai Toon Diorama style
+
+Characters: designed after the user's own series characters (grandma, kid, ghost), drawn in code.
+Fonts: Kanit (Cadson Demak, SIL OFL 1.1, fonts/OFL-Kanit.txt), Mitr (Cadson Demak, SIL OFL 1.1, fonts/OFL-Mitr.txt), via @fontsource.
+Music and sound: synthesized in mix.py (no samples).
+Code: post.js is adapted from Lemo-Opuscar styles/hd-2d/demo/post_ts.js; /core/lib.js, core/audio/sfx.py and the render tools are from
+Lemo-Opuscar (github.com/lemomo-ai/lemo-opuscar), MIT licence.

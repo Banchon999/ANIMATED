@@ -58,7 +58,7 @@ jobs:
           LEMO_ANGLE: swiftshader
           FPS: ${{ inputs.fps || '24' }}
           SS: ${{ inputs.ss || '1.5' }}
-          WORKERS: '3'
+          WORKERS: '2'   # software WebGL: more workers starve each other past the 30 s screenshot timeout
         run: sh thai-toon-diorama-test/build.sh
 
       - name: Upload film, stills and contact sheet

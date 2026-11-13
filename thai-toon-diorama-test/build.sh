@@ -6,10 +6,11 @@ LIB=${LIB:-/home/user/lemo-opuscar}
 export LIB
 [ -f "$LIB/core/render/video.mjs" ] || { echo "set LIB to the library folder"; exit 1; }
 OUT=${OUT:-$HERE/out}; mkdir -p "$OUT"
-FPS=${FPS:-24}; SS=${SS:-1.5}; WORKERS=${WORKERS:-3}
+FPS=${FPS:-24}; SS=${SS:-1.5}; WORKERS=${WORKERS:-2}
 cd "$LIB"
 node core/render/events.mjs "$HERE" --size 1080x1920 --q "ss=1"
-node core/render/readcheck.mjs "$HERE" --size 1080x1920 --q "ss=1" || echo "readcheck: some text too short (see above)"
+# readcheck renders every 0.04 s of the film: slow on software WebGL, so only on request
+[ "${READCHECK:-0}" = 1 ] && { node core/render/readcheck.mjs "$HERE" --size 1080x1920 --q "ss=1" --step .25 || echo "readcheck: some text too short (see above)"; }
 node core/render/still.mjs "$HERE" 1.5 5.0 6.5 9 12 16.5 19.6 22.5 --size 1080x1920 --q "ss=$SS" --out "$OUT/stills"
 "$LIB/.venv/bin/python" core/render/sheet.py "$OUT/contact.jpg" "$OUT"/stills/*.jpg --cols 4 --w 360
 node core/render/video.mjs "$HERE" --fps "$FPS" --workers "$WORKERS" --size 1080x1920 --q "ss=$SS" --out "$OUT/video.mp4"

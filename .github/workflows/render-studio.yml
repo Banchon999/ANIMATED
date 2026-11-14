@@ -1,0 +1,55 @@
+name: Render Studio
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/studio-2.5d]
+    paths: ['studio/render.json', '.github/workflows/render-studio.yml']
+
+concurrency:
+  group: render-studio-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    runs-on: ubuntu-24.04
+    outputs:
+      comps: ${{ steps.read.outputs.comps }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: read
+        run: echo "comps=$(jq -c .compositions studio/render.json)" >> "$GITHUB_OUTPUT"
+
+  render:
+    needs: queue
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        comp: ${{ fromJson(needs.queue.outputs.comps) }}
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+      - run: npm ci
+      - name: Render ${{ matrix.comp }}
+        env:
+          RENDER_CONCURRENCY: '3'
+        run: npx remotion render "${{ matrix.comp }}" "out/${{ matrix.comp }}.mp4" --crf=18
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.comp }}-${{ github.run_number }}
+          path: studio/out/*.mp4
+          retention-days: 14
+          if-no-files-found: warn

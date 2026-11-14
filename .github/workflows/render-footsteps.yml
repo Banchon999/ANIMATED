@@ -1,0 +1,80 @@
+name: Render Footsteps (three.js + Remotion)
+
+on:
+  workflow_dispatch:
+    inputs:
+      crf:
+        description: H.264 CRF (lower = better quality, bigger file)
+        default: '18'
+  push:
+    paths: ['footsteps/**', '.github/workflows/render-footsteps.yml']
+
+concurrency:
+  group: render-footsteps-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # to attach the MP4 to a GitHub release
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    defaults:
+      run:
+        working-directory: footsteps
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: footsteps/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install packages
+        run: |
+          npm ci
+          pip install numpy scipy
+          npx remotion browser ensure
+
+      - name: Synthesize the soundtrack
+        run: python3 scripts/sound.py public/sound.wav
+
+      - name: Render (software WebGL via SwiftShader/ANGLE)
+        env:
+          REMOTION_GL: swangle
+        run: |
+          mkdir -p out
+          npx remotion render Film out/footsteps.mp4 \
+            --concurrency=3 --timeout=180000 --crf=${{ inputs.crf || '18' }}
+          # contact sheet of key frames for quick review
+          for f in 60 330 520 600 1000 1350 1500 1900 2100; do
+            npx remotion still Film out/still-$f.jpg --frame=$f --scale=0.5 --image-format=jpeg
+          done
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: footsteps-${{ github.run_number }}
+          path: |
+            footsteps/out/*.mp4
+            footsteps/out/*.jpg
+          if-no-files-found: warn
+
+      - name: Publish to a release (direct download link)
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="footsteps-r${{ github.run_number }}"
+          gh release create "$TAG" out/footsteps.mp4 \
+            --target "${{ github.sha }}" \
+            --title "ฝีเท้า (Footsteps) — render #${{ github.run_number }}" \
+            --notes "Rendered by GitHub Actions from ${{ github.sha }}. 1080×1920, 30 fps, 72 s." \
+            --prerelease

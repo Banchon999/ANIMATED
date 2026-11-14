@@ -71,7 +71,7 @@ const House: React.FC<{ spec: HouseSpec }> = ({ spec }) => {
     [0, stilt / 2, d / 2 - 0.15],
     [0, stilt / 2, -d / 2 + 0.15],
   ];
-  const steps = 5;
+  const steps = 9;
   return (
     <group position={[spec.x, 0, spec.z]} rotation={[0, spec.rot, 0]}>
       {posts.map((p, i) => (
@@ -86,22 +86,23 @@ const House: React.FC<{ spec: HouseSpec }> = ({ spec }) => {
         <Mat color={roof} />
       </mesh>
       {/* door + windows on the front (+z) */}
-      <Box p={[-w * 0.2, stilt + 0.62, d / 2 + 0.02]} s={[0.6, 1.1, 0.05]} color="#4a3324" shadow={false} />
-      <Box p={[w * 0.22, stilt + 0.85, d / 2 + 0.02]} s={[0.7, 0.6, 0.05]} color="#3b4a55" shadow={false} />
-      <Box p={[w * 0.22, stilt + 0.85, d / 2 + 0.05]} s={[0.8, 0.07, 0.05]} color={trim} shadow={false} />
-      <Box p={[w * 0.22, stilt + 0.85, d / 2 + 0.05]} s={[0.07, 0.7, 0.05]} color={trim} shadow={false} />
+      <Box p={[-w * 0.2, stilt + 1.02, d / 2 + 0.02]} s={[0.85, 1.9, 0.05]} color="#4a3324" shadow={false} />
+      <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.02]} s={[0.9, 0.95, 0.05]} color="#3b4a55" shadow={false} />
+      <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.05]} s={[1.0, 0.07, 0.05]} color={trim} shadow={false} />
+      <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.05]} s={[0.07, 1.05, 0.05]} color={trim} shadow={false} />
       {/* side windows */}
-      <Box p={[w / 2 + 0.02, stilt + 0.85, 0]} s={[0.05, 0.6, 0.8]} color="#3b4a55" shadow={false} />
-      <Box p={[-w / 2 - 0.02, stilt + 0.85, 0]} s={[0.05, 0.6, 0.8]} color="#3b4a55" shadow={false} />
+      <Box p={[w / 2 + 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} color="#3b4a55" shadow={false} />
+      <Box p={[-w / 2 - 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} color="#3b4a55" shadow={false} />
       {/* porch rail */}
-      <Box p={[w * 0.25, stilt + 0.45, d / 2 + 0.8]} s={[w * 0.5, 0.08, 0.08]} color={trim} />
-      <Box p={[w * 0.48, stilt + 0.25, d / 2 + 0.8]} s={[0.08, 0.5, 0.08]} color={trim} />
+      <Box p={[w * 0.25, stilt + 0.95, d / 2 + 0.8]} s={[w * 0.5, 0.08, 0.08]} color={trim} />
+      <Box p={[w * 0.48, stilt + 0.5, d / 2 + 0.8]} s={[0.08, 1.0, 0.08]} color={trim} />
+      <Box p={[w * 0.02, stilt + 0.5, d / 2 + 0.8]} s={[0.08, 1.0, 0.08]} color={trim} />
       {/* stairs */}
       {Array.from({ length: steps }).map((_, i) => (
         <Box
           key={i}
           p={[-w * 0.2, stilt - ((i + 0.5) * stilt) / steps, d / 2 + 0.95 + i * 0.26]}
-          s={[0.8, 0.08, 0.28]}
+          s={[1.0, 0.06, 0.28]}
           color="#8a6444"
         />
       ))}
@@ -166,7 +167,7 @@ const Palm: React.FC<{ p: V3; s: number; seed: number }> = ({ p, s, seed }) => {
 };
 
 const Hay: React.FC<{ p: V3 }> = ({ p }) => (
-  <group position={p}>
+  <group position={p} scale={1.7}>
     <mesh position={[0, 0.7, 0]} castShadow>
       <coneGeometry args={[0.95, 1.5, 8]} />
       <Mat color="#e0bf62" />
@@ -197,8 +198,8 @@ export const Village: React.FC<{
     const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)];
     const houses: HouseSpec[] = [];
     const rows = [
-      { z: -6.5, xs: [-11.5, -4.2, 3.4, 11] },
-      { z: -15.5, xs: [-15, -7.5, 0.5, 8, 15.5] },
+      { z: -7.6, xs: [-13.5, -4.6, 4.2, 13] },
+      { z: -17.5, xs: [-18, -9, 0, 9, 18] },
     ];
     rows.forEach((row) =>
       row.xs.forEach((x) =>
@@ -206,10 +207,10 @@ export const Village: React.FC<{
           x: x + (r() - 0.5) * 1.6,
           z: row.z + (r() - 0.5) * 2.2,
           rot: (r() - 0.5) * 0.5,
-          w: 3.0 + r() * 1.4,
-          d: 2.6 + r() * 1.2,
-          h: 1.7 + r() * 0.5,
-          stilt: 1.0 + r() * 0.7,
+          w: 4.6 + r() * 1.4,
+          d: 3.6 + r() * 1.0,
+          h: 2.4 + r() * 0.3,
+          stilt: 1.7 + r() * 0.4,
           wall: pick(WALLS),
           roof: pick(ROOFS),
           trim: pick(["#f1e4c8", "#e8d3a8", "#ffffff"]),
@@ -217,20 +218,20 @@ export const Village: React.FC<{
       ),
     );
     const trees = Array.from({ length: 16 }).map((_, i) => ({
-      p: [-22 + i * 3 + (r() - 0.5) * 2, 0, -10.5 - r() * 14] as V3,
-      s: 0.8 + r() * 0.7,
+      p: [-30 + i * 4 + (r() - 0.5) * 2, 0, -12.5 - r() * 16] as V3,
+      s: 1.5 + r() * 0.9,
       seed: Math.floor(r() * 9999),
     }));
     const palms = Array.from({ length: 9 }).map(() => ({
-      p: [-24 + r() * 48, 0, -19 - r() * 14] as V3,
-      s: 0.9 + r() * 0.6,
+      p: [-30 + r() * 60, 0, -24 - r() * 16] as V3,
+      s: 1.7 + r() * 0.5,
       seed: Math.floor(r() * 9999),
     }));
     const nearTrees = [
-      { p: [-8.2, 0, -3.4] as V3, s: 1.0, seed: 11 },
-      { p: [7.4, 0, -3.8] as V3, s: 1.15, seed: 23 },
-      { p: [-16.5, 0, -4.5] as V3, s: 1.2, seed: 31 },
-      { p: [16.5, 0, -5] as V3, s: 1.0, seed: 47 },
+      { p: [-9.2, 0, -3.6] as V3, s: 1.6, seed: 11 },
+      { p: [8.8, 0, -3.9] as V3, s: 1.8, seed: 23 },
+      { p: [-18.5, 0, -4.5] as V3, s: 1.9, seed: 31 },
+      { p: [18.5, 0, -5] as V3, s: 1.7, seed: 47 },
     ];
     const tufts = Array.from({ length: 60 }).map(() => ({
       p: [-26 + r() * 52, 0.12, -30 + r() * 27] as V3,
@@ -278,7 +279,7 @@ export const Village: React.FC<{
         </mesh>
       ))}
       {/* pond */}
-      <mesh position={[-1.5, 0.03, -11]} rotation={[-Math.PI / 2, 0, 0]} scale={[1.6, 1, 1]}>
+      <mesh position={[0, 0.03, -12.5]} rotation={[-Math.PI / 2, 0, 0]} scale={[1.6, 1, 1]}>
         <circleGeometry args={[1.8, 20]} />
         <meshLambertMaterial color="#6fb6d1" />
       </mesh>
@@ -298,12 +299,12 @@ export const Village: React.FC<{
       {/* fence along the back edge of the lane */}
       {Array.from({ length: 40 }).map((_, i) => {
         const x = -39 + i * 2;
-        if (Math.abs(x + 4.2) < 1.6 || Math.abs(x - 3.4) < 1.6) return null;
+        if (Math.abs(x + 4.6) < 1.6 || Math.abs(x - 4.2) < 1.6) return null;
         return (
           <group key={i} position={[x, 0, -2.2]}>
-            <Box p={[0, 0.4, 0]} s={[0.12, 0.8, 0.12]} color="#8a6a4c" />
-            <Box p={[1, 0.6, 0]} s={[2, 0.07, 0.06]} color="#a5825e" />
-            <Box p={[1, 0.32, 0]} s={[2, 0.07, 0.06]} color="#a5825e" />
+            <Box p={[0, 0.5, 0]} s={[0.12, 1.0, 0.12]} color="#8a6a4c" />
+            <Box p={[1, 0.8, 0]} s={[2, 0.07, 0.06]} color="#a5825e" />
+            <Box p={[1, 0.45, 0]} s={[2, 0.07, 0.06]} color="#a5825e" />
           </group>
         );
       })}
@@ -320,9 +321,9 @@ export const Village: React.FC<{
       <Hay p={[-13.5, 0, -9.5]} />
       <Hay p={[13.8, 0, -10]} />
       <Hay p={[5.5, 0, -11.5]} />
-      <Jar p={[-2.4, 0, -4.0]} />
-      <Jar p={[-1.6, 0, -4.2]} />
-      <Jar p={[5.6, 0, -4.4]} />
+      <Jar p={[-1.6, 0, -3.6]} />
+      <Jar p={[-0.8, 0, -3.8]} />
+      <Jar p={[7.4, 0, -3.8]} />
       {data.tufts.map((t, i) => (
         <mesh key={i} position={t.p} rotation={[0, t.ry, 0]} scale={t.s}>
           <coneGeometry args={[0.16, 0.5, 4]} />

@@ -63,9 +63,9 @@ const planks = (vertical: boolean, n: number, base: [number, number, number], se
 
 const useTextures = () =>
   useMemo(() => {
-    const wall = makeTex(1024, 1024, planks(true, 16, [22, 32, 27], 3), [2, 1.4]);
-    const lower = makeTex(1024, 1024, planks(false, 6, [20, 32, 23], 5), [2, 0.5]);
-    const floor = makeTex(1024, 1024, planks(false, 8, [24, 30, 25], 9), [1.5, 2]);
+    const wall = makeTex(1024, 1024, planks(true, 16, [22, 32, 27], 3), [4.9, 3.5]);
+    const lower = makeTex(1024, 1024, planks(false, 6, [20, 32, 23], 5), [11.7, 0.85]);
+    const floor = makeTex(1024, 1024, planks(false, 8, [24, 30, 25], 9), [8.75, 6.25]);
     const night = makeTex(512, 640, (c) => {
       const g = c.createLinearGradient(0, 0, 0, 640);
       g.addColorStop(0, "#0a1230");
@@ -154,11 +154,11 @@ const W: React.FC<{ p: V3; s: V3; c: string; r?: V3; sh?: boolean }> = ({ p, s, 
 
 // ---- positions shared with the 2D layer ----
 export const ROOM = {
-  window: { x: -0.72, y: 4.25, w: 1.35, h: 1.8 },
-  bed: { x0: -0.55, x1: 1.95, z0: 0.75, z1: 2.45, top: 0.78, post: 2.75 },
-  lantern: [0.2, 0, 4.7] as V3,
-  candles: [-0.72, 0, 5.15] as V3,
-  sleeperHead: [1.42, 1.0, 1.55] as V3,
+  window: { x: -0.6, y: 1.5, w: 1.0, h: 1.2 },
+  bed: { x0: -0.2, x1: 1.7, z0: 0.6, z1: 1.9, top: 0.55, post: 2.0 },
+  lantern: [0.15, 0, 3.3] as V3,
+  candles: [-0.7, 0, 3.65] as V3,
+  sleeperHead: [1.3, 0.74, 1.25] as V3,
 };
 
 const scallop = (len: number, h: number, n: number) => {
@@ -179,15 +179,15 @@ const scallop = (len: number, h: number, n: number) => {
 const Net: React.FC<{ p: V3; h: number }> = ({ p, h }) => (
   <group position={p}>
     <mesh position={[0, h * 0.72, 0]}>
-      <cylinderGeometry args={[0.2, 0.07, h * 0.52, 10, 1, true]} />
+      <cylinderGeometry args={[0.15, 0.055, h * 0.52, 10, 1, true]} />
       <meshLambertMaterial color="#d9dde8" transparent opacity={0.62} side={THREE.DoubleSide} />
     </mesh>
     <mesh position={[0, h * 0.23, 0]}>
-      <cylinderGeometry args={[0.07, 0.24, h * 0.46, 10, 1, true]} />
+      <cylinderGeometry args={[0.055, 0.18, h * 0.46, 10, 1, true]} />
       <meshLambertMaterial color="#d9dde8" transparent opacity={0.62} side={THREE.DoubleSide} />
     </mesh>
     <mesh position={[0, h * 0.46, 0]}>
-      <cylinderGeometry args={[0.085, 0.085, 0.07, 10]} />
+      <cylinderGeometry args={[0.068, 0.068, 0.05, 10]} />
       <meshLambertMaterial color="#b5485a" />
     </mesh>
   </group>
@@ -203,7 +203,7 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
   const win = ROOM.window;
   const wood = "#3c2415";
   const woodD = "#2a180e";
-  const val = useMemo(() => ({ long: scallop(bw + 0.1, 0.2, 13), short: scallop(bd, 0.2, 9) }), [bw, bd]);
+  const val = useMemo(() => ({ long: scallop(bw + 0.1, 0.14, 13), short: scallop(bd, 0.14, 9) }), [bw, bd]);
   const curtain = useMemo(() => {
     const L = new THREE.Shape();
     L.moveTo(-0.22, 0);
@@ -242,8 +242,8 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         shadow-camera-far={30}
         shadow-bias={-0.001}
       />
-      <pointLight position={[ROOM.lantern[0], 0.55, ROOM.lantern[2]]} color="#ffad55" intensity={5 * flicker} distance={7} decay={1.8} />
-      <pointLight position={[ROOM.candles[0], 0.4, ROOM.candles[2]]} color="#ffb060" intensity={3 * (0.6 + 0.4 * flicker)} distance={5} decay={1.8} />
+      <pointLight position={[ROOM.lantern[0], 0.33, ROOM.lantern[2]]} color="#ffad55" intensity={5 * flicker} distance={7} decay={1.8} />
+      <pointLight position={[ROOM.candles[0], 0.25, ROOM.candles[2]]} color="#ffb060" intensity={3 * (0.6 + 0.4 * flicker)} distance={5} decay={1.8} />
     </>
   );
 
@@ -262,16 +262,16 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
           .filter((q) => q.front)
           .map((q, i) => (
             <group key={i}>
-              <W p={[q.p[0], b.post / 2, q.p[2]]} s={[0.1, b.post, 0.1]} c={wood} />
-              <Net p={[q.p[0], 0.55, q.p[2] + 0.06]} h={b.post - 0.6} />
+              <W p={[q.p[0], b.post / 2, q.p[2]]} s={[0.07, b.post, 0.07]} c={wood} />
+              <Net p={[q.p[0], 0.42, q.p[2] + 0.05]} h={b.post - 0.46} />
             </group>
           ))}
-        <W p={[bcx, b.post, b.z1]} s={[bw + 0.2, 0.1, 0.1]} c={wood} />
+        <W p={[bcx, b.post, b.z1]} s={[bw + 0.14, 0.07, 0.07]} c={wood} />
         <mesh geometry={val.long} position={[b.x0 - 0.05, b.post - 0.04, b.z1 + 0.06]}>
           <meshLambertMaterial color="#e2e4ee" transparent opacity={0.8} side={THREE.DoubleSide} />
         </mesh>
         {/* front rail of the bed */}
-        <W p={[bcx, b.top - 0.2, b.z1]} s={[bw, 0.22, 0.08]} c={wood} />
+        <W p={[bcx, b.top - 0.22, b.z1]} s={[bw, 0.2, 0.06]} c={wood} />
       </>
     );
   }
@@ -284,12 +284,18 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         <planeGeometry args={[14, 10]} />
         <meshLambertMaterial map={tx.wall} />
       </mesh>
-      <mesh position={[0, 1.55, 0.05]} receiveShadow>
-        <planeGeometry args={[14, 3.1]} />
+      <mesh position={[0, 0.5, 0.05]} receiveShadow>
+        <planeGeometry args={[14, 1.0]} />
         <meshLambertMaterial map={tx.lower} />
       </mesh>
-      <W p={[0, 3.12, 0.1]} s={[14, 0.14, 0.14]} c={woodD} />
-      <W p={[0, 0.1, 0.1]} s={[14, 0.2, 0.12]} c={woodD} />
+      <W p={[0, 1.03, 0.08]} s={[14, 0.08, 0.1]} c={woodD} />
+      {/* ceiling + beam */}
+      <mesh position={[0, 2.8, 5]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[14, 10]} />
+        <meshLambertMaterial map={tx.floor} color="#8a7466" />
+      </mesh>
+      <W p={[0, 2.72, 0.12]} s={[14, 0.16, 0.16]} c={woodD} />
+      <W p={[0, 0.06, 0.08]} s={[14, 0.12, 0.08]} c={woodD} />
       <mesh position={[0, 0, 5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[14, 10]} />
         <meshLambertMaterial map={tx.floor} />
@@ -301,34 +307,34 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
           <planeGeometry args={[win.w, win.h]} />
           <meshBasicMaterial map={tx.night} toneMapped={false} />
         </mesh>
-        <W p={[0, win.h / 2 + 0.06, 0.06]} s={[win.w + 0.34, 0.14, 0.14]} c={woodD} />
-        <W p={[0, -win.h / 2 - 0.06, 0.06]} s={[win.w + 0.34, 0.14, 0.16]} c={woodD} />
-        <W p={[-win.w / 2 - 0.06, 0, 0.06]} s={[0.14, win.h + 0.1, 0.14]} c={woodD} />
-        <W p={[win.w / 2 + 0.06, 0, 0.06]} s={[0.14, win.h + 0.1, 0.14]} c={woodD} />
-        <W p={[0, 0, 0.04]} s={[0.05, win.h, 0.04]} c={woodD} sh={false} />
-        <W p={[0, 0.15, 0.04]} s={[win.w, 0.05, 0.04]} c={woodD} sh={false} />
+        <W p={[0, win.h / 2 + 0.045, 0.06]} s={[win.w + 0.22, 0.09, 0.1]} c={woodD} />
+        <W p={[0, -win.h / 2 - 0.045, 0.06]} s={[win.w + 0.26, 0.09, 0.14]} c={woodD} />
+        <W p={[-win.w / 2 - 0.045, 0, 0.06]} s={[0.09, win.h + 0.1, 0.1]} c={woodD} />
+        <W p={[win.w / 2 + 0.045, 0, 0.06]} s={[0.09, win.h + 0.1, 0.1]} c={woodD} />
+        <W p={[0, 0, 0.04]} s={[0.035, win.h, 0.04]} c={woodD} sh={false} />
+        <W p={[0, 0.1, 0.04]} s={[win.w, 0.035, 0.04]} c={woodD} sh={false} />
         {/* curtain rod + curtains */}
-        <mesh position={[0, win.h / 2 + 0.22, 0.2]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.025, 0.025, win.w + 0.7, 8]} />
+        <mesh position={[0, win.h / 2 + 0.16, 0.16]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.015, 0.015, win.w + 0.5, 8]} />
           <meshLambertMaterial color="#1c120b" />
         </mesh>
-        <mesh geometry={curtain.L} position={[-win.w / 2 - 0.08, win.h / 2 + 0.22, 0.2]}>
+        <mesh geometry={curtain.L} position={[-win.w / 2 - 0.06, win.h / 2 + 0.16, 0.16]} scale={[0.72, 0.62, 1]}>
           <meshBasicMaterial color="#b9c2d8" transparent opacity={0.8} />
         </mesh>
-        <mesh geometry={curtain.R} position={[win.w / 2 + 0.04, win.h / 2 + 0.22, 0.2]}>
+        <mesh geometry={curtain.R} position={[win.w / 2 + 0.04, win.h / 2 + 0.16, 0.16]} scale={[0.72, 0.62, 1]}>
           <meshBasicMaterial color="#aab4cd" transparent opacity={0.78} />
         </mesh>
       </group>
 
       {/* small framed picture + wall shelf */}
-      <group position={[-1.75, 3.75, 0.08]}>
+      <group position={[0.55, 1.72, 0.08]} scale={0.8}>
         <W p={[0, 0, 0]} s={[0.42, 0.56, 0.05]} c="#1e130c" />
         <mesh position={[0, 0, 0.03]}>
           <planeGeometry args={[0.3, 0.44]} />
           <meshBasicMaterial color="#4a443f" />
         </mesh>
       </group>
-      <group position={[1.35, 3.9, 0.12]}>
+      <group position={[1.25, 1.8, 0.1]} scale={0.75}>
         <W p={[0, 0, 0.08]} s={[0.9, 0.05, 0.26]} c={woodD} />
         <mesh position={[-0.22, 0.14, 0.08]} castShadow>
           <cylinderGeometry args={[0.07, 0.09, 0.22, 8]} />
@@ -340,42 +346,42 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         </mesh>
       </group>
 
-      {/* wardrobe */}
-      <group position={[-1.85, 0, 0.5]}>
-        <W p={[0, 1.45, 0]} s={[1.15, 2.7, 0.8]} c="#33200f" />
-        <W p={[0, 2.86, 0.02]} s={[1.3, 0.14, 0.9]} c={woodD} />
-        <W p={[0, 0.06, 0.02]} s={[1.25, 0.12, 0.86]} c={woodD} />
-        <W p={[0, 1.45, 0.41]} s={[0.03, 2.5, 0.02]} c="#140b06" sh={false} />
-        {[-0.29, 0.29].map((x) => (
+      {/* wardrobe (1.9 m) */}
+      <group position={[-1.62, 0, 0.36]}>
+        <W p={[0, 0.96, 0]} s={[0.9, 1.78, 0.55]} c="#33200f" />
+        <W p={[0, 1.89, 0.02]} s={[1.0, 0.09, 0.62]} c={woodD} />
+        <W p={[0, 0.045, 0.02]} s={[0.96, 0.09, 0.6]} c={woodD} />
+        <W p={[0, 0.96, 0.285]} s={[0.02, 1.66, 0.02]} c="#140b06" sh={false} />
+        {[-0.225, 0.225].map((x) => (
           <group key={x}>
-            <W p={[x, 1.95, 0.41]} s={[0.42, 1.1, 0.02]} c="#2a190c" sh={false} />
-            <W p={[x, 0.75, 0.41]} s={[0.42, 0.9, 0.02]} c="#2a190c" sh={false} />
+            <W p={[x, 1.32, 0.285]} s={[0.33, 0.78, 0.02]} c="#2a190c" sh={false} />
+            <W p={[x, 0.5, 0.285]} s={[0.33, 0.62, 0.02]} c="#2a190c" sh={false} />
           </group>
         ))}
-        <W p={[-0.06, 1.4, 0.43]} s={[0.03, 0.16, 0.03]} c="#b08a3e" sh={false} />
-        <W p={[0.06, 1.4, 0.43]} s={[0.03, 0.16, 0.03]} c="#b08a3e" sh={false} />
+        <W p={[-0.045, 0.95, 0.3]} s={[0.02, 0.11, 0.02]} c="#b08a3e" sh={false} />
+        <W p={[0.045, 0.95, 0.3]} s={[0.02, 0.11, 0.02]} c="#b08a3e" sh={false} />
       </group>
 
       {/* bed: frame, mattress, pillow, blanket, back posts + canopy */}
-      <W p={[bcx, b.top - 0.34, bcz]} s={[bw, 0.16, bd]} c={wood} />
+      <W p={[bcx, b.top - 0.3, bcz]} s={[bw, 0.12, bd]} c={wood} />
       {posts.map((q, i) => (
-        <W key={i} p={[q.p[0], 0.2, q.p[2]]} s={[0.14, 0.4, 0.14]} c={woodD} />
+        <W key={i} p={[q.p[0], 0.13, q.p[2]]} s={[0.1, 0.26, 0.1]} c={woodD} />
       ))}
-      <W p={[bcx, b.top - 0.12, bcz]} s={[bw - 0.08, 0.28, bd - 0.08]} c="#cfc6bb" />
-      <W p={[b.x1 + 0.02, b.top + 0.28, bcz]} s={[0.08, 0.95, bd]} c={wood} />
-      <mesh position={[b.x1 + 0.02, b.top + 0.76, bcz]} rotation={[0, Math.PI / 2, 0]} scale={[1, 0.45, 1]} castShadow>
-        <cylinderGeometry args={[bd / 2, bd / 2, 0.08, 20, 1, false, 0, Math.PI]} />
+      <W p={[bcx, b.top - 0.12, bcz]} s={[bw - 0.06, 0.24, bd - 0.06]} c="#cfc6bb" />
+      <W p={[b.x1 + 0.02, b.top + 0.2, bcz]} s={[0.06, 0.7, bd]} c={wood} />
+      <mesh position={[b.x1 + 0.02, b.top + 0.55, bcz]} rotation={[0, Math.PI / 2, 0]} scale={[1, 0.4, 1]} castShadow>
+        <cylinderGeometry args={[bd / 2, bd / 2, 0.06, 20, 1, false, 0, Math.PI]} />
         <meshLambertMaterial color={wood} />
       </mesh>
-      <mesh position={[b.x1 - 0.5, b.top + 0.1, bcz]} castShadow receiveShadow>
-        <boxGeometry args={[0.8, 0.16, bd - 0.5]} />
+      <mesh position={[b.x1 - 0.36, b.top + 0.07, bcz]} castShadow receiveShadow>
+        <boxGeometry args={[0.55, 0.12, bd - 0.5]} />
         <meshLambertMaterial map={tx.pillow} />
       </mesh>
-      <mesh position={[bcx - 0.25, b.top + 0.08, bcz]} scale={[1.02, 0.2, 0.56]} castShadow receiveShadow>
+      <mesh position={[bcx - 0.22, b.top + 0.05, bcz]} scale={[0.72, 0.16, 0.46]} castShadow receiveShadow>
         <sphereGeometry args={[1, 18, 12]} />
         <meshLambertMaterial color="#9c8f96" />
       </mesh>
-      <mesh position={[bcx - 0.75, b.top + 0.13, bcz + 0.1]} scale={[0.34, 0.2, 0.34]} castShadow>
+      <mesh position={[bcx - 0.78, b.top + 0.09, bcz + 0.06]} scale={[0.2, 0.15, 0.22]} castShadow>
         <sphereGeometry args={[1, 12, 8]} />
         <meshLambertMaterial color="#9c8f96" />
       </mesh>
@@ -383,13 +389,13 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         .filter((q) => !q.front)
         .map((q, i) => (
           <group key={i}>
-            <W p={[q.p[0], b.post / 2, q.p[2]]} s={[0.1, b.post, 0.1]} c={wood} />
-            <Net p={[q.p[0], 0.55, q.p[2] + 0.06]} h={b.post - 0.6} />
+            <W p={[q.p[0], b.post / 2, q.p[2]]} s={[0.07, b.post, 0.07]} c={wood} />
+            <Net p={[q.p[0], 0.42, q.p[2] + 0.05]} h={b.post - 0.46} />
           </group>
         ))}
-      <W p={[bcx, b.post, b.z0]} s={[bw + 0.2, 0.1, 0.1]} c={wood} />
-      <W p={[b.x0, b.post, bcz]} s={[0.1, 0.1, bd]} c={wood} />
-      <W p={[b.x1, b.post, bcz]} s={[0.1, 0.1, bd]} c={wood} />
+      <W p={[bcx, b.post, b.z0]} s={[bw + 0.14, 0.07, 0.07]} c={wood} />
+      <W p={[b.x0, b.post, bcz]} s={[0.07, 0.07, bd]} c={wood} />
+      <W p={[b.x1, b.post, bcz]} s={[0.07, 0.07, bd]} c={wood} />
       <mesh geometry={val.long} position={[b.x0 - 0.05, b.post - 0.04, b.z0 + 0.06]}>
         <meshLambertMaterial color="#c9cddb" transparent opacity={0.6} side={THREE.DoubleSide} />
       </mesh>
@@ -398,13 +404,13 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
       </mesh>
 
       {/* woven mat */}
-      <mesh position={[-0.75, 0.012, 4.35]} rotation={[-Math.PI / 2, 0, 0.06]} receiveShadow>
-        <planeGeometry args={[1.7, 1.5]} />
+      <mesh position={[-0.75, 0.012, 3.15]} rotation={[-Math.PI / 2, 0, 0.06]} receiveShadow>
+        <planeGeometry args={[1.5, 1.1]} />
         <meshLambertMaterial map={tx.mat} />
       </mesh>
 
       {/* kerosene lantern */}
-      <group position={ROOM.lantern}>
+      <group position={ROOM.lantern} scale={0.6}>
         <mesh position={[0, 0.09, 0]} castShadow>
           <cylinderGeometry args={[0.13, 0.16, 0.18, 12]} />
           <meshLambertMaterial color="#3d5546" />
@@ -428,7 +434,7 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
       </group>
 
       {/* candle tray */}
-      <group position={ROOM.candles}>
+      <group position={ROOM.candles} scale={0.6}>
         <mesh position={[0, 0.03, 0]} castShadow>
           <cylinderGeometry args={[0.36, 0.3, 0.06, 16]} />
           <meshLambertMaterial color="#8a6a2c" />
@@ -452,7 +458,7 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
       </group>
 
       {/* wooden chest */}
-      <group position={[1.0, 0, 5.35]} rotation={[0, -0.25, 0]}>
+      <group position={[0.95, 0, 3.75]} rotation={[0, -0.25, 0]} scale={0.8}>
         <W p={[0, 0.2, 0]} s={[0.75, 0.4, 0.45]} c="#3b2413" />
         <W p={[0, 0.42, 0]} s={[0.79, 0.07, 0.49]} c="#2c1a0d" />
         <W p={[-0.25, 0.22, 0.23]} s={[0.06, 0.44, 0.02]} c="#9c7a34" sh={false} />

@@ -92,10 +92,10 @@ const shotA = (f: number): Shot => {
   const t = f / FPS;
   const p = easeInOut(f / 72);
   const az = lerp(0.72, 0.2, p);
-  const R = lerp(31, 24, p);
-  const target: V3 = [0.5, 0.9, -2.2];
+  const R = lerp(38, 30, p);
+  const target: V3 = [0.5, 1.2, -3.5];
   const cam: Cam = {
-    pos: [target[0] + R * Math.sin(az), lerp(23, 15.5, p), target[2] + R * Math.cos(az)],
+    pos: [target[0] + R * Math.sin(az), lerp(27, 18, p), target[2] + R * Math.cos(az)],
     target,
     fov: 40,
   };

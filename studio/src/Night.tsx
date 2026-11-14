@@ -15,14 +15,14 @@ const LINES = [
   ["ใต้ลำแสงจันทร์", "มีใครบางคนยืนอยู่ข้างเตียง"],
   ["แล้วเธอก็ค่อย ๆ", "ลืมตาขึ้น"],
 ];
-const GHOST: V3 = [-0.72, 0, 3.05];
-const MAN: V3 = [-1.0, 0, 4.05];
+const GHOST: V3 = [-0.68, 0, 2.3];
+const MAN: V3 = [-0.95, 0, 2.95];
 
 const camFor = (idx: number, lf: number, dur: number): Cam => {
   const p = easeInOut(lf / dur);
-  if (idx === 0) return { pos: lerp3([-0.4, 3.1, 12.2], [0.2, 2.95, 10.9], p), target: lerp3([0.05, 2.4, 0], [0.1, 2.3, 0], p), fov: 46 };
-  if (idx === 1) return { pos: lerp3([0.5, 2.75, 10.3], [0.0, 2.5, 8.7], p), target: [-0.15, 2.1, 1.2], fov: 44 };
-  return { pos: lerp3([-0.2, 1.6, 6.0], [-0.5, 1.54, 5.2], p), target: [GHOST[0], 1.44, GHOST[2]], fov: 30 };
+  if (idx === 0) return { pos: lerp3([-0.2, 1.9, 10.6], [0.25, 1.8, 9.6], p), target: lerp3([0.25, 1.15, 0], [0.3, 1.1, 0], p), fov: 48 };
+  if (idx === 1) return { pos: lerp3([0.5, 1.75, 8.7], [0.1, 1.6, 7.3], p), target: [0.0, 1.15, 1.0], fov: 46 };
+  return { pos: lerp3([GHOST[0] + 0.5, 1.6, GHOST[2] + 2.9], [GHOST[0] + 0.2, 1.54, GHOST[2] + 2.15], p), target: [GHOST[0], 1.44, GHOST[2]], fov: 30 };
 };
 
 export const Night: React.FC = () => {
@@ -44,25 +44,26 @@ export const Night: React.FC = () => {
   const sleeper = P(ROOM.sleeperHead);
   const ghost = P(GHOST);
   const man = P(MAN);
-  const lan = P([ROOM.lantern[0], 0.4, ROOM.lantern[2]]);
-  const can = P([ROOM.candles[0], 0.3, ROOM.candles[2]]);
+  const lan = P([ROOM.lantern[0], 0.25, ROOM.lantern[2]]);
+  const can = P([ROOM.candles[0], 0.2, ROOM.candles[2]]);
 
   // moonlight shafts, projected from the 3D room
   const w = ROOM.window;
   const shafts = [
     [-0.62, 0.1, 0.15], [-0.42, 0.06, 0.1], [-0.2, 0.13, 0.17], [0.02, 0.05, 0.09], [0.2, 0.1, 0.14], [0.42, 0.07, 0.11], [0.56, 0.05, 0.08],
   ].map(([o, wd, a], i) => {
-    const top = w.y + 0.6;
-    const a1 = P([w.x + o, top, 0.15]);
-    const a2 = P([w.x + o + wd, top, 0.15]);
-    const b2 = P([w.x + o * 1.5 + wd * 2.2 + 1.3, 0, 3.9]);
-    const b1 = P([w.x + o * 1.5 + 1.3, 0, 3.9]);
+    const top = w.y + 0.55;
+    const k = 0.75;
+    const a1 = P([w.x + o * k, top, 0.12]);
+    const a2 = P([w.x + (o + wd) * k, top, 0.12]);
+    const b2 = P([w.x + (o * 1.5 + wd * 2.2) * k + 0.95, 0, 2.9]);
+    const b1 = P([w.x + o * 1.5 * k + 0.95, 0, 2.9]);
     return { i, a1, a2, b1, b2, a: 1.7 * a * (0.85 + 0.15 * Math.sin(t * 0.8 + i * 1.7)) };
   });
 
   const dust = useMemo(() => {
     const r = rng(99);
-    return Array.from({ length: 90 }).map(() => ({ x: -2.2 + r() * 4.4, y: 0.2 + r() * 5, z: 0.4 + r() * 6.2, ph: r() * 6.28, s: 0.6 + r() * 1.2, sp: 0.02 + r() * 0.05 }));
+    return Array.from({ length: 90 }).map(() => ({ x: -1.8 + r() * 3.6, y: 0.15 + r() * 2.5, z: 0.4 + r() * 4.6, ph: r() * 6.28, s: 0.6 + r() * 1.2, sp: 0.02 + r() * 0.05 }));
   }, []);
 
   const figure = (pr: ReturnType<typeof P>, node: React.ReactNode) => (
@@ -129,13 +130,13 @@ export const Night: React.FC = () => {
       </svg>
 
       {/* warm pools of light */}
-      {glow(lan, 1.7, flicker * (idx === 2 ? 0.3 : 1))}
-      {glow(can, 1.3, (0.55 + 0.45 * flicker) * (idx === 2 ? 0.3 : 1))}
+      {glow(lan, 1.05, flicker * (idx === 2 ? 0.3 : 1))}
+      {glow(can, 0.8, (0.55 + 0.45 * flicker) * (idx === 2 ? 0.3 : 1))}
 
       {/* drifting dust */}
       <svg width={width} height={height} style={{ ...full, mixBlendMode: "screen" }}>
         {dust.map((d, i) => {
-          const pr = P([d.x + Math.sin(t * 0.35 + d.ph) * 0.18, ((d.y + t * d.sp) % 5.2) + 0.1, d.z + Math.cos(t * 0.27 + d.ph) * 0.15]);
+          const pr = P([d.x + Math.sin(t * 0.35 + d.ph) * 0.18, ((d.y + t * d.sp) % 2.6) + 0.1, d.z + Math.cos(t * 0.27 + d.ph) * 0.15]);
           if (pr.depth < 0.4) return null;
           const r = Math.max(1.2, Math.min(7, 0.011 * d.s * pr.ppu));
           return <circle key={i} cx={pr.x} cy={pr.y} r={r} fill="#e6edff" opacity={(0.16 + 0.3 * Math.abs(Math.sin(t * 0.9 + d.ph))) * (r > 5 ? 0.5 : 1)} />;

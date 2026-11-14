@@ -132,8 +132,8 @@ export const Kneeler: React.FC<{ t: number; warm?: number }> = ({ t, warm = 1 })
 export const SleeperHead: React.FC<{ t: number }> = ({ t }) => {
   const skin = "#d9b49a";
   return (
-    <g transform={`rotate(${-78 + Math.sin(t * 1.2) * 0.6})`}>
-      <path d="M -14 4 Q -20 -22 0 -24 Q 20 -22 15 6 Q 22 26 6 34 Q -2 20 -14 4 Z" fill="#1b1512" />
+    <g transform={`rotate(${84 + Math.sin(t * 1.2) * 0.6})`}>
+      <path d="M -13 2 Q -19 -24 0 -26 Q 19 -24 13 2 Q 16 12 10 15 L 9 -2 Q 0 -12 -9 -2 L -10 15 Q -16 12 -13 2 Z" fill="#1b1512" />
       <ellipse cx={0} cy={0} rx={10.4} ry={12.8} fill={skin} />
       <path d="M 0 -13.5 Q -11 -13 -10.6 -1 Q -9 -9 0 -9.5 Q 9 -9 10.6 -1 Q 11 -13 0 -13.5 Z" fill="#1b1512" />
       <path d="M -7.2 -3.4 Q -4.4 -4.8 -1.8 -3.6 M 1.8 -3.6 Q 4.4 -4.8 7.2 -3.4" stroke={INK} strokeWidth={0.8} fill="none" strokeLinecap="round" />

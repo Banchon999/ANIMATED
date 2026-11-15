@@ -87,7 +87,7 @@ export type Pose = {
 const P = (a: Partial<Pose>): Pose => ({ armL: 8, elbowL: 6, armR: 8, elbowR: 6, legL: 3, legR: 3, lean: 0, head: 0, crouch: 0, handL: "open", handR: "open", ...a });
 export const POSES = {
   stand: P({}),
-  wai: P({ armL: 28, elbowL: 128, armR: 28, elbowR: 128, head: 0, handL: "flat", handR: "flat" }),
+  wai: P({ armL: 10, elbowL: 216, armR: 10, elbowR: 216, head: 6, lean: 4, handL: "flat", handR: "flat" }),
   point: P({ armR: 82, elbowR: 6, handR: "point", armL: 12, lean: 3 }),
   wave: P({ armR: 135, elbowR: 40, handR: "open", head: -5 }),
   shock: P({ armL: 62, elbowL: 95, armR: 62, elbowR: 95, lean: -6, legL: 9, legR: 9 }),

@@ -1,0 +1,50 @@
+{
+  "id": "sample",
+  "seed": 7,
+  "cast": {
+    "mali": { "seed": 12, "age": "adult", "female": true, "era": "rural" },
+    "yai": { "seed": 27, "age": "elder", "female": true, "era": "old" },
+    "ton": { "seed": 4, "age": "child", "female": false, "era": "rural" }
+  },
+  "shots": [
+    {
+      "set": "village", "cam": "high", "dur": 2.6, "focus": [0, 0, 1.5],
+      "actors": [
+        { "who": "mali", "at": [-3.5, 1.8], "walkTo": [0.2, 1.8] },
+        { "who": "ton", "at": [4.5, 2.6], "walkTo": [1.2, 2.1] }
+      ],
+      "caption": ["เช้าวันหนึ่ง", "ที่*บ้านดอนตาล*"]
+    },
+    {
+      "set": "village", "cam": "mid", "dur": 2.6, "focus": "mali+ton", "say": "ton",
+      "actors": [
+        { "who": "mali", "at": [0.2, 1.8], "pose": "stand", "feel": "neutral", "then": [{ "at": 1.2, "pose": "shock", "feel": "shock" }] },
+        { "who": "ton", "at": [1.2, 2.1], "pose": "point", "feel": "happy", "face": -1 }
+      ],
+      "caption": ["น้องต้นวิ่งมาบอก", "ว่า*เงินเข้าแล้ว!*"]
+    },
+    {
+      "set": "village", "cam": "close", "dur": 2.4, "focus": "mali",
+      "actors": [
+        { "who": "mali", "at": [0.2, 1.8], "pose": "shock", "feel": "shock", "then": [{ "at": 1.1, "pose": "cheer", "feel": "happy" }] }
+      ],
+      "card": { "title": "ยอดเงินเข้า", "value": 6000, "unit": "บาท" },
+      "caption": ["มะลิ*แทบไม่เชื่อสายตา*"]
+    },
+    {
+      "set": "room", "cam": "wide", "dur": 2.6, "focus": [-0.1, 0, 2.7],
+      "actors": [
+        { "who": "yai", "at": [0.55, 2.75], "pose": "stand", "feel": "calm", "face": -1 },
+        { "who": "mali", "at": [-0.95, 2.9], "pose": "stand", "feel": "happy", "then": [{ "at": 0.9, "pose": "wai", "feel": "shy" }] }
+      ],
+      "caption": ["คืนนั้นมะลิ", "ไป*กราบขอบคุณยาย*"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 2.4, "focus": "yai", "say": "yai",
+      "actors": [
+        { "who": "yai", "at": [0.55, 2.75], "pose": "stand", "feel": "calm", "then": [{ "at": 0.8, "pose": "wave", "feel": "happy" }] }
+      ],
+      "caption": ["ยายยิ้ม", "*แล้วบอกว่าไม่เป็นไร*"]
+    }
+  ]
+}

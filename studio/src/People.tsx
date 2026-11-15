@@ -1,6 +1,7 @@
 import React, { useId } from "react";
 import { AbsoluteFill } from "remotion";
 import { ensureFonts, lerp, rad, rng } from "./lib";
+import { Gait, GAITS } from "./Character";
 
 // Batch 1: seeded person generator + reusable pose / hand / mouth / emotion libraries.
 // 100 units = 1 m, origin on the ground between the feet. See README for the scale table.
@@ -327,6 +328,175 @@ export const PeopleSheet: React.FC = () => {
               <line x1={c * cw + 14} x2={(c + 1) * cw - 14} y1={y - 170 * k} y2={y - 170 * k} stroke="#d9cfbf" strokeWidth={2} strokeDasharray="6 8" />
               <g transform={`translate(${x} ${y}) scale(${k})`}><Person spec={spec} pose={POSES[pose]} feel={feel} /></g>
               <text x={x} y={y + 30} textAnchor="middle" fontFamily="Kanit" fontWeight={500} fontSize={21} fill="#5a4f46">{`#${i + 1} ${pose} · ${feel}`}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </AbsoluteFill>
+  );
+};
+
+// ---------- side view with real walk cycles (faces +x; flip with scale(-1,1)) ----------
+export type GaitName = keyof typeof GAITS;
+/** Ground covered by one full walk cycle (two steps), in units. Drive the phase by distance so feet never slide. */
+export const strideOf = (spec: PersonSpec, gait: Gait) => 4 * spec.h * (spec.age === "child" ? 0.43 : 0.47) * Math.sin(rad(gait.A));
+/** Natural speed in metres per second, for choosing walk distances in a script. */
+export const gaitMps = (spec: PersonSpec, gait: Gait) => (strideOf(spec, gait) * gait.cadence) / 100;
+
+export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?: number; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean }> = ({
+  spec: s, gait = null, phase = 0, feel = "neutral", mouth, t = 0, blink = false,
+}) => {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const h = s.h;
+  const child = s.age === "child";
+  const R = h * (child ? 0.098 : 0.074);
+  const Ry = R * 1.18;
+  const legLen = h * (child ? 0.43 : 0.47);
+  const L = legLen / 2;
+  const torso = h * (child ? 0.3 : 0.31);
+  const tw = h * 0.062 * s.wide; // half depth of the torso
+  const limb = h * 0.062 * (0.85 + s.wide * 0.2);
+  const upper = h * 0.165, fore = h * 0.155;
+  const f = FEELS[feel] as Feel;
+  const m: Mouth = mouth ?? f.mouth;
+  const phi = phase * 2 * Math.PI;
+
+  const leg = (ph: number) => {
+    const th = gait ? rad(gait.A * Math.sin(ph)) : 0;
+    const k = gait ? rad(gait.k0 + gait.K * Math.max(0, Math.cos(ph))) : 0;
+    const knee = { x: L * Math.sin(th), y: L * Math.cos(th) };
+    const foot = { x: knee.x + L * Math.sin(th - k), y: knee.y + L * Math.cos(th - k) };
+    return { knee, foot };
+  };
+  const back = leg(phi + Math.PI), front = leg(phi);
+  const hipH = Math.max(back.foot.y, front.foot.y) + limb * 0.4;
+  const shY = -torso;
+  const arm = (swing: number) => {
+    const a = rad((gait ? gait.armBase + swing * gait.armSwing : 4));
+    const b = a + rad(gait ? gait.elbow : 8);
+    const sh = { x: 0, y: shY + limb * 0.5 };
+    const el = { x: Math.sin(a) * upper, y: sh.y + Math.cos(a) * upper };
+    const hd = { x: el.x + Math.sin(b) * fore, y: el.y + Math.cos(b) * fore };
+    return { sh, el, hd };
+  };
+  const armB = arm(Math.sin(phi)), armF = arm(-Math.sin(phi));
+  const legSkin = s.bottomKind !== "pants";
+  const sleeve = s.topKind === "tee" ? 0.45 : s.topKind === "wrap" ? 0 : 1;
+  const dim = { filter: "brightness(0.8)" };
+
+  const drawLeg = (l: ReturnType<typeof leg>, far: boolean) => (
+    <g style={far ? dim : undefined}>
+      <path d={`M 0 0 L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`} fill="none" stroke={legSkin ? s.skin : s.bottom} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
+      {s.bottomKind === "shorts" && <path d={`M 0 0 L ${l.knee.x * 0.75} ${l.knee.y * 0.75}`} stroke={s.bottom} strokeWidth={limb * 1.4} strokeLinecap="round" />}
+      <ellipse cx={l.foot.x + limb * 0.45} cy={l.foot.y + 1} rx={limb * 0.95} ry={limb * 0.42} fill={s.shoe ?? s.skin} />
+    </g>
+  );
+  const drawArm = (a: ReturnType<typeof arm>, far: boolean) => (
+    <g style={far ? dim : undefined}>
+      <path d={`M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${a.hd.x} ${a.hd.y}`} fill="none" stroke={s.skin} strokeWidth={limb * 0.82} strokeLinecap="round" strokeLinejoin="round" />
+      {sleeve > 0 && (
+        <path
+          d={sleeve === 1 ? `M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${lerp(a.el.x, a.hd.x, 0.8)} ${lerp(a.el.y, a.hd.y, 0.8)}` : `M ${a.sh.x} ${a.sh.y} L ${lerp(a.sh.x, a.el.x, 0.55)} ${lerp(a.sh.y, a.el.y, 0.55)}`}
+          fill="none" stroke={s.top} strokeWidth={limb * 1.05} strokeLinecap="round" strokeLinejoin="round"
+        />
+      )}
+      <circle cx={a.hd.x} cy={a.hd.y} r={limb * 0.48} fill={s.skin} />
+    </g>
+  );
+  const torsoD = `M ${-tw} ${shY + 5} Q ${-tw} ${shY - 1} 0 ${shY - 1} Q ${tw} ${shY - 1} ${tw} ${shY + 5} L ${tw * 1.05} -2 Q ${tw} 4 0 4 Q ${-tw} 4 ${-tw * 1.05} -2 Z`;
+  const longSkirt = s.bottomKind === "sarong";
+  const skirtLen = legLen * (longSkirt ? 0.8 : 0.48);
+  const spread = Math.max(Math.abs(back.knee.x), Math.abs(front.knee.x)) + limb * 0.75;
+
+  // profile face
+  const ex = R * 0.5, ey = R * 0.06, ew = R * 0.2;
+  const eyeKind = blink && (f.eyes === "open" || f.eyes === "narrow") ? "closed" : f.eyes;
+  const mx = R * 0.62, my = R * 0.62, mw = R * 0.26;
+  const open = m === "A" ? 0.9 : m === "O" ? 0.7 : m === "E" || m === "grit" ? 0.45 : m === "U" ? 0.4 : 0;
+  const style = s.female && (s.hairStyle === 0 || s.hairStyle === 5) && !child ? 2 : !s.female && s.hairStyle === 3 ? 1 : s.hairStyle;
+  const cap = `M ${R * 0.78} ${-Ry * 0.42} Q ${R * 0.7} ${-Ry * 1.14} ${-R * 0.1} ${-Ry * 1.13} Q ${-R * 1.16} ${-Ry * 1.08} ${-R * 1.08} ${Ry * 0.1} L ${-R * 0.62} ${Ry * 0.28} Q ${-R * 0.5} ${-Ry * 0.35} ${R * 0.2} ${-Ry * 0.52} Q ${R * 0.55} ${-Ry * 0.55} ${R * 0.78} ${-Ry * 0.42} Z`;
+
+  return (
+    <g transform={`translate(0 ${-hipH})`}>
+      {drawLeg(back, true)}
+      {drawLeg(front, false)}
+      {(s.bottomKind === "sarong" || s.bottomKind === "skirt") && (
+        <path d={`M ${-tw} -3 L ${tw} -3 L ${Math.max(tw * 1.15, spread * (skirtLen / L) * 0.55)} ${skirtLen} L ${-Math.max(tw * 1.15, spread * (skirtLen / L) * 0.55)} ${skirtLen} Z`} fill={s.bottom} />
+      )}
+      <g transform={`rotate(${gait ? gait.lean : 0})`}>
+        {drawArm(armB, true)}
+        {s.extra === "bag" && <rect x={-tw * 1.9} y={-torso * 0.3} width={tw * 1.5} height={torso * 0.4} rx={3} fill="#8a5a3a" />}
+        <clipPath id={`s${id}`}><path d={torsoD} /></clipPath>
+        <path d={torsoD} fill={s.top} />
+        <g clipPath={`url(#s${id})`}>
+          {(s.pattern === "stripes" || s.pattern === "check") && Array.from({ length: 9 }).map((_, i) => <rect key={i} x={-tw - 2} y={shY + i * (torso / 8)} width={tw * 2 + 4} height={torso / 20} fill={s.patternColor} opacity={s.pattern === "check" ? 0.5 : 0.85} />)}
+          {s.pattern === "check" && Array.from({ length: 5 }).map((_, i) => <rect key={`v${i}`} x={-tw + i * (tw / 2)} y={shY - 2} width={1.4} height={torso + 8} fill={s.patternColor} opacity={0.5} />)}
+          {s.pattern === "dots" && Array.from({ length: 14 }).map((_, i) => <circle key={i} cx={-tw * 0.5 + (i % 2) * tw + (Math.floor(i / 2) % 2) * 2} cy={shY + 5 + Math.floor(i / 2) * (torso / 7)} r={1.5} fill={s.patternColor} />)}
+        </g>
+        {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-tw * 1.05} -5 L ${tw * 1.05} -5 L ${tw * 1.05} 0 Q ${tw} 5 0 5 Q ${-tw} 5 ${-tw * 1.05} 0 Z`} fill={s.bottom} />}
+        {s.extra === "sash" && <path d={`M ${-tw} ${shY + 2} L ${tw * 0.2} ${shY - 1} L ${tw} ${-torso * 0.1} L ${tw * 0.2} 2 Z`} fill="#a8443f" opacity={0.95} />}
+        <rect x={-R * 0.32} y={shY - R * 0.5} width={R * 0.64} height={R * 0.7} fill={s.skin} />
+        <g transform={`translate(${R * 0.12} ${shY - R * 0.35 - Ry}) rotate(${gait ? gait.headTilt : 0})`}>
+          <g fill={s.hair}>
+            {style === 2 && <circle cx={-R * 0.95} cy={-Ry * 0.75} r={R * 0.42} />}
+            {style === 3 && <path d={`M ${-R * 0.2} ${-Ry * 0.9} Q ${-R * 1.5} ${-Ry * 0.6} ${-R * 1.25} ${Ry * 2.3} L ${-R * 0.55} ${Ry * 2.2} L ${-R * 0.5} 0 Z`} />}
+            {style === 4 && <path d={`M ${-R * 0.2} ${-Ry * 0.9} Q ${-R * 1.4} ${-Ry * 0.6} ${-R * 1.2} ${Ry * 0.8} L ${-R * 0.5} ${Ry * 0.75} L ${-R * 0.5} 0 Z`} />}
+            {style === 5 && child && <circle cx={-R * 0.1} cy={-Ry * 1.2} r={R * 0.3} />}
+          </g>
+          <ellipse rx={R} ry={Ry} fill={s.skin} />
+          <path d={`M ${R * 0.93} ${-R * 0.02} q ${R * 0.26} ${R * 0.3} ${-R * 0.04} ${R * 0.4} z`} fill={s.skin} />
+          <ellipse cx={-R * 0.12} cy={Ry * 0.1} rx={R * 0.15} ry={R * 0.26} fill={s.skin} style={{ filter: "brightness(0.92)" }} />
+          {f.blush && <ellipse cx={R * 0.42} cy={R * 0.42} rx={R * 0.22} ry={R * 0.12} fill="#ef7a80" opacity={0.5} />}
+          {eyeKind === "open" || eyeKind === "narrow" || eyeKind === "wide" ? (
+            <>
+              <ellipse cx={ex} cy={ey} rx={ew * (eyeKind === "wide" ? 1.2 : 0.95)} ry={ew * (eyeKind === "wide" ? 1.5 : eyeKind === "narrow" ? 0.6 : 1.15)} fill="#fff" />
+              <circle cx={ex + ew * 0.25} cy={ey} r={ew * (eyeKind === "wide" ? 0.4 : 0.62)} fill={INK} />
+            </>
+          ) : (
+            <path d={eyeKind === "happy" ? `M ${ex - ew} ${ey + ew * 0.4} Q ${ex} ${ey - ew * 1.1} ${ex + ew} ${ey + ew * 0.4}` : `M ${ex - ew} ${ey} Q ${ex} ${ey + ew * 0.9} ${ex + ew} ${ey}`} fill="none" stroke={INK} strokeWidth={R * 0.075} strokeLinecap="round" />
+          )}
+          <line x1={-ew * 1.2} x2={ew * 1.2} y1={0} y2={0} stroke={s.age === "elder" ? "#8a8580" : INK} strokeWidth={R * 0.085} strokeLinecap="round" transform={`translate(${ex} ${ey - ew * 2.1 + f.browY}) rotate(${f.brow})`} />
+          {f.tears && <path d={`M ${ex} ${ey + ew} q 1 ${ew * 2.5} 0 ${ew * 5} q 0 ${ew} ${ew * 0.8} ${ew} q ${ew * 0.8} 0 ${ew * 0.6} ${-ew} q -${ew * 0.4} ${-ew * 2.5} 0 ${-ew * 5} z`} fill="#7cc6ee" opacity={0.9} />}
+          {open > 0 ? (
+            <ellipse cx={mx} cy={my + mw * 0.2} rx={mw * (m === "E" || m === "grit" ? 0.9 : 0.55)} ry={mw * open} fill={m === "E" || m === "grit" ? "#fff" : "#6a2622"} stroke={INK} strokeWidth={R * 0.05} />
+          ) : m === "smile" ? (
+            <path d={`M ${mx - mw} ${my - mw * 0.2} Q ${mx} ${my + mw * 1.1} ${mx + mw * 0.8} ${my - mw * 0.3} Z`} fill="#7a2e2a" stroke={INK} strokeWidth={R * 0.05} strokeLinejoin="round" />
+          ) : (
+            <path d={m === "frown" ? `M ${mx - mw * 0.8} ${my + mw * 0.4} Q ${mx} ${my - mw * 0.3} ${mx + mw * 0.7} ${my + mw * 0.3}` : `M ${mx - mw * 0.7} ${my} Q ${mx} ${my + (m === "M" ? 0 : mw * 0.3)} ${mx + mw * 0.7} ${my}`} fill="none" stroke={INK} strokeWidth={R * 0.07} strokeLinecap="round" />
+          )}
+          {!(style === 5 && !child) ? <path d={cap} fill={s.hair} /> : <path d={`M ${-R * 1.05} ${Ry * 0.1} Q ${-R * 1.1} ${-Ry * 0.7} ${-R * 0.5} ${-Ry * 0.95} Q ${-R * 0.7} ${-Ry * 0.3} ${-R * 0.62} ${Ry * 0.28} Z`} fill={s.hair} />}
+          {s.extra === "glasses" && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={ex} cy={ey + R * 0.02} r={R * 0.3} /><line x1={ex - R * 0.3} x2={-R * 0.15} y1={ey} y2={ey - R * 0.05} /></g>}
+          {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.3} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+          {f.sweat && <path transform={`translate(${-R * 0.5} ${-R * 0.5})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
+        </g>
+        {drawArm(armF, false)}
+      </g>
+    </g>
+  );
+};
+
+// ---------- review sheet: the four gaits at six phases, on four different people ----------
+export const WalkSheet: React.FC = () => {
+  const gaits = Object.keys(GAITS) as GaitName[];
+  const th: Record<GaitName, string> = { stroll: "เดินเล่น", hurry: "วิ่งรีบ", sneak: "ย่อง", tired: "หมดแรง" } as Record<GaitName, string>;
+  const who = [12, 4, 27, 1];
+  const feels: FeelName[] = ["happy", "shock", "calm", "sad"];
+  return (
+    <AbsoluteFill style={{ background: "#efe8dc", fontFamily: "Kanit" }}>
+      <div style={{ position: "absolute", left: 40, top: 26, fontSize: 44, fontWeight: 800, color: "#231c1a" }}>มุมข้าง · ท่าเดิน 4 แบบ</div>
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
+        {gaits.map((g, r) => {
+          const y = 520 + r * 440;
+          const spec = makePerson(who[r]);
+          return (
+            <g key={g}>
+              <line x1={30} x2={1050} y1={y} y2={y} stroke="#cbbfae" strokeWidth={3} />
+              <text x={40} y={y - 330} fontFamily="Kanit" fontWeight={700} fontSize={40} fill="#231c1a">{`${th[g]} · ${gaitMps(spec, GAITS[g]).toFixed(1)} ม./วินาที`}</text>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <g key={i} transform={`translate(${110 + i * 172} ${y}) scale(1.55)`}>
+                  <PersonSide spec={spec} gait={GAITS[g]} phase={i / 6} feel={feels[r]} />
+                </g>
+              ))}
             </g>
           );
         })}

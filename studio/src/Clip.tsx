@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { FeelName, makePerson, mixPose, Mouth, Person, PersonSpec, Pose, PoseName, POSES, Age, Era } from "./People";
+import { FeelName, GaitName, makePerson, mixPose, Mouth, Person, PersonSide, PersonSpec, Pose, PoseName, POSES, strideOf, Age, Era } from "./People";
+import { GAITS } from "./Character";
 import { SetName, SETS, SetStage } from "./Sets";
 import { buildCam, Cam, clamp01, easeInOut, easeOut, easeOutBack, ensureFonts, lerp, project, rng, V3 } from "./lib";
 
@@ -11,7 +12,8 @@ export type CamKind = "high" | "wide" | "mid" | "close";
 export type ActorCue = {
   who: string;
   at: [number, number]; // x, z on the ground
-  walkTo?: [number, number]; // walks there over the whole shot
+  walkTo?: [number, number]; // walks there over the whole shot, drawn in side view
+  gait?: GaitName; // stroll (default), hurry, sneak, tired
   pose?: PoseName;
   feel?: FeelName;
   then?: { at: number; pose?: PoseName; feel?: FeelName }[]; // seconds into the shot
@@ -36,6 +38,30 @@ export type ClipScript = {
 const FPS = 30;
 export const clipFrames = (c: ClipScript) => c.shots.reduce((n, s) => n + Math.round(s.dur * FPS), 0);
 
+/** Fail early, with a readable message, when a script names something the kit does not have. */
+export const validateClip = (c: ClipScript) => {
+  const bad = (msg: string) => { throw new Error(`clips/${c.id}.json: ${msg}`); };
+  c.shots.forEach((s, i) => {
+    const at = `shot ${i + 1}`;
+    if (!(s.set in SETS)) bad(`${at}: unknown set "${s.set}" (have: ${Object.keys(SETS).join(", ")})`);
+    if (!["high", "wide", "mid", "close"].includes(s.cam)) bad(`${at}: unknown cam "${s.cam}"`);
+    if (!(s.dur > 0)) bad(`${at}: dur must be a positive number of seconds`);
+    const names = s.actors.map((a) => a.who);
+    s.actors.forEach((a) => {
+      if (!(a.who in c.cast)) bad(`${at}: actor "${a.who}" is not in cast`);
+      for (const p of [a.pose, ...(a.then ?? []).map((x) => x.pose)]) if (p && !(p in POSES)) bad(`${at}: unknown pose "${p}" (have: ${Object.keys(POSES).join(", ")})`);
+      if (a.gait && !(a.gait in GAITS)) bad(`${at}: unknown gait "${a.gait}" (have: ${Object.keys(GAITS).join(", ")})`);
+    });
+    if (typeof s.focus === "string") for (const n of s.focus.split("+")) if (!names.includes(n)) bad(`${at}: focus "${n}" is not an actor in this shot`);
+    if (s.say && !names.includes(s.say)) bad(`${at}: say "${s.say}" is not an actor in this shot`);
+    const xs = s.actors.filter((a) => !a.walkTo).map((a) => a.at[0]);
+    const span = xs.length ? Math.max(...xs) - Math.min(...xs) : 0;
+    const limit = s.cam === "close" ? 0.6 : s.cam === "mid" ? 1.4 : 3.6;
+    if (s.cam !== "high" && span > limit) bad(`${at}: actors stand ${span.toFixed(1)} m apart but a "${s.cam}" shot only fits ${limit} m`);
+  });
+  return c;
+};
+
 // ---------- camera presets: framing relative to the focus point, varied per shot by seed ----------
 const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, dark: boolean): { cam: Cam; blur: number } => {
   const sx = (r() - 0.5) * 2; // -1..1, which side the camera drifts from
@@ -55,12 +81,7 @@ const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, dark: boole
 };
 
 // ---------- actor state at a moment of a shot ----------
-const walkPose = (t: number): Pose => {
-  const ph = t * 2 * Math.PI * 1.7;
-  const s = Math.sin(ph);
-  return { ...POSES.stand, legL: 3 + 16 * Math.max(0, s), legR: 3 + 16 * Math.max(0, -s), armL: 8 + 14 * Math.max(0, -s), armR: 8 + 14 * Math.max(0, s), elbowL: 14, elbowR: 14, lean: 2.5 * s, head: -1.5 * s };
-};
-const cueState = (cue: ActorCue, t: number, dur: number) => {
+const cueState = (cue: ActorCue, spec: PersonSpec, t: number, dur: number) => {
   let pose: Pose = POSES[cue.pose ?? "stand"];
   let feel: FeelName = cue.feel ?? "neutral";
   let lastAt = -1;
@@ -73,17 +94,19 @@ const cueState = (cue: ActorCue, t: number, dur: number) => {
   }
   let pos: V3 = [cue.at[0], 0, cue.at[1]];
   let face = cue.face ?? 1;
-  let bob = 0;
+  let walk: { gait: GaitName; phase: number } | null = null;
   if (cue.walkTo) {
     const p = clamp01(t / dur);
     pos = [lerp(cue.at[0], cue.walkTo[0], p), 0, lerp(cue.at[1], cue.walkTo[1], p)];
     face = cue.walkTo[0] >= cue.at[0] ? 1 : -1;
-    pose = walkPose(t);
-    bob = Math.abs(Math.sin(t * 2 * Math.PI * 1.7)) * 2.2;
+    const gait = cue.gait ?? "stroll";
+    // phase follows the distance covered, so the planted foot never slides
+    const dist = Math.hypot(cue.walkTo[0] - cue.at[0], cue.walkTo[1] - cue.at[1]) * 100 * p;
+    walk = { gait, phase: dist / strideOf(spec, GAITS[gait]) };
   }
   // a small hop when the pose or feeling changes
   const hop = lastAt >= 0 ? Math.max(0, 1 - (t - lastAt) / 0.25) * 5 : 0;
-  return { pose, feel, pos, face, lift: bob + hop };
+  return { pose, feel, pos, face, lift: hop, walk };
 };
 const TALK: Mouth[] = ["A", "M", "E", "O", "A", "U", "E", "M"];
 
@@ -133,7 +156,7 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
   const people: Record<string, PersonSpec> = {};
   for (const [name, c] of Object.entries(script.cast)) people[name] = makePerson(c.seed, c);
 
-  const states = shot.actors.map((cue) => ({ cue, spec: people[cue.who], ...cueState(cue, t, shot.dur) }));
+  const states = shot.actors.map((cue) => ({ cue, spec: people[cue.who], ...cueState(cue, people[cue.who], t, shot.dur) }));
   // focus: a point, one actor, or "a+b" for the middle of several actors
   const names = typeof shot.focus === "string" ? shot.focus.split("+") : [];
   const focused = states.filter((s) => names.includes(s.cue.who));
@@ -158,14 +181,18 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
         <SetStage set={shot.set} cam={cam} cam3={cam3} width={width} height={height} frame={frame} blur={blur} seed={script.seed} blobs={dark ? [] : states.map((s) => ({ x: s.pos[0], z: s.pos[2], r: 0.32 }))}>
           {placed.map(({ s, pr }, i) => (
             <g key={i} transform={`translate(${pr.x} ${pr.y - (s.lift * pr.ppu) / 100}) scale(${(pr.ppu / 100) * s.face} ${pr.ppu / 100})`}>
-              <Person
-                spec={s.spec}
-                pose={s.pose}
-                feel={s.feel}
-                t={frame / FPS}
-                blink={(frame + s.spec.seed * 11) % 96 < 4}
-                mouth={shot.say === s.cue.who ? TALK[Math.floor(frame / 3 + s.spec.seed) % TALK.length] : undefined}
-              />
+              {s.walk ? (
+                <PersonSide spec={s.spec} gait={GAITS[s.walk.gait]} phase={s.walk.phase} feel={s.feel} t={frame / FPS} blink={(frame + s.spec.seed * 11) % 96 < 4} />
+              ) : (
+                <Person
+                  spec={s.spec}
+                  pose={s.pose}
+                  feel={s.feel}
+                  t={frame / FPS}
+                  blink={(frame + s.spec.seed * 11) % 96 < 4}
+                  mouth={shot.say === s.cue.who ? TALK[Math.floor(frame / 3 + s.spec.seed) % TALK.length] : undefined}
+                />
+              )}
             </g>
           ))}
         </SetStage>

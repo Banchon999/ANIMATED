@@ -1,3 +1,4 @@
 {
-  "compositions": ["Clip-sample"]
+  "compositions": ["Clip-sample"],
+  "run": 2
 }

@@ -10,10 +10,18 @@
     {
       "set": "village", "cam": "high", "dur": 2.6, "focus": [0, 0, 1.5],
       "actors": [
-        { "who": "mali", "at": [-3.5, 1.8], "walkTo": [0.2, 1.8] },
-        { "who": "ton", "at": [4.5, 2.6], "walkTo": [1.2, 2.1] }
+        { "who": "mali", "at": [-4.5, 1.8], "walkTo": [-1.8, 1.8], "feel": "happy" },
+        { "who": "ton", "at": [10.4, 2.4], "walkTo": [5.6, 2.2], "gait": "hurry", "feel": "shock" }
       ],
       "caption": ["เช้าวันหนึ่ง", "ที่*บ้านดอนตาล*"]
+    },
+    {
+      "set": "village", "cam": "wide", "dur": 2.2, "focus": [0.2, 0, 2.0],
+      "actors": [
+        { "who": "mali", "at": [-1.8, 1.8], "walkTo": [0.2, 1.8], "feel": "happy" },
+        { "who": "ton", "at": [5.6, 2.2], "walkTo": [1.2, 2.1], "gait": "hurry", "feel": "shock" }
+      ],
+      "caption": ["มะลิกำลังเดินไปตลาด", "*จู่ ๆ ก็มีคนวิ่งตามมา*"]
     },
     {
       "set": "village", "cam": "mid", "dur": 2.6, "focus": "mali+ton", "say": "ton",

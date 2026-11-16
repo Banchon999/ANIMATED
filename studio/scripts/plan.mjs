@@ -1,5 +1,5 @@
 // Splits every queued composition into short frame ranges so each range renders in a fresh browser
-// on its own runner. Long single renders crashed the browser ("Target closed") part-way through.
+// on its own runner, in parallel.
 import { readFileSync, existsSync } from "node:fs";
 
 const FPS = 30;
@@ -12,11 +12,25 @@ for (const comp of queue.compositions) {
   const file = id ? `clips/${id}.json` : null;
   if (file && existsSync(file)) {
     const script = JSON.parse(readFileSync(file, "utf8"));
-    const frames = script.shots.reduce((n, s) => n + Math.round(s.dur * FPS), 0);
+    // A part never crosses a change of set: switching sets inside one browser tab crashed it on CI
+    // (frame 892 of Clip-bugorski, twice), so every tab only ever mounts one set.
+    const runs = [];
+    let at = 0;
+    for (const shot of script.shots) {
+      const n = Math.round(shot.dur * FPS);
+      const last = runs[runs.length - 1];
+      if (last && last.set === shot.set) last.to += n;
+      else runs.push({ set: shot.set, from: at, to: at + n });
+      at += n;
+    }
     let i = 0;
-    for (let from = 0; from < frames; from += CHUNK, i++) {
-      const to = Math.min(frames, from + CHUNK) - 1;
-      parts.push({ comp, part: String(i).padStart(3, "0"), range: `--frames=${from}-${to}` });
+    for (const run of runs) {
+      const count = Math.ceil((run.to - run.from) / CHUNK);
+      const size = Math.ceil((run.to - run.from) / count);
+      for (let from = run.from; from < run.to; from += size, i++) {
+        const to = Math.min(run.to, from + size) - 1;
+        parts.push({ comp, part: String(i).padStart(3, "0"), range: `--frames=${from}-${to}` });
+      }
     }
     comps.push({ comp, audio: script.audio ? `public/audio/${script.audio}` : "" });
   } else {

@@ -1,0 +1,61 @@
+{
+  "id": "settest",
+  "seed": 3,
+  "cast": {
+    "anatoly": { "seed": 21, "age": "adult", "female": false, "era": "city", "outfit": "labcoat" },
+    "doc": { "seed": 5, "age": "adult", "female": true, "era": "city", "outfit": "labcoat" },
+    "pat": { "seed": 9, "age": "adult", "female": false, "era": "city", "outfit": "patient" }
+  },
+  "shots": [
+    {
+      "set": "accelerator", "cam": "high", "dur": 2, "focus": [0, 0, 3.0],
+      "actors": [{ "who": "anatoly", "at": [-1.0, 3.0], "walkTo": [1.0, 3.0], "feel": "calm" }],
+      "caption": ["accelerator *high*"]
+    },
+    {
+      "set": "accelerator", "cam": "wide", "dur": 2, "focus": [0, 0, 2.8],
+      "actors": [{ "who": "anatoly", "at": [0.3, 2.8], "pose": "point", "feel": "happy", "face": -1 }],
+      "fx": [{ "kind": "sparks", "at": [-0.88, 1.08, 1.72] }, { "kind": "question" }, { "kind": "flash", "at": 1.4 }],
+      "caption": ["wide + sparks + question + flash"]
+    },
+    {
+      "set": "accelerator", "cam": "mid", "dur": 2, "focus": "anatoly",
+      "actors": [{ "who": "anatoly", "at": [0.2, 2.6], "pose": "squat", "feel": "shock" }],
+      "fx": [{ "kind": "beam", "through": "anatoly" }],
+      "caption": ["mid + beam through squat"]
+    },
+    {
+      "set": "accelerator", "cam": "close", "dur": 2, "focus": "anatoly",
+      "actors": [{ "who": "anatoly", "at": [0.2, 2.6], "pose": "shock", "feel": "shock" }],
+      "fx": [{ "kind": "beam", "through": "anatoly", "from": 0.3 }],
+      "caption": ["close + beam"]
+    },
+    {
+      "set": "clinic", "cam": "high", "dur": 2, "focus": "doc+pat",
+      "actors": [
+        { "who": "doc", "at": [-0.5, 2.6], "pose": "stand", "feel": "neutral" },
+        { "who": "pat", "at": [0.6, 2.8], "pose": "stand", "feel": "sad", "face": -1 }
+      ],
+      "caption": ["clinic *high*"]
+    },
+    {
+      "set": "clinic", "cam": "wide", "dur": 2, "focus": "doc+pat",
+      "actors": [
+        { "who": "doc", "at": [-0.6, 2.6], "pose": "point", "feel": "neutral" },
+        { "who": "pat", "at": [0.7, 2.8], "pose": "stand", "feel": "shock", "face": -1 }
+      ],
+      "caption": ["clinic wide"]
+    },
+    {
+      "set": "clinic", "cam": "mid", "dur": 2, "focus": "doc",
+      "actors": [{ "who": "doc", "at": [-0.2, 2.6], "pose": "think", "feel": "neutral" }],
+      "fx": [{ "kind": "question" }],
+      "caption": ["clinic mid + question"]
+    },
+    {
+      "set": "clinic", "cam": "close", "dur": 2, "focus": "doc",
+      "actors": [{ "who": "doc", "at": [-0.2, 2.6], "pose": "stand", "feel": "happy" }],
+      "caption": ["clinic close"]
+    }
+  ]
+}

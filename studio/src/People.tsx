@@ -30,7 +30,13 @@ export type PersonSpec = {
   bottomKind: "pants" | "shorts" | "sarong" | "skirt";
   shoe: string | null;
   extra: "none" | "sash" | "hat" | "glasses" | "bag";
+  outfit?: Outfit; // worn over (or instead of) the seeded clothes
 };
+export type Outfit = "labcoat" | "patient";
+export const OUTFITS: Outfit[] = ["labcoat", "patient"];
+const COAT = "#f5f7f6";
+const COAT_EDGE = "#b9c4c4";
+const GOWN = "#cfe2e3";
 
 const SKINS = ["#f0c9a4", "#e3b088", "#cf9a70", "#b98058", "#9c6844"];
 const TOPS: Record<Era, string[]> = {
@@ -44,7 +50,7 @@ const BOTTOMS: Record<Era, string[]> = {
   city: ["#1f2530", "#3a4660", "#6d5a4a", "#c9c2b4", "#2f3f3a"],
 };
 
-export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | "female" | "era">> = {}): PersonSpec => {
+export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | "female" | "era" | "outfit">> = {}): PersonSpec => {
   const r = rng(seed * 7919 + 13);
   const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)];
   const age = want.age ?? pick<Age>(["child", "teen", "adult", "adult", "adult", "elder"]);
@@ -56,7 +62,7 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
     era === "old"
       ? pick<PersonSpec["bottomKind"]>(female ? ["sarong", "sarong", "skirt"] : ["pants", "sarong", "shorts"])
       : pick<PersonSpec["bottomKind"]>(female ? ["pants", "skirt", "sarong", "shorts"] : ["pants", "pants", "shorts"]);
-  return {
+  const spec: PersonSpec = {
     seed,
     age,
     female,
@@ -75,7 +81,39 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
     shoe: era === "old" ? null : pick(["#2b2b2b", "#f4f4f4", "#8a4b2a", "#d94f70"]),
     extra: pick<PersonSpec["extra"]>(era === "old" ? ["none", "sash", "sash", "hat"] : era === "city" ? ["none", "glasses", "bag", "none"] : ["none", "hat", "bag", "none"]),
   };
+  // outfits are applied after every seeded pick, so the same seed keeps the same face, hair and body
+  if (want.outfit === "labcoat") {
+    spec.outfit = "labcoat";
+    if (spec.extra === "sash" || spec.extra === "bag" || spec.extra === "hat") spec.extra = "none";
+  } else if (want.outfit === "patient") {
+    Object.assign(spec, { outfit: "patient", top: GOWN, topKind: "tee", pattern: "plain", bottom: GOWN, bottomKind: "shorts", extra: spec.extra === "glasses" ? "glasses" : "none" });
+  }
+  return spec;
 };
+
+/**
+ * Centre of the head in metres above the ground point of a front-view Person in a given pose
+ * (x is sideways for an actor facing right; mirror it for face -1). Matches the drawing in Person exactly.
+ */
+export const headCenter = (s: PersonSpec, pose: Pose = POSES.stand) => {
+  const child = s.age === "child";
+  const R = s.h * (child ? 0.098 : 0.074);
+  const legLen = s.h * (child ? 0.43 : 0.47) * (1 - pose.crouch * 0.55);
+  const d = s.h * (child ? 0.3 : 0.31) + R * 0.35 + R * 1.18;
+  const a = rad(pose.lean);
+  return { x: (d * Math.sin(a)) / 100, y: (legLen + d * Math.cos(a)) / 100 };
+};
+/** Same for the walking side view (PersonSide); x is forward. Approximate within ~1 cm. */
+export const headCenterSide = (s: PersonSpec, gait: Gait | null) => {
+  const child = s.age === "child";
+  const R = s.h * (child ? 0.098 : 0.074);
+  const hip = s.h * (child ? 0.43 : 0.47) * (gait ? Math.cos(rad(gait.A * 0.7)) : 1) + s.h * 0.062 * 0.4;
+  const d = s.h * (child ? 0.3 : 0.31) + R * 0.35 + R * 1.18;
+  const a = rad(gait ? gait.lean : 0);
+  return { x: (R * 0.12 * Math.cos(a) + d * Math.sin(a)) / 100, y: (hip + d * Math.cos(a) - R * 0.12 * Math.sin(a)) / 100 };
+};
+/** Head-centre height (m) of a Person in a pose. */
+export const headHeight = (s: PersonSpec, pose: Pose = POSES.stand) => headCenter(s, pose).y;
 
 // ---------- libraries ----------
 // Angles in degrees. Arms/legs: 0 = hanging down, + = away from the body (outward). Elbow: + bends the forearm up/in.
@@ -143,6 +181,64 @@ const HandShape: React.FC<{ kind: Hand; r: number; skin: string }> = ({ kind, r,
   );
 };
 
+// ---------- outfits drawn over the seeded clothes ----------
+type Pt = { x: number; y: number };
+const CoatSleeve: React.FC<{ a: { sh: Pt; el: Pt; hd: Pt }; limb: number }> = ({ a, limb }) => {
+  const end = { x: lerp(a.el.x, a.hd.x, 0.84), y: lerp(a.el.y, a.hd.y, 0.84) };
+  const d = `M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${end.x} ${end.y}`;
+  return (
+    <g>
+      <path d={d} fill="none" stroke={COAT_EDGE} strokeWidth={limb * 1.34} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke={COAT} strokeWidth={limb * 1.16} strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  );
+};
+/** Open, knee-length lab coat seen from the front (hip at y=0, legs towards +y). */
+const CoatFront: React.FC<{ sw: number; hw: number; shY: number; torso: number; hem: number }> = ({ sw, hw, shY, torso, hem }) => {
+  const W = Math.max(hw, sw * 0.82);
+  const panel = (k: number) =>
+    `M ${k * sw * 0.4} ${shY - 1.5} L ${k * sw * 1.07} ${shY + 3} L ${k * W * 1.12} -2 L ${k * W * 1.3} ${hem} L ${k * W * 0.2} ${hem} L ${k * W * 0.15} ${-torso * 0.05} L ${k * sw * 0.13} ${-torso * 0.48} Z`;
+  return (
+    <g strokeLinejoin="round">
+      {[-1, 1].map((k) => (
+        <g key={k}>
+          <path d={panel(k)} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.3} />
+          {/* lapel */}
+          <path d={`M ${k * sw * 0.4} ${shY - 1.5} L ${k * sw * 0.62} ${shY + torso * 0.22} L ${k * sw * 0.2} ${-torso * 0.42}`} fill="none" stroke={COAT_EDGE} strokeWidth={1.3} />
+          {/* hip pocket */}
+          <path d={`M ${k * W * 1.02} ${hem * 0.2} L ${k * W * 0.42} ${hem * 0.2}`} stroke={COAT_EDGE} strokeWidth={1.4} />
+        </g>
+      ))}
+      {/* breast pocket with a pen */}
+      <rect x={-sw * 0.78} y={shY + torso * 0.3} width={sw * 0.34} height={1.6} fill={COAT_EDGE} />
+      <rect x={-sw * 0.66} y={shY + torso * 0.3 - 4} width={1.6} height={5} fill="#3b5fa8" />
+      {[0.55, 0.8].map((f) => <circle key={f} cx={W * 0.27} cy={-torso + torso * f} r={1.1} fill={COAT_EDGE} />)}
+    </g>
+  );
+};
+/** Plain hospital gown: covers the torso and hangs to the knee. */
+const GownFront: React.FC<{ sw: number; hw: number; shY: number; torso: number; hem: number }> = ({ sw, hw, shY, torso, hem }) => {
+  const W = Math.max(hw, sw * 0.8);
+  return (
+    <g>
+      <path d={`M ${-sw} ${shY + 4} L ${-W * 1.08} -2 L ${-W * 1.24} ${hem} L ${W * 1.24} ${hem} L ${W * 1.08} -2 L ${sw} ${shY + 4} Z`} fill={GOWN} />
+      <path d={`M ${-sw * 0.45} ${shY - 1} Q 0 ${shY + torso * 0.2} ${sw * 0.45} ${shY - 1}`} fill="none" stroke="#9fbcbe" strokeWidth={1.6} />
+      <path d={`M ${-W * 0.5} ${hem * 0.15} L ${-W * 0.6} ${hem - 2} M ${W * 0.45} ${hem * 0.25} L ${W * 0.55} ${hem - 2}`} stroke="#b4cfd1" strokeWidth={1.2} />
+    </g>
+  );
+};
+/** Lab coat or gown in side view (faces +x, hip at y=0). */
+const SideCover: React.FC<{ kind: Outfit; tw: number; shY: number; hem: number; flare: number }> = ({ kind, tw, shY, hem, flare }) =>
+  kind === "labcoat" ? (
+    <g strokeLinejoin="round">
+      <path d={`M ${tw * 0.72} ${shY - 1} L ${tw * 0.98} ${-2} L ${flare * 0.95} ${hem} L ${-flare * 1.08} ${hem} L ${-tw * 1.2} ${-2} L ${-tw * 1.12} ${shY + 2} Q ${-tw * 0.4} ${shY - 2} ${tw * 0.72} ${shY - 1} Z`} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.3} />
+      <path d={`M ${tw * 0.72} ${shY - 1} L ${tw * 0.3} ${shY + 8}`} stroke={COAT_EDGE} strokeWidth={1.3} />
+      <path d={`M ${-tw * 0.3} ${hem * 0.22} L ${tw * 0.6} ${hem * 0.22}`} stroke={COAT_EDGE} strokeWidth={1.4} />
+    </g>
+  ) : (
+    <path d={`M ${tw * 1.02} -3 L ${flare * 0.95} ${hem} L ${-flare} ${hem} L ${-tw * 1.06} -3 Z`} fill={GOWN} />
+  );
+
 export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean }> = ({
   spec: s, pose = POSES.stand, feel = "neutral", mouth, t = 0, blink = false,
 }) => {
@@ -201,6 +297,7 @@ export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; 
           fill="none" stroke={s.top} strokeWidth={limb * 1.05} strokeLinecap="round" strokeLinejoin="round"
         />
       )}
+      {s.outfit === "labcoat" && <CoatSleeve a={a} limb={limb} />}
       <g transform={`translate(${a.hd.x} ${a.hd.y}) rotate(${a.rot})`}>
         <HandShape kind={hand} r={limb * 0.5} skin={s.skin} />
       </g>
@@ -283,6 +380,8 @@ export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; 
         {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
         {s.extra === "sash" && <path d={`M ${-sw * 0.9} ${shY} L ${-sw * 0.35} ${shY - 1} L ${hw} ${-torso * 0.1} L ${hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
         {s.extra === "bag" && <line x1={-sw * 0.6} y1={shY} x2={hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
+        {s.outfit === "labcoat" && <CoatFront sw={sw} hw={hw} shY={shY} torso={torso} hem={Math.max(LL.knee.y, LR.knee.y) + limb * 0.5} />}
+        {s.outfit === "patient" && <GownFront sw={sw} hw={hw} shY={shY} torso={torso} hem={Math.max(LL.knee.y, LR.knee.y) + limb * 0.3} />}
         {drawArm(AL, pose.handL)}
         {drawArm(AR, pose.handR)}
         <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
@@ -400,6 +499,7 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
           fill="none" stroke={s.top} strokeWidth={limb * 1.05} strokeLinecap="round" strokeLinejoin="round"
         />
       )}
+      {s.outfit === "labcoat" && <CoatSleeve a={a} limb={limb} />}
       <circle cx={a.hd.x} cy={a.hd.y} r={limb * 0.48} fill={s.skin} />
     </g>
   );
@@ -435,6 +535,7 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
         </g>
         {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-tw * 1.05} -5 L ${tw * 1.05} -5 L ${tw * 1.05} 0 Q ${tw} 5 0 5 Q ${-tw} 5 ${-tw * 1.05} 0 Z`} fill={s.bottom} />}
         {s.extra === "sash" && <path d={`M ${-tw} ${shY + 2} L ${tw * 0.2} ${shY - 1} L ${tw} ${-torso * 0.1} L ${tw * 0.2} 2 Z`} fill="#a8443f" opacity={0.95} />}
+        {s.outfit && <SideCover kind={s.outfit} tw={tw} shY={shY} hem={L * (s.outfit === "labcoat" ? 1.08 : 1.0)} flare={Math.max(tw * 1.3, spread * 0.62)} />}
         <rect x={-R * 0.32} y={shY - R * 0.5} width={R * 0.64} height={R * 0.7} fill={s.skin} />
         <g transform={`translate(${R * 0.12} ${shY - R * 0.35 - Ry}) rotate(${gait ? gait.headTilt : 0})`}>
           <g fill={s.hair}>

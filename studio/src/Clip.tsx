@@ -1,6 +1,8 @@
 import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
-import { FeelName, GaitName, makePerson, mixPose, Mouth, Person, PersonSide, PersonSpec, Pose, PoseName, POSES, strideOf, Age, Era } from "./People";
+import { AbsoluteFill, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Audio } from "@remotion/media";
+import { FeelName, GaitName, headCenter, headCenterSide, makePerson, mixPose, Mouth, Outfit, OUTFITS, Person, PersonSide, PersonSpec, Pose, PoseName, POSES, strideOf, Age, Era } from "./People";
+import { BEAM_DEFAULT, BeamFx, Fx, FX_KINDS, FlashFx, QuestionFx, SparksFx } from "./Fx";
 import { GAITS } from "./Character";
 import { SetName, SETS, SetStage } from "./Sets";
 import { buildCam, Cam, clamp01, easeInOut, easeOut, easeOutBack, ensureFonts, lerp, project, rng, V3 } from "./lib";
@@ -28,12 +30,14 @@ export type ShotScript = {
   caption?: string[]; // lines shown one after another; *word* = highlight
   say?: string; // actor whose mouth moves
   card?: { title: string; value: number; unit?: string };
+  fx?: Fx[]; // per-shot effects: beam, flash, sparks, question
 };
 export type ClipScript = {
   id: string;
   seed: number;
-  cast: Record<string, { seed: number; age?: Age; female?: boolean; era?: Era }>;
+  cast: Record<string, { seed: number; age?: Age; female?: boolean; era?: Era; outfit?: Outfit }>;
   shots: ShotScript[];
+  audio?: string; // file in public/audio/, plays from frame 0 for the whole clip
 };
 const FPS = 30;
 export const clipFrames = (c: ClipScript) => c.shots.reduce((n, s) => n + Math.round(s.dur * FPS), 0);
@@ -41,6 +45,8 @@ export const clipFrames = (c: ClipScript) => c.shots.reduce((n, s) => n + Math.r
 /** Fail early, with a readable message, when a script names something the kit does not have. */
 export const validateClip = (c: ClipScript) => {
   const bad = (msg: string) => { throw new Error(`clips/${c.id}.json: ${msg}`); };
+  for (const [name, p] of Object.entries(c.cast)) if (p.outfit && !OUTFITS.includes(p.outfit)) bad(`cast "${name}": unknown outfit "${p.outfit}" (have: ${OUTFITS.join(", ")})`);
+  if (c.audio !== undefined && (typeof c.audio !== "string" || !c.audio)) bad(`audio must be a file name in public/audio/`);
   c.shots.forEach((s, i) => {
     const at = `shot ${i + 1}`;
     if (!(s.set in SETS)) bad(`${at}: unknown set "${s.set}" (have: ${Object.keys(SETS).join(", ")})`);
@@ -54,6 +60,13 @@ export const validateClip = (c: ClipScript) => {
     });
     if (typeof s.focus === "string") for (const n of s.focus.split("+")) if (!names.includes(n)) bad(`${at}: focus "${n}" is not an actor in this shot`);
     if (s.say && !names.includes(s.say)) bad(`${at}: say "${s.say}" is not an actor in this shot`);
+    (s.fx ?? []).forEach((f) => {
+      if (!(FX_KINDS as readonly string[]).includes(f.kind)) bad(`${at}: unknown fx "${(f as { kind: string }).kind}" (have: ${FX_KINDS.join(", ")})`);
+      if (f.kind === "beam" && f.through && !names.includes(f.through)) bad(`${at}: beam through "${f.through}" is not an actor in this shot`);
+      if (f.kind === "beam" && f.strength !== undefined && !(f.strength >= 0 && f.strength <= 1)) bad(`${at}: beam strength must be 0..1`);
+      if (f.kind === "sparks" && !(Array.isArray(f.at) && f.at.length === 3 && f.at.every((v) => typeof v === "number"))) bad(`${at}: sparks needs "at": [x, y, z]`);
+      if (f.kind === "question" && !s.actors.length) bad(`${at}: question needs an actor in the shot`);
+    });
     const xs = s.actors.filter((a) => !a.walkTo).map((a) => a.at[0]);
     const span = xs.length ? Math.max(...xs) - Math.min(...xs) : 0;
     const limit = s.cam === "close" ? 0.6 : s.cam === "mid" ? 1.4 : 3.6;
@@ -63,13 +76,36 @@ export const validateClip = (c: ClipScript) => {
 };
 
 // ---------- camera presets: framing relative to the focus point, varied per shot by seed ----------
-const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, dark: boolean): { cam: Cam; blur: number } => {
+const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, set: SetName): { cam: Cam; blur: number } => {
+  const dark = SETS[set].dark;
   const sx = (r() - 0.5) * 2; // -1..1, which side the camera drifts from
   const e = easeInOut(p);
   const at = (dx: number, y: number, dz: number, ty: number, fov: number, blur = 0) => ({
     cam: { pos: [f[0] + dx, y, f[2] + dz] as V3, target: [f[0], ty, f[2]] as V3, fov },
     blur,
   });
+  // portrait frames see only 0.56 of their height across: width = 2 * dist * tan(fov/2) * 0.5625
+  if (set === "clinic") {
+    // ceiling is 2.8 m, so "high" is a corner view from just under the ceiling (about 4.3 m across)
+    if (kind === "high") {
+      const side = sx > 0 ? 1 : -1;
+      return { cam: { pos: [f[0] + side * lerp(1.9, 1.5, e), 2.55, f[2] + lerp(6.1, 5.5, e)], target: [f[0] + side * 0.15, 0.8, f[2] - 0.9], fov: 56 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.4 + lerp(-0.2, 0.2, e), 1.7, lerp(8.0, 7.3, e), 1.2, 48); // ~4.0 m across
+    if (kind === "mid") return at(sx * 0.4 + lerp(-0.12, 0.12, e), 1.6, lerp(5.3, 4.9, e), 1.1, 36, 1.5); // ~1.9 m
+    return at(sx * 0.2, 1.5, lerp(3.2, 2.95, e), f[1], 30, 3); // ~0.95 m
+  }
+  if (set === "accelerator") {
+    if (kind === "high") {
+      // steep view from above the open roof: the ring reads as an arc, the back wall top sits near the frame top
+      const az = lerp(0.42, 0.18, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(15, 12.5, e);
+      return { cam: { pos: [f[0] + R * Math.sin(az), lerp(24, 21, e), f[2] + R * Math.cos(az)], target: [f[0], 0.6, f[2] - 1.4], fov: 46 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.6 + lerp(-0.35, 0.35, e), 2.3, lerp(9.2, 8.4, e), 1.45, 44); // ~4.0 m across
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.6, lerp(5.4, 5.0, e), 1.15, 36, 1.5); // ~1.9 m
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 4); // ~0.95 m
+  }
   if (kind === "high") {
     const az = lerp(0.55, 0.2, e) * (sx > 0 ? 1 : -1);
     const R = lerp(30, 25, e);
@@ -167,7 +203,7 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
         focused.reduce((n, s) => n + s.pos[2], 0) / focused.length,
       ]
     : typeof shot.focus === "string" ? [0, 0, 0] : shot.focus;
-  const { cam, blur } = camPreset(shot.cam, focus, t / shot.dur, rng(script.seed * 131 + idx * 17), dark);
+  const { cam, blur } = camPreset(shot.cam, focus, t / shot.dur, rng(script.seed * 131 + idx * 17), shot.set);
   const cam3 = buildCam(cam, width / height);
 
   const placed = states
@@ -175,10 +211,36 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
     .sort((a, b) => b.pr.depth - a.pr.depth);
   const punch = 1 + 0.045 * (1 - easeOut(lf / 7));
 
+  // ---- per-shot effects ----
+  const headOf = (who: string) => {
+    const hit = placed.find((q) => q.s.cue.who === who);
+    if (!hit) return null;
+    const { s, pr } = hit;
+    const hc = s.walk ? headCenterSide(s.spec, GAITS[s.walk.gait]) : headCenter(s.spec, s.pose);
+    return { x: pr.x + s.face * hc.x * pr.ppu, y: pr.y - (s.lift * pr.ppu) / 100 - hc.y * pr.ppu, ppu: pr.ppu, world: [s.pos[0], hc.y, s.pos[2]] as V3 };
+  };
+  const fx = shot.fx ?? [];
+  const asker = shot.say ?? (names[0] && states.some((s) => s.cue.who === names[0]) ? names[0] : shot.actors[0]?.who);
+  const behind = fx.map((f, i) => {
+    if (f.kind !== "question" || !asker) return null;
+    const h = headOf(asker);
+    return h ? <QuestionFx key={i} head={h} ppu={h.ppu} t={t} width={width} height={height} /> : null;
+  });
+  const over = fx.map((f, i) => {
+    if (f.kind === "beam") {
+      const h = f.through ? headOf(f.through) : null;
+      const y = h ? h.world[1] : f.y ?? BEAM_DEFAULT.y;
+      const z = h ? h.world[2] : f.z ?? BEAM_DEFAULT.z;
+      return <BeamFx key={i} cam3={cam3} width={width} height={height} t={t} frame={frame} y={y} z={z} x0={h ? h.world[0] : focus[0]} head={h ?? undefined} from={f.from} strength={f.strength} />;
+    }
+    if (f.kind === "sparks") return <SparksFx key={i} cam3={cam3} width={width} height={height} frame={frame} at={f.at} />;
+    return null;
+  });
+
   return (
     <AbsoluteFill style={{ background: "#000", overflow: "hidden" }}>
       <AbsoluteFill style={{ transform: `scale(${punch})` }}>
-        <SetStage set={shot.set} cam={cam} cam3={cam3} width={width} height={height} frame={frame} blur={blur} seed={script.seed} blobs={dark ? [] : states.map((s) => ({ x: s.pos[0], z: s.pos[2], r: 0.32 }))}>
+        <SetStage set={shot.set} cam={cam} cam3={cam3} width={width} height={height} frame={frame} blur={blur} seed={script.seed} blobs={dark ? [] : states.map((s) => ({ x: s.pos[0], z: s.pos[2], r: 0.32 }))} behind={behind}>
           {placed.map(({ s, pr }, i) => (
             <g key={i} transform={`translate(${pr.x} ${pr.y - (s.lift * pr.ppu) / 100}) scale(${(pr.ppu / 100) * s.face} ${pr.ppu / 100})`}>
               {s.walk ? (
@@ -196,10 +258,13 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
             </g>
           ))}
         </SetStage>
+        {over}
       </AbsoluteFill>
+      {fx.map((f, i) => (f.kind === "flash" ? <FlashFx key={i} t={t} at={f.at} /> : null))}
       {shot.caption?.length ? <AbsoluteFill style={{ background: "linear-gradient(rgba(0,0,0,0) 62%, rgba(0,0,0,0.38) 80%, rgba(0,0,0,0.08) 96%)" }} /> : null}
       {shot.card ? <Card card={shot.card} t={t} /> : null}
       {shot.caption?.length ? <Caption lines={shot.caption} t={t} dur={shot.dur} /> : null}
+      {script.audio ? <Audio src={staticFile(`audio/${script.audio}`)} /> : null}
     </AbsoluteFill>
   );
 };

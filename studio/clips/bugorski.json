@@ -1,0 +1,602 @@
+{
+  "id": "bugorski",
+  "seed": 11,
+  "cast": {
+    "bugorski": {
+      "seed": 15,
+      "age": "adult",
+      "female": false,
+      "era": "city",
+      "outfit": "labcoat"
+    },
+    "doctor": {
+      "seed": 21,
+      "age": "adult",
+      "female": true,
+      "era": "city",
+      "outfit": "labcoat"
+    }
+  },
+  "shots": [
+    {
+      "set": "accelerator",
+      "cam": "close",
+      "dur": 2.833,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.0,
+            3.0
+          ],
+          "pose": "shock",
+          "feel": "shock"
+        }
+      ],
+      "fx": [
+        {
+          "kind": "beam",
+          "through": "bugorski"
+        }
+      ],
+      "caption": [
+        "เอา *หัว* เข้าลำ",
+        "แล้วรอด!"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "mid",
+      "dur": 3.467,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.0,
+            3.0
+          ],
+          "pose": "stand",
+          "feel": "neutral",
+          "then": [
+            {
+              "at": 1.73,
+              "pose": "wave",
+              "feel": "happy"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "*อนาโตลี บูกอร์สกี*",
+        "นักฟิสิกส์โซเวียต"
+      ],
+      "card": {
+        "title": "อายุตอนเกิดเหตุ",
+        "value": 36,
+        "unit": "ปี"
+      }
+    },
+    {
+      "set": "accelerator",
+      "cam": "high",
+      "dur": 4.3,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -1.6,
+            3.6
+          ],
+          "walkTo": [
+            0.6,
+            3.6
+          ],
+          "gait": "stroll",
+          "feel": "calm"
+        }
+      ],
+      "caption": [
+        "*13 กรกฎาคม*",
+        "1978"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "wide",
+      "dur": 4.233,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.6,
+            3.6
+          ],
+          "pose": "point",
+          "feel": "happy"
+        }
+      ],
+      "caption": [
+        "เครื่อง *U-70*",
+        "ใหญ่สุดในโซเวียต"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "mid",
+      "dur": 2.633,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.6,
+            3.6
+          ],
+          "walkTo": [
+            -1.0,
+            2.02
+          ],
+          "gait": "sneak",
+          "feel": "neutral"
+        }
+      ],
+      "fx": [
+        {
+          "kind": "sparks",
+          "at": [
+            -0.88,
+            1.08,
+            1.72
+          ]
+        }
+      ],
+      "caption": [
+        "อุปกรณ์ *ขัดข้อง*",
+        "เขาเข้าไปดู"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "mid",
+      "dur": 3.367,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.8,
+            2.2
+          ],
+          "pose": "think",
+          "feel": "neutral",
+          "then": [
+            {
+              "at": 1.68,
+              "pose": "stand",
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "ความปลอดภัย *ล้ม*",
+        "ไฟเตือนถูกปิดไว้"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "wide",
+      "dur": 3.467,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.8,
+            2.2
+          ],
+          "pose": "squat",
+          "feel": "calm"
+        }
+      ],
+      "fx": [
+        {
+          "kind": "beam",
+          "through": "bugorski",
+          "from": 0.69
+        }
+      ],
+      "caption": [
+        "ก้มหัวเข้าลำโปรตอน",
+        "วิ่งเกือบเท่า *แสง*"
+      ],
+      "card": {
+        "title": "พลังงานลำโปรตอน",
+        "value": 76,
+        "unit": "GeV"
+      }
+    },
+    {
+      "set": "accelerator",
+      "cam": "mid",
+      "dur": 2.933,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.8,
+            2.2
+          ],
+          "pose": "squat",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 1.47,
+              "pose": "squat",
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "fx": [
+        {
+          "kind": "beam",
+          "through": "bugorski"
+        }
+      ],
+      "caption": [
+        "เข้าทาง *ท้ายทอย*",
+        "ออกใกล้จมูก"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "close",
+      "dur": 4.833,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.8,
+            2.2
+          ],
+          "pose": "shock",
+          "feel": "shock",
+          "then": [
+            {
+              "at": 3.22,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "fx": [
+        {
+          "kind": "flash",
+          "at": 0.0
+        }
+      ],
+      "caption": [
+        "มีรายงานว่าสว่างกว่า",
+        "*ดวงอาทิตย์พันดวง*"
+      ]
+    },
+    {
+      "set": "clinic",
+      "cam": "close",
+      "dur": 2.167,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.0,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "sad"
+        }
+      ],
+      "caption": [
+        "หน้าซีกซ้าย",
+        "*บวมจนจำไม่ได้*"
+      ]
+    },
+    {
+      "set": "clinic",
+      "cam": "mid",
+      "dur": 2.533,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.0,
+            2.8
+          ],
+          "pose": "think",
+          "feel": "sad"
+        }
+      ],
+      "caption": [
+        "วันต่อมา",
+        "ผิว *ลอกตามแนวลำแสง*"
+      ]
+    },
+    {
+      "set": "clinic",
+      "cam": "mid",
+      "dur": 3.9,
+      "focus": "bugorski+doctor",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.3,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "neutral",
+          "face": 1
+        },
+        {
+          "who": "doctor",
+          "at": [
+            0.7,
+            2.8
+          ],
+          "pose": "think",
+          "feel": "sad",
+          "face": -1,
+          "then": [
+            {
+              "at": 2.15,
+              "pose": "stand",
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "หมอคาด: *เสียชีวิต*",
+        "ในไม่กี่วัน"
+      ]
+    },
+    {
+      "set": "clinic",
+      "cam": "wide",
+      "dur": 3.6,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "doctor",
+          "at": [
+            0.7,
+            2.8
+          ],
+          "pose": "point",
+          "feel": "shock"
+        },
+        {
+          "who": "bugorski",
+          "at": [
+            -0.3,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "calm"
+        }
+      ],
+      "caption": [
+        "รังสี *หลายร้อยเท่า*",
+        "ของระดับถึงตาย"
+      ]
+    },
+    {
+      "set": "clinic",
+      "cam": "mid",
+      "dur": 2.967,
+      "focus": "bugorski+doctor",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -0.3,
+            2.8
+          ],
+          "pose": "cheer",
+          "feel": "happy",
+          "face": 1
+        },
+        {
+          "who": "doctor",
+          "at": [
+            0.7,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "shock",
+          "face": -1
+        }
+      ],
+      "caption": [
+        "*รอด!* สติปัญญาปกติ",
+        "จบปริญญาเอก"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "wide",
+      "dur": 3.067,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            -1.8,
+            3.0
+          ],
+          "walkTo": [
+            1.2,
+            3.0
+          ],
+          "gait": "stroll",
+          "feel": "happy",
+          "then": [
+            {
+              "at": 1.84,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "กลับไป *ทำงาน*",
+        "ที่เครื่องเดิม"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "close",
+      "dur": 4.9,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            1.2,
+            3.0
+          ],
+          "pose": "stand",
+          "feel": "sad",
+          "then": [
+            {
+              "at": 2.45,
+              "pose": "think",
+              "feel": "neutral"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "*หูซ้ายหนวก*",
+        "อัมพาต ชัก เหนื่อย"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "close",
+      "dur": 3.9,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            1.2,
+            3.0
+          ],
+          "pose": "think",
+          "feel": "calm"
+        }
+      ],
+      "caption": [
+        "เล่ากันว่า",
+        "ซีกซ้าย *แทบไม่เหี่ยว*"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "high",
+      "dur": 4.133,
+      "focus": [
+        0,
+        0,
+        2.6
+      ],
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.2,
+            3.0
+          ],
+          "pose": "stand",
+          "feel": "calm"
+        }
+      ],
+      "fx": [
+        {
+          "kind": "beam",
+          "y": 1.2,
+          "z": 1.0,
+          "strength": 0.4
+        }
+      ],
+      "caption": [
+        "คนเดียวเท่าที่รู้",
+        "ผ่านหัวแล้ว *รอด*"
+      ]
+    },
+    {
+      "set": "accelerator",
+      "cam": "close",
+      "dur": 3.433,
+      "focus": "bugorski",
+      "actors": [
+        {
+          "who": "bugorski",
+          "at": [
+            0.2,
+            3.0
+          ],
+          "pose": "think",
+          "feel": "neutral",
+          "then": [
+            {
+              "at": 1.96,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "fx": [
+        {
+          "kind": "question"
+        }
+      ],
+      "caption": [
+        "นักวิทยาศาสตร์",
+        "ยังอธิบาย *ไม่ชัด*"
+      ]
+    }
+  ]
+}

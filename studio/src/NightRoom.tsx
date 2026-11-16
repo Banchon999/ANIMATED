@@ -5,7 +5,7 @@ import { rng, V3 } from "./lib";
 // Old wooden house bedroom at night. Rendered in two passes ("back" / "front")
 // so 2D characters can be sandwiched between the bed and its front posts.
 
-const makeTex = (w: number, h: number, draw: (c: CanvasRenderingContext2D) => void, repeat?: [number, number]) => {
+export const makeTex = (w: number, h: number, draw: (c: CanvasRenderingContext2D) => void, repeat?: [number, number]) => {
   const cv = document.createElement("canvas");
   cv.width = w;
   cv.height = h;

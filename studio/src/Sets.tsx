@@ -4,13 +4,17 @@ import { AbsoluteFill } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
 import { Blob, CameraRig, Village } from "./Village";
 import { NightRoom, ROOM } from "./NightRoom";
+import { Accelerator, ACCEL } from "./Accelerator";
+import { Clinic, CLINIC } from "./Clinic";
 import { Cam, project, rng, V3 } from "./lib";
 
 // Set kit: every set draws its 3D layers, takes the 2D actors as children, then adds its own light effects.
-export type SetName = "village" | "room";
+export type SetName = "village" | "room" | "accelerator" | "clinic";
 export const SETS: Record<SetName, { label: string; dark: boolean; actorFilter?: string }> = {
   village: { label: "หมู่บ้านกลางวัน", dark: false },
   room: { label: "ห้องเรือนไม้กลางคืน", dark: true, actorFilter: "brightness(0.8) saturate(0.82)" },
+  accelerator: { label: "โถงเครื่องเร่งอนุภาคโซเวียต", dark: false },
+  clinic: { label: "ห้องคนไข้โรงพยาบาลยุค 70", dark: false },
 };
 
 type StageProps = {
@@ -23,7 +27,46 @@ type StageProps = {
   blur: number;
   seed: number;
   blobs: Blob[];
+  behind?: React.ReactNode; // HTML/SVG layers drawn over the set but under the actors
   children: React.ReactNode; // SVG content: the actors
+};
+
+/** Soft round glow at a world point; radius and strength are capped so close cameras are not flooded. */
+const Glow: React.FC<{ cam3: THREE.PerspectiveCamera; width: number; height: number; p: V3; radius: number; strength: number; rgb: string; maxR?: number }> = ({ cam3, width, height, p, radius, strength, rgb, maxR = 260 }) => {
+  const pr = project(cam3, p, width, height);
+  if (pr.depth < 0.3) return null;
+  const R = Math.min(radius * pr.ppu, maxR);
+  const s = strength * Math.min(1, 300 / Math.max(pr.ppu, 1));
+  return (
+    <div
+      style={{
+        position: "absolute", left: pr.x - R, top: pr.y - R, width: R * 2, height: R * 2, borderRadius: "50%", mixBlendMode: "screen",
+        background: `radial-gradient(circle, rgba(${rgb},${0.7 * s}) 0%, rgba(${rgb},${0.22 * s}) 30%, rgba(${rgb},0) 68%)`,
+      }}
+    />
+  );
+};
+
+const AccelFx: React.FC<{ cam3: THREE.PerspectiveCamera; width: number; height: number }> = ({ cam3, width, height }) => (
+  <>
+    {ACCEL.lamps.map((p, i) => (
+      <Glow key={i} cam3={cam3} width={width} height={height} p={[p[0], p[1] - 0.1, p[2]]} radius={0.9} strength={0.8} rgb="255,250,225" />
+    ))}
+    <AbsoluteFill style={{ background: "linear-gradient(rgba(200,225,215,0.10), rgba(0,0,0,0) 45%, rgba(20,40,32,0.08))" }} />
+    <AbsoluteFill style={{ background: "radial-gradient(ellipse 80% 62% at 50% 46%, rgba(0,0,0,0) 55%, rgba(10,18,14,0.38) 100%)" }} />
+  </>
+);
+
+const ClinicFx: React.FC<{ cam3: THREE.PerspectiveCamera; width: number; height: number }> = ({ cam3, width, height }) => {
+  const w = CLINIC.window;
+  return (
+    <>
+      <Glow cam3={cam3} width={width} height={height} p={[w.x, w.y, 0.05]} radius={1.1} strength={0.55} rgb="235,248,255" maxR={420} />
+      <Glow cam3={cam3} width={width} height={height} p={CLINIC.lamp} radius={0.55} strength={0.6} rgb="255,252,235" />
+      <AbsoluteFill style={{ background: "rgba(225,240,240,0.06)" }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse 82% 64% at 50% 46%, rgba(0,0,0,0) 58%, rgba(18,28,26,0.3) 100%)" }} />
+    </>
+  );
 };
 
 const RoomFx: React.FC<Omit<StageProps, "children" | "set" | "blobs" | "seed" | "blur" | "cam"> & { flicker: number }> = ({ cam3, width, height, frame, flicker }) => {
@@ -94,9 +137,25 @@ const RoomFx: React.FC<Omit<StageProps, "children" | "set" | "blobs" | "seed" | 
   );
 };
 
-export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, blobs, children }) => {
+export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, blobs, behind, children }) => {
   const full: React.CSSProperties = { position: "absolute", inset: 0, overflow: "visible" };
   const blurStyle = blur > 0.2 ? { filter: `blur(${blur}px)` } : undefined;
+  if (set === "accelerator" || set === "clinic") {
+    const acc = set === "accelerator";
+    return (
+      <AbsoluteFill style={{ background: acc ? "#2c3430" : "#cfdcd4" }}>
+        <AbsoluteFill style={blurStyle}>
+          <ThreeCanvas width={width} height={height} shadows gl={{ antialias: true, alpha: true }}>
+            <CameraRig cam={cam} />
+            {acc ? <Accelerator blobs={blobs} /> : <Clinic blobs={blobs} />}
+          </ThreeCanvas>
+        </AbsoluteFill>
+        {behind}
+        <svg width={width} height={height} style={full}>{children}</svg>
+        {acc ? <AccelFx cam3={cam3} width={width} height={height} /> : <ClinicFx cam3={cam3} width={width} height={height} />}
+      </AbsoluteFill>
+    );
+  }
   if (set === "room") {
     const flicker = 0.86 + 0.08 * Math.sin(frame * 0.9) + 0.06 * Math.sin(frame * 2.3 + 1);
     return (
@@ -114,6 +173,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           </ThreeCanvas>
         </AbsoluteFill>
         <AbsoluteFill style={{ background: "rgba(60,52,80,0.12)", mixBlendMode: "multiply" }} />
+        {behind}
         <svg width={width} height={height} style={{ ...full, filter: SETS.room.actorFilter }}>{children}</svg>
         <RoomFx cam3={cam3} width={width} height={height} frame={frame} flicker={flicker} />
       </AbsoluteFill>
@@ -129,6 +189,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           <Village seed={seed} blobs={blobs} />
         </ThreeCanvas>
       </AbsoluteFill>
+      {behind}
       <svg width={width} height={height} style={full}>{children}</svg>
       <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(20,16,10,.38) 100%)" }} />
     </AbsoluteFill>

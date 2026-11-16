@@ -1,6 +1,7 @@
 {
   "id": "bugorski",
   "seed": 11,
+  "audio": "bugorski.mp3",
   "cast": {
     "bugorski": {
       "seed": 15,
@@ -21,7 +22,7 @@
     {
       "set": "accelerator",
       "cam": "close",
-      "dur": 2.833,
+      "dur": 2.733,
       "focus": "bugorski",
       "actors": [
         {
@@ -48,7 +49,7 @@
     {
       "set": "accelerator",
       "cam": "mid",
-      "dur": 3.467,
+      "dur": 3.233,
       "focus": "bugorski",
       "actors": [
         {
@@ -61,7 +62,7 @@
           "feel": "neutral",
           "then": [
             {
-              "at": 1.73,
+              "at": 1.61,
               "pose": "wave",
               "feel": "happy"
             }
@@ -81,7 +82,7 @@
     {
       "set": "accelerator",
       "cam": "high",
-      "dur": 4.3,
+      "dur": 3.6,
       "focus": [
         0,
         0,
@@ -110,7 +111,7 @@
     {
       "set": "accelerator",
       "cam": "wide",
-      "dur": 4.233,
+      "dur": 4.0,
       "focus": [
         0,
         0,
@@ -135,7 +136,7 @@
     {
       "set": "accelerator",
       "cam": "mid",
-      "dur": 2.633,
+      "dur": 2.3,
       "focus": "bugorski",
       "actors": [
         {
@@ -170,7 +171,7 @@
     {
       "set": "accelerator",
       "cam": "mid",
-      "dur": 3.367,
+      "dur": 3.3,
       "focus": "bugorski",
       "actors": [
         {
@@ -183,7 +184,7 @@
           "feel": "neutral",
           "then": [
             {
-              "at": 1.68,
+              "at": 1.65,
               "pose": "stand",
               "feel": "shock"
             }
@@ -198,7 +199,7 @@
     {
       "set": "accelerator",
       "cam": "wide",
-      "dur": 3.467,
+      "dur": 3.167,
       "focus": [
         0,
         0,
@@ -219,7 +220,7 @@
         {
           "kind": "beam",
           "through": "bugorski",
-          "from": 0.69
+          "from": 0.63
         }
       ],
       "caption": [
@@ -235,7 +236,7 @@
     {
       "set": "accelerator",
       "cam": "mid",
-      "dur": 2.933,
+      "dur": 2.9,
       "focus": "bugorski",
       "actors": [
         {
@@ -248,7 +249,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 1.47,
+              "at": 1.45,
               "pose": "squat",
               "feel": "shock"
             }
@@ -269,7 +270,7 @@
     {
       "set": "accelerator",
       "cam": "close",
-      "dur": 4.833,
+      "dur": 4.5,
       "focus": "bugorski",
       "actors": [
         {
@@ -282,7 +283,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 3.22,
+              "at": 3.0,
               "pose": "stand",
               "feel": "calm"
             }
@@ -303,7 +304,7 @@
     {
       "set": "clinic",
       "cam": "close",
-      "dur": 2.167,
+      "dur": 2.4,
       "focus": "bugorski",
       "actors": [
         {
@@ -324,7 +325,7 @@
     {
       "set": "clinic",
       "cam": "mid",
-      "dur": 2.533,
+      "dur": 2.633,
       "focus": "bugorski",
       "actors": [
         {
@@ -345,7 +346,7 @@
     {
       "set": "clinic",
       "cam": "mid",
-      "dur": 3.9,
+      "dur": 3.467,
       "focus": "bugorski+doctor",
       "actors": [
         {
@@ -369,7 +370,7 @@
           "face": -1,
           "then": [
             {
-              "at": 2.15,
+              "at": 1.91,
               "pose": "stand",
               "feel": "sad"
             }
@@ -384,7 +385,7 @@
     {
       "set": "clinic",
       "cam": "wide",
-      "dur": 3.6,
+      "dur": 3.3,
       "focus": [
         0,
         0,
@@ -418,7 +419,7 @@
     {
       "set": "clinic",
       "cam": "mid",
-      "dur": 2.967,
+      "dur": 2.1,
       "focus": "bugorski+doctor",
       "actors": [
         {
@@ -450,7 +451,7 @@
     {
       "set": "accelerator",
       "cam": "wide",
-      "dur": 3.067,
+      "dur": 3.267,
       "focus": [
         0,
         0,
@@ -471,7 +472,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 1.84,
+              "at": 1.96,
               "pose": "stand",
               "feel": "calm"
             }
@@ -486,7 +487,7 @@
     {
       "set": "accelerator",
       "cam": "close",
-      "dur": 4.9,
+      "dur": 4.433,
       "focus": "bugorski",
       "actors": [
         {
@@ -499,7 +500,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.45,
+              "at": 2.22,
               "pose": "think",
               "feel": "neutral"
             }
@@ -514,7 +515,7 @@
     {
       "set": "accelerator",
       "cam": "close",
-      "dur": 3.9,
+      "dur": 3.6,
       "focus": "bugorski",
       "actors": [
         {
@@ -535,7 +536,7 @@
     {
       "set": "accelerator",
       "cam": "high",
-      "dur": 4.133,
+      "dur": 3.633,
       "focus": [
         0,
         0,

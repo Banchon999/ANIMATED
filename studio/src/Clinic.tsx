@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { makeTex } from "./NightRoom";
 import type { Blob } from "./Village";
 import { rng, V3 } from "./lib";
+import { INDOOR, KITS, paintSky, TimeOfDay } from "./Light";
 
 // 1970s hospital room, real-world scale (1 unit = 1 m). Back wall at z = 0, room x -3.4..3.4,
 // ceiling 2.8. Floor, ceiling and side walls run on to z = 15 so wide cameras stay "inside".
@@ -50,7 +51,27 @@ const useTextures = () =>
         c.fillRect(0, i * 64, 512, 1);
       }
     }, [6.8 / 2.4, 15 / 2.4]);
-    const day = makeTex(256, 320, (c) => {
+    const chart = makeTex(192, 320, (c) => {
+      c.fillStyle = "#f6f5ef";
+      c.fillRect(0, 0, 192, 320);
+      c.fillStyle = "#151515";
+      c.textAlign = "center";
+      const rows = ["Ш Б", "М Н К", "Ы М Б Ш", "Б Ы Н К М", "И Н Ш М К", "Н Ш Ы И К Б", "Ш И Н Б К Ы"];
+      rows.forEach((t, i) => {
+        const size = 48 - i * 6;
+        c.font = `bold ${size}px sans-serif`;
+        c.fillText(t, 96, 52 + i * 40 - i * i * 1.2);
+      });
+      c.fillStyle = "#b02a20";
+      c.fillRect(14, 300, 164, 4);
+    });
+    return { wall, dado, floor, chart };
+  }, []);
+
+/** View through the window: the original daylight picture by day, the same yard under the kit's sky otherwise. */
+const useWindow = (time: TimeOfDay) =>
+  useMemo(() => {
+    if (time === "day") return makeTex(256, 320, (c) => {
       const g = c.createLinearGradient(0, 0, 0, 320);
       g.addColorStop(0, "#bfdcf3");
       g.addColorStop(1, "#eef6fa");
@@ -71,22 +92,34 @@ const useTextures = () =>
       c.fillRect(40, 200, 4, 120);
       c.fillRect(100, 215, 4, 105);
     });
-    const chart = makeTex(192, 320, (c) => {
-      c.fillStyle = "#f6f5ef";
-      c.fillRect(0, 0, 192, 320);
-      c.fillStyle = "#151515";
-      c.textAlign = "center";
-      const rows = ["Ш Б", "М Н К", "Ы М Б Ш", "Б Ы Н К М", "И Н Ш М К", "Н Ш Ы И К Б", "Ш И Н Б К Ы"];
-      rows.forEach((t, i) => {
-        const size = 48 - i * 6;
-        c.font = `bold ${size}px sans-serif`;
-        c.fillText(t, 96, 52 + i * 40 - i * i * 1.2);
-      });
-      c.fillStyle = "#b02a20";
-      c.fillRect(14, 300, 164, 4);
+    const kit = KITS[time];
+    const dim = time === "night" ? 0.28 : time === "evening" ? 0.7 : 0.92;
+    const sh = (hex: string) => {
+      const n = parseInt(hex.slice(1), 16);
+      const f = (v: number) => Math.round(v * dim);
+      return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+    };
+    return makeTex(256, 320, (c) => {
+      paintSky(c, 256, 320, kit, 4);
+      c.fillStyle = sh("#d9dcd6");
+      c.fillRect(150, 150, 120, 170);
+      for (let y = 0; y < 4; y++)
+        for (let x = 0; x < 3; x++) {
+          c.fillStyle = kit.litWindows && (x * 5 + y * 3) % 4 !== 1 ? "#ffd892" : sh("#b9c2c6");
+          c.fillRect(162 + x * 34, 165 + y * 38, 20, 24);
+        }
+      const r = rng(4);
+      c.fillStyle = sh("#8fb383");
+      for (let i = 0; i < 14; i++) {
+        c.beginPath();
+        c.arc(r() * 160, 210 + r() * 60, 28 + r() * 26, 0, 7);
+        c.fill();
+      }
+      c.fillStyle = sh("#e9eee6");
+      c.fillRect(40, 200, 4, 120);
+      c.fillRect(100, 215, 4, 105);
     });
-    return { wall, dado, floor, day, chart };
-  }, []);
+  }, [time]);
 
 const B: React.FC<{ p: V3; s: V3; c: string; r?: V3; sh?: boolean; map?: THREE.Texture }> = ({ p, s, c, r, sh = true, map }) => (
   <mesh position={p} rotation={r} castShadow={sh} receiveShadow>
@@ -108,8 +141,10 @@ const Tube: React.FC<{ a: V3; b: V3; r?: number; c?: string }> = ({ a, b, r = 0.
   );
 };
 
-export const Clinic: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
+export const Clinic: React.FC<{ blobs?: Blob[]; time?: TimeOfDay }> = ({ blobs = [], time = "day" }) => {
   const tx = useTextures();
+  const view = useWindow(time);
+  const L = INDOOR[time];
   const C = CLINIC;
   const W = C.halfW * 2;
   const D = 15;
@@ -123,13 +158,13 @@ export const Clinic: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
 
   return (
     <>
-      <ambientLight color="#e2ecea" intensity={1.25} />
-      <hemisphereLight args={["#f3fbff", "#9aa594", 1.15]} />
+      <ambientLight color={time === "night" ? "#a4aecb" : "#e2ecea"} intensity={1.25 * L.amb} />
+      <hemisphereLight args={["#f3fbff", "#9aa594", 1.15 * L.amb]} />
       {/* daylight from the window side (behind, up, right); aimed through the origin */}
       <directionalLight
         position={[3.2, 6.5, -5.5]}
-        intensity={1.1}
-        color="#f6fbff"
+        intensity={1.1 * L.sun}
+        color={L.sunColor ?? "#f6fbff"}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
@@ -142,7 +177,9 @@ export const Clinic: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
         shadow-bias={-0.001}
       />
       {/* fill from the room side so the back wall reads */}
-      <directionalLight position={[-3, 5, 9]} intensity={0.75} color="#eef4f4" />
+      <directionalLight position={[-3, 5, 9]} intensity={0.75 * L.amb} color="#eef4f4" />
+      {/* the ceiling lamp is switched on in the evening and at night */}
+      {L.lamp > 0 ? <pointLight position={[CLINIC.lamp[0], CLINIC.lamp[1] - 0.15, CLINIC.lamp[2]]} color="#fff1d8" intensity={4.5 * L.lamp} distance={8} decay={1.5} /> : null}
 
       {/* floor, ceiling, walls */}
       <mesh position={[0, 0, D / 2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
@@ -181,7 +218,7 @@ export const Clinic: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
       <group position={[win.x, win.y, 0]}>
         <mesh position={[0, 0, 0.01]}>
           <planeGeometry args={[win.w, win.h]} />
-          <meshBasicMaterial map={tx.day} toneMapped={false} />
+          <meshBasicMaterial map={view} toneMapped={false} />
         </mesh>
         <B p={[0, win.h / 2 + 0.04, 0.04]} s={[win.w + 0.16, 0.08, 0.08]} c={frame} sh={false} />
         <B p={[0, -win.h / 2 - 0.03, 0.08]} s={[win.w + 0.24, 0.06, 0.16]} c={frame} sh={false} />

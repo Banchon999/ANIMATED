@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { rng, V3 } from "./lib";
+import { KITS, paintSky, TimeOfDay } from "./Light";
 
 // Old wooden house bedroom at night. Rendered in two passes ("back" / "front")
 // so 2D characters can be sandwiched between the bed and its front posts.
@@ -145,6 +146,49 @@ const useTextures = () =>
     return { wall, lower, floor, night, mat, pillow };
   }, []);
 
+/** Window view by day, morning or evening: sky, the tree line and the banana plant in daylight colours. */
+const useDayView = (time: TimeOfDay) =>
+  useMemo(() => {
+    if (time === "night") return null;
+    const kit = KITS[time];
+    return makeTex(512, 640, (c) => {
+      paintSky(c, 512, 640, kit, 21);
+      const r = rng(21);
+      const far = time === "evening" ? "#4a3a4a" : "#5f8a5a";
+      const near = time === "evening" ? "#2e2630" : "#3f6e3e";
+      c.fillStyle = far;
+      c.beginPath();
+      c.moveTo(0, 640);
+      for (let x = 0; x <= 512; x += 32) c.lineTo(x, 520 - Math.sin(x * 0.05) * 22 - r() * 40);
+      c.lineTo(512, 640);
+      c.fill();
+      const leaf = (x: number, y: number, a: number, L: number) => {
+        c.save();
+        c.translate(x, y);
+        c.rotate(a);
+        c.beginPath();
+        c.moveTo(0, 0);
+        c.quadraticCurveTo(L * 0.5, -L * 0.22, L, 0);
+        c.quadraticCurveTo(L * 0.5, L * 0.22, 0, 0);
+        c.fill();
+        c.restore();
+      };
+      c.fillStyle = near;
+      c.fillRect(96, 300, 12, 340);
+      [-2.6, -2.0, -1.2, -0.5, 0.2].forEach((a, i) => leaf(102, 310, a, 190 - i * 12));
+      c.fillStyle = time === "evening" ? "#3a3040" : "#4f8a48";
+      [-0.9, -0.3, 0.3].forEach((a) => leaf(170, 560, a - 1.1, 170));
+    });
+  }, [time]);
+
+/** Room light per time of day; "night" is the original look. lamp = lantern and candles lit (0..1). */
+export const ROOM_LIGHT: Record<TimeOfDay, { amb: string; ambI: number; hemi: [string, string, number]; sun: string; sunI: number; lamp: number; shaft: string }> = {
+  night: { amb: "#c2ab9a", ambI: 2.5, hemi: ["#7f8db8", "#4a3424", 0.9], sun: "#9db6ff", sunI: 1.5, lamp: 1, shaft: "#bcd0ff" },
+  evening: { amb: "#d8b49a", ambI: 3.0, hemi: ["#c09ab0", "#4a3424", 1.0], sun: "#ff9a5a", sunI: 2.4, lamp: 0.85, shaft: "#ffb27a" },
+  morning: { amb: "#efd8c4", ambI: 4.4, hemi: ["#e0d8f0", "#6a4a34", 1.3], sun: "#ffd29e", sunI: 3.4, lamp: 0, shaft: "#ffe2b8" },
+  day: { amb: "#eadfd2", ambI: 5.0, hemi: ["#d6e4ff", "#6a4a34", 1.6], sun: "#fff3dc", sunI: 3.3, lamp: 0, shaft: "#fff6e0" },
+};
+
 const W: React.FC<{ p: V3; s: V3; c: string; r?: V3; sh?: boolean }> = ({ p, s, c, r, sh = true }) => (
   <mesh position={p} rotation={r} castShadow={sh} receiveShadow>
     <boxGeometry args={s} />
@@ -193,8 +237,11 @@ const Net: React.FC<{ p: V3; h: number }> = ({ p, h }) => (
   </group>
 );
 
-export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moon: number }> = ({ layer, flicker, moon }) => {
+export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moon: number; time?: TimeOfDay }> = ({ layer, flicker, moon, time = "night" }) => {
   const tx = useTextures();
+  const dayView = useDayView(time);
+  const RL = ROOM_LIGHT[time];
+  const lampOn = RL.lamp > 0;
   const b = ROOM.bed;
   const bw = b.x1 - b.x0;
   const bd = b.z1 - b.z0;
@@ -224,13 +271,13 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
 
   const lights = (
     <>
-      <ambientLight color="#c2ab9a" intensity={2.5} />
-      <hemisphereLight args={["#7f8db8", "#4a3424", 0.9]} />
+      <ambientLight color={RL.amb} intensity={RL.ambI} />
+      <hemisphereLight args={RL.hemi} />
       {/* moon through the window */}
       <directionalLight
         position={[-4, 9.5, -8.6]}
-        color="#9db6ff"
-        intensity={1.5 * moon}
+        color={RL.sun}
+        intensity={RL.sunI * moon}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
@@ -242,8 +289,12 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         shadow-camera-far={30}
         shadow-bias={-0.001}
       />
-      <pointLight position={[ROOM.lantern[0], 0.33, ROOM.lantern[2]]} color="#ffad55" intensity={5 * flicker} distance={7} decay={1.8} />
-      <pointLight position={[ROOM.candles[0], 0.25, ROOM.candles[2]]} color="#ffb060" intensity={3 * (0.6 + 0.4 * flicker)} distance={5} decay={1.8} />
+      {lampOn ? (
+        <>
+          <pointLight position={[ROOM.lantern[0], 0.33, ROOM.lantern[2]]} color="#ffad55" intensity={5 * flicker * RL.lamp} distance={7} decay={1.8} />
+          <pointLight position={[ROOM.candles[0], 0.25, ROOM.candles[2]]} color="#ffb060" intensity={3 * (0.6 + 0.4 * flicker) * RL.lamp} distance={5} decay={1.8} />
+        </>
+      ) : null}
     </>
   );
 
@@ -305,7 +356,7 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
       <group position={[win.x, win.y, 0.06]}>
         <mesh position={[0, 0, 0.01]}>
           <planeGeometry args={[win.w, win.h]} />
-          <meshBasicMaterial map={tx.night} toneMapped={false} />
+          <meshBasicMaterial map={dayView ?? tx.night} toneMapped={false} />
         </mesh>
         <W p={[0, win.h / 2 + 0.045, 0.06]} s={[win.w + 0.22, 0.09, 0.1]} c={woodD} />
         <W p={[0, -win.h / 2 - 0.045, 0.06]} s={[win.w + 0.26, 0.09, 0.14]} c={woodD} />
@@ -417,12 +468,18 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
         </mesh>
         <mesh position={[0, 0.36, 0]}>
           <cylinderGeometry args={[0.1, 0.12, 0.36, 12, 1, true]} />
-          <meshBasicMaterial color="#ffd9a0" transparent opacity={0.5 * flicker + 0.2} side={THREE.DoubleSide} />
+          {lampOn ? (
+            <meshBasicMaterial color="#ffd9a0" transparent opacity={0.5 * flicker + 0.2} side={THREE.DoubleSide} />
+          ) : (
+            <meshLambertMaterial color="#c9c4b4" transparent opacity={0.45} side={THREE.DoubleSide} />
+          )}
         </mesh>
-        <mesh position={[0, 0.3, 0]} scale={[1, 1.9, 1]}>
-          <sphereGeometry args={[0.035, 8, 6]} />
-          <meshBasicMaterial color="#fff3c9" />
-        </mesh>
+        {lampOn ? (
+          <mesh position={[0, 0.3, 0]} scale={[1, 1.9, 1]}>
+            <sphereGeometry args={[0.035, 8, 6]} />
+            <meshBasicMaterial color="#fff3c9" />
+          </mesh>
+        ) : null}
         <mesh position={[0, 0.58, 0]}>
           <cylinderGeometry args={[0.05, 0.12, 0.1, 12]} />
           <meshLambertMaterial color="#3d5546" />
@@ -446,12 +503,14 @@ export const NightRoom: React.FC<{ layer: "back" | "front"; flicker: number; moo
             <group key={i} position={[x, 0.06, z]}>
               <mesh position={[0, h / 2, 0]}>
                 <cylinderGeometry args={[0.014, 0.016, h, 6]} />
-                <meshLambertMaterial color="#e8dcc0" emissive="#6a4a20" />
+                <meshLambertMaterial color="#e8dcc0" emissive={lampOn ? "#6a4a20" : "#000000"} />
               </mesh>
-              <mesh position={[0, h + 0.03, 0]} scale={[1, 2.2 * (0.8 + 0.25 * Math.sin(i * 2.1 + flicker * 40)), 1]}>
-                <sphereGeometry args={[0.014, 6, 5]} />
-                <meshBasicMaterial color="#ffe9a8" />
-              </mesh>
+              {lampOn ? (
+                <mesh position={[0, h + 0.03, 0]} scale={[1, 2.2 * (0.8 + 0.25 * Math.sin(i * 2.1 + flicker * 40)), 1]}>
+                  <sphereGeometry args={[0.014, 6, 5]} />
+                  <meshBasicMaterial color="#ffe9a8" />
+                </mesh>
+              ) : null}
             </group>
           );
         })}

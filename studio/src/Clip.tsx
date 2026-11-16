@@ -6,6 +6,7 @@ import { checkWear, WearSpec } from "./Wardrobe";
 import { BEAM_DEFAULT, BeamFx, Fx, FX_KINDS, FlashFx, QuestionFx, SparksFx } from "./Fx";
 import { GAITS } from "./Character";
 import { SetName, SETS, SetStage } from "./Sets";
+import { TimeOfDay, TIMES } from "./Light";
 import { buildCam, Cam, clamp01, easeInOut, easeOut, easeOutBack, ensureFonts, lerp, project, rng, V3 } from "./lib";
 
 ensureFonts();
@@ -37,6 +38,7 @@ export type ShotScript = {
   say?: string; // actor whose mouth moves
   card?: { title: string; value: number; unit?: string };
   fx?: Fx[]; // per-shot effects: beam, flash, sparks, question
+  time?: TimeOfDay; // morning, day, evening, night; default: the set's own time (SETS[set].time)
 };
 export type ClipScript = {
   id: string;
@@ -67,6 +69,7 @@ export const validateClip = (c: ClipScript) => {
     const at = `shot ${i + 1}`;
     if (!(s.set in SETS)) bad(`${at}: unknown set "${s.set}" (have: ${Object.keys(SETS).join(", ")})`);
     if (!["high", "wide", "mid", "close"].includes(s.cam)) bad(`${at}: unknown cam "${s.cam}"`);
+    if (s.time !== undefined && !TIMES.includes(s.time)) bad(`${at}: unknown time "${s.time}" (have: ${TIMES.join(", ")})`);
     if (!(s.dur > 0)) bad(`${at}: dur must be a positive number of seconds`);
     const names = s.actors.map((a) => a.who);
     s.actors.forEach((a) => {
@@ -101,7 +104,7 @@ export const validateClip = (c: ClipScript) => {
 };
 
 // ---------- camera presets: framing relative to the focus point, varied per shot by seed ----------
-const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, set: SetName): { cam: Cam; blur: number } => {
+export const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, set: SetName): { cam: Cam; blur: number } => {
   const dark = SETS[set].dark;
   const sx = (r() - 0.5) * 2; // -1..1, which side the camera drifts from
   const e = easeInOut(p);
@@ -119,6 +122,48 @@ const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, set: SetNam
     if (kind === "wide") return at(sx * 0.4 + lerp(-0.2, 0.2, e), 1.7, lerp(8.0, 7.3, e), 1.2, 48); // ~4.0 m across
     if (kind === "mid") return at(sx * 0.4 + lerp(-0.12, 0.12, e), 1.6, lerp(5.3, 4.9, e), 1.1, 36, 1.5); // ~1.9 m
     return at(sx * 0.2, 1.5, lerp(3.2, 2.95, e), f[1], 30, 3); // ~0.95 m
+  }
+  if (set === "cityroom") {
+    // ceiling 2.6 m: "high" is a corner view from just under the ceiling, like the clinic (about 3.6 m across)
+    if (kind === "high") {
+      const side = sx > 0 ? 1 : -1;
+      return { cam: { pos: [f[0] * 0.5 + side * lerp(1.9, 1.7, e), 2.48, f[2] + lerp(4.3, 3.9, e)], target: [f[0] - side * 0.15, 0.45, f[2] - 1.3], fov: 62 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.3 + lerp(-0.15, 0.15, e), 1.6, lerp(7.6, 7.0, e), 1.15, 48); // ~3.7 m across
+    if (kind === "mid") return at(sx * 0.35 + lerp(-0.12, 0.12, e), 1.55, lerp(5.3, 4.9, e), 1.1, 36, 1.5); // ~1.9 m
+    return at(sx * 0.2, 1.5, lerp(3.2, 2.95, e), f[1], 30, 3); // ~0.95 m
+  }
+  if (set === "temple") {
+    if (kind === "high") {
+      // from above the courtyard: the hall roofs, chedi and bodhi tree around the actors
+      const az = lerp(0.42, 0.22, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(17, 15, e);
+      return { cam: { pos: [f[0] + R * Math.sin(az), lerp(12.5, 11, e), f[2] + R * Math.cos(az)], target: [f[0], 2.4, f[2] - 4.5], fov: 50 }, blur: 0 };
+    }
+    // low and looking up a little, so the layered roofs and the chofa stay in the frame (~4.5 m across)
+    if (kind === "wide") return at(sx * 0.5 + lerp(-0.3, 0.3, e), 1.5, lerp(10.4, 9.6, e), 2.15, 50);
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.55, lerp(5.6, 5.1, e), 1.2, 36, 2);
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 5);
+  }
+  if (set === "market") {
+    if (kind === "high") {
+      const az = lerp(0.35, 0.15, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(11, 9.5, e);
+      return { cam: { pos: [f[0] + R * Math.sin(az), lerp(8.5, 7.5, e), f[2] + R * Math.cos(az)], target: [f[0], 1.0, f[2] - 1.6], fov: 46 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.5 + lerp(-0.25, 0.25, e), 1.9, lerp(8.6, 7.9, e), 1.3, 46); // ~3.9 m across
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.6, lerp(5.6, 5.1, e), 1.1, 36, 2);
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 5);
+  }
+  if (set === "ricefield") {
+    if (kind === "high") {
+      const az = lerp(0.5, 0.25, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(19, 16, e);
+      return { cam: { pos: [f[0] + R * Math.sin(az), lerp(13, 11, e), f[2] + R * Math.cos(az)], target: [f[0], 0.4, f[2] - 5], fov: 44 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.6 + lerp(-0.35, 0.35, e), 1.9, lerp(9.0, 8.2, e), 1.35, 44); // ~4 m across, horizon high in the frame
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.6, lerp(5.6, 5.1, e), 1.1, 36, 2);
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 5);
   }
   if (set === "accelerator") {
     if (kind === "high") {
@@ -271,7 +316,7 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
   return (
     <AbsoluteFill style={{ background: "#000", overflow: "hidden" }}>
       <AbsoluteFill style={{ transform: `scale(${punch})` }}>
-        <SetStage set={shot.set} cam={cam} cam3={cam3} width={width} height={height} frame={frame} blur={blur} seed={script.seed} blobs={dark ? [] : states.map((s) => ({ x: s.pos[0], z: s.pos[2], r: 0.32 }))} behind={behind}>
+        <SetStage set={shot.set} cam={cam} cam3={cam3} width={width} height={height} frame={frame} blur={blur} seed={script.seed} time={shot.time} blobs={dark ? [] : states.map((s) => ({ x: s.pos[0], z: s.pos[2], r: 0.32 }))} behind={behind}>
           {placed.map(({ s, pr }, i) => (
             <g key={i} transform={`translate(${pr.x} ${pr.y - (s.lift * pr.ppu) / 100}) scale(${(pr.ppu / 100) * s.face} ${pr.ppu / 100})`}>
               {s.walk ? (

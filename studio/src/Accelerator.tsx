@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { makeTex } from "./NightRoom";
 import type { Blob } from "./Village";
 import { rng, V3 } from "./lib";
+import { INDOOR, TimeOfDay } from "./Light";
 
 // Hall of a 1970s Soviet proton synchrotron. Built to real-world scale (1 unit = 1 m).
 // The ring is a circle of radius R whose nearest point is at x=0, z=pipeZ; it curves away
@@ -128,8 +129,9 @@ const OnRing: React.FC<{ s: number; children: React.ReactNode }> = ({ s, childre
   );
 };
 
-export const Accelerator: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
+export const Accelerator: React.FC<{ blobs?: Blob[]; time?: TimeOfDay }> = ({ blobs = [], time = "day" }) => {
   const tx = useTextures();
+  const L = INDOOR[time];
   const A = ACCEL;
   const H = A.height;
   const arc = 1.4; // radians of ring drawn (about ±19.6 m of arc)
@@ -147,12 +149,18 @@ export const Accelerator: React.FC<{ blobs?: Blob[] }> = ({ blobs = [] }) => {
 
   return (
     <>
-      <hemisphereLight args={["#e6f0ea", "#5d6a62", 1.35]} />
-      <ambientLight color="#d2ddd6" intensity={0.85} />
+      <hemisphereLight args={["#e6f0ea", "#5d6a62", 1.35 * L.amb]} />
+      <ambientLight color={time === "night" ? "#b4bdc8" : "#d2ddd6"} intensity={0.85 * L.amb} />
+      {/* the hall lamps light the floor around the actors once the daylight goes */}
+      {L.lamp > 0
+        ? ([[-3, 5.3, 1.0], [3, 5.3, 1.0], [0, 5.5, -2.2]] as V3[]).map((p, i) => (
+            <pointLight key={i} position={p} color="#fff0cc" intensity={9 * L.lamp} distance={12} decay={1.4} />
+          ))
+        : null}
       <directionalLight
         position={[-7, 15, 11]}
-        intensity={1.7}
-        color="#f4f8f1"
+        intensity={1.7 * L.sun}
+        color={L.sunColor ?? "#f4f8f1"}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}

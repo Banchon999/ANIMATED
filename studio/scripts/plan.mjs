@@ -13,14 +13,16 @@ for (const comp of queue.compositions) {
   if (file && existsSync(file)) {
     const script = JSON.parse(readFileSync(file, "utf8"));
     // A part never crosses a change of set: switching sets inside one browser tab crashed it on CI
-    // (frame 892 of Clip-bugorski, twice), so every tab only ever mounts one set.
+    // (frame 892 of Clip-bugorski, twice), so every tab only ever mounts one set. A change of time of day
+    // ("time") swaps lights and textures too, so it also starts a new part.
     const runs = [];
     let at = 0;
     for (const shot of script.shots) {
       const n = Math.round(shot.dur * FPS);
       const last = runs[runs.length - 1];
-      if (last && last.set === shot.set) last.to += n;
-      else runs.push({ set: shot.set, from: at, to: at + n });
+      const key = `${shot.set}/${shot.time ?? ""}`;
+      if (last && last.key === key) last.to += n;
+      else runs.push({ key, set: shot.set, from: at, to: at + n });
       at += n;
     }
     let i = 0;

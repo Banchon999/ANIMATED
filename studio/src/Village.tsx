@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
 import { Cam, rng, V3 } from "./lib";
+import { Kit, KITS, SkyLights } from "./Light";
 
 /** Copies the per-frame camera into the R3F camera (driven by useCurrentFrame upstream). */
 export const CameraRig: React.FC<{ cam: Cam }> = ({ cam }) => {
@@ -49,7 +50,18 @@ type HouseSpec = {
 const WALLS = ["#c98f5a", "#b97a4b", "#d9a871", "#a8744a", "#cfa07a", "#8fa7b5"];
 const ROOFS = ["#8c4a3c", "#5f6f7a", "#a85a3a", "#6d5a4a", "#3f7f78", "#b0473f"];
 
-const House: React.FC<{ spec: HouseSpec }> = ({ spec }) => {
+/** Window glass: dark by day, lit warm from inside for some houses at evening / night. */
+const Glass: React.FC<{ p: V3; s: V3; lit: string | null }> = ({ p, s, lit }) =>
+  lit ? (
+    <mesh position={p}>
+      <boxGeometry args={s} />
+      <meshBasicMaterial color={lit} toneMapped={false} />
+    </mesh>
+  ) : (
+    <Box p={p} s={s} color="#3b4a55" shadow={false} />
+  );
+
+const House: React.FC<{ spec: HouseSpec; lit?: (string | null)[] }> = ({ spec, lit = [null, null, null] }) => {
   const { w, d, h, stilt, wall, roof, trim } = spec;
   const rh = w * 0.38;
   const roofGeo = useMemo(() => {
@@ -87,12 +99,12 @@ const House: React.FC<{ spec: HouseSpec }> = ({ spec }) => {
       </mesh>
       {/* door + windows on the front (+z) */}
       <Box p={[-w * 0.2, stilt + 1.02, d / 2 + 0.02]} s={[0.85, 1.9, 0.05]} color="#4a3324" shadow={false} />
-      <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.02]} s={[0.9, 0.95, 0.05]} color="#3b4a55" shadow={false} />
+      <Glass p={[w * 0.22, stilt + 1.4, d / 2 + 0.02]} s={[0.9, 0.95, 0.05]} lit={lit[0]} />
       <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.05]} s={[1.0, 0.07, 0.05]} color={trim} shadow={false} />
       <Box p={[w * 0.22, stilt + 1.4, d / 2 + 0.05]} s={[0.07, 1.05, 0.05]} color={trim} shadow={false} />
       {/* side windows */}
-      <Box p={[w / 2 + 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} color="#3b4a55" shadow={false} />
-      <Box p={[-w / 2 - 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} color="#3b4a55" shadow={false} />
+      <Glass p={[w / 2 + 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} lit={lit[1]} />
+      <Glass p={[-w / 2 - 0.02, stilt + 1.4, 0]} s={[0.05, 0.95, 0.9]} lit={lit[2]} />
       {/* porch rail */}
       <Box p={[w * 0.25, stilt + 0.95, d / 2 + 0.8]} s={[w * 0.5, 0.08, 0.08]} color={trim} />
       <Box p={[w * 0.48, stilt + 0.5, d / 2 + 0.8]} s={[0.08, 1.0, 0.08]} color={trim} />
@@ -190,9 +202,9 @@ export type Blob = { x: number; z: number; r?: number };
 
 export const Village: React.FC<{
   seed: number;
-  night?: boolean;
+  kit?: Kit;
   blobs?: Blob[];
-}> = ({ seed, blobs = [] }) => {
+}> = ({ seed, kit = KITS.day, blobs = [] }) => {
   const data = useMemo(() => {
     const r = rng(seed);
     const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)];
@@ -240,26 +252,18 @@ export const Village: React.FC<{
     }));
     return { houses, trees, palms, nearTrees, tufts };
   }, [seed]);
+  // lit windows use their own random stream so the layout above stays the same for every seed
+  const lit = useMemo(() => {
+    const r = rng(seed * 7 + 3);
+    return data.houses.map(() => [0, 1, 2].map(() => {
+      const v = r();
+      return v < kit.litWindows ? (v < kit.litWindows * 0.2 ? "#cfe0ff" : "#ffcf7e") : null;
+    }));
+  }, [seed, data, kit]);
 
   return (
     <>
-      <hemisphereLight args={["#eaf6ff", "#b9a37a", 1.25]} />
-      <directionalLight
-        position={[-17, 21, 9]}
-        intensity={2.1}
-        color="#fff3d6"
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={30}
-        shadow-camera-bottom={-30}
-        shadow-camera-near={1}
-        shadow-camera-far={80}
-        shadow-bias={-0.0006}
-      />
-      <fog attach="fog" args={["#d9ecf2", 30, 95]} />
+      <SkyLights kit={kit} box={30} far={80} />
 
       {/* grass ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
@@ -310,7 +314,7 @@ export const Village: React.FC<{
       })}
 
       {data.houses.map((h, i) => (
-        <House key={i} spec={h} />
+        <House key={i} spec={h} lit={lit[i]} />
       ))}
       {[...data.trees, ...data.nearTrees].map((t, i) => (
         <Tree key={i} {...t} />

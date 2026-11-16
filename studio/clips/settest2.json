@@ -1,0 +1,1828 @@
+{
+ "id": "settest2",
+ "seed": 11,
+ "cast": {
+  "a": {
+   "seed": 12,
+   "age": "adult",
+   "female": true,
+   "era": "rural"
+  },
+  "b": {
+   "seed": 33,
+   "age": "adult",
+   "female": false,
+   "era": "city"
+  }
+ },
+ "shots": [
+  {
+   "set": "temple",
+   "time": "morning",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · morning · high"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "morning",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · morning · wide"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "morning",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · morning · mid"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "morning",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "temple · morning · close"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "day",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · day · high"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "day",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · day · wide"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "day",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · day · mid"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "day",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "temple · day · close"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "evening",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · evening · high"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "evening",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · evening · wide"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "evening",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · evening · mid"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "evening",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "temple · evening · close"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "night",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · night · high"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "night",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · night · wide"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "night",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "temple · night · mid"
+   ]
+  },
+  {
+   "set": "temple",
+   "time": "night",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "temple · night · close"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "morning",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · morning · high"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "morning",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · morning · wide"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "morning",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · morning · mid"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "morning",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "market · morning · close"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "day",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · day · high"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "day",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · day · wide"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "day",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · day · mid"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "day",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "market · day · close"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "evening",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · evening · high"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "evening",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · evening · wide"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "evening",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · evening · mid"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "evening",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "market · evening · close"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "night",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · night · high"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "night",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · night · wide"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "night",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "market · night · mid"
+   ]
+  },
+  {
+   "set": "market",
+   "time": "night",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "market · night · close"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "morning",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · morning · high"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "morning",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · morning · wide"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "morning",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · morning · mid"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "morning",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "ricefield · morning · close"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "day",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · day · high"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "day",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · day · wide"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "day",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · day · mid"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "day",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "ricefield · day · close"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "evening",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · evening · high"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "evening",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · evening · wide"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "evening",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · evening · mid"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "evening",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "ricefield · evening · close"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "night",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · night · high"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "night",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · night · wide"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "night",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.6,
+      3.2
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "ricefield · night · mid"
+   ]
+  },
+  {
+   "set": "ricefield",
+   "time": "night",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.55,
+      3.0
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "ricefield · night · close"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "morning",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · morning · high"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "morning",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · morning · wide"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "morning",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · morning · mid"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "morning",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "cityroom · morning · close"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "day",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · day · high"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "day",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · day · wide"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "day",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · day · mid"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "day",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "cityroom · day · close"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "evening",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · evening · high"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "evening",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · evening · wide"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "evening",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · evening · mid"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "evening",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "cityroom · evening · close"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "night",
+   "cam": "high",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · night · high"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "night",
+   "cam": "wide",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · night · wide"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "night",
+   "cam": "mid",
+   "dur": 0.5,
+   "focus": "a+b",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "pose": "stand",
+     "feel": "neutral"
+    },
+    {
+     "who": "b",
+     "at": [
+      0.2,
+      3.1
+     ],
+     "pose": "point",
+     "feel": "happy",
+     "face": -1
+    }
+   ],
+   "caption": [
+    "cityroom · night · mid"
+   ]
+  },
+  {
+   "set": "cityroom",
+   "time": "night",
+   "cam": "close",
+   "dur": 0.5,
+   "focus": "a",
+   "actors": [
+    {
+     "who": "a",
+     "at": [
+      -0.9,
+      2.9
+     ],
+     "feel": "happy"
+    }
+   ],
+   "caption": [
+    "cityroom · night · close"
+   ]
+  }
+ ]
+}

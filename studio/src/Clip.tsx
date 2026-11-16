@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { Audio } from "@remotion/media";
-import { FeelName, GaitName, headCenter, headCenterSide, makePerson, mixPose, Mouth, Outfit, OUTFITS, Person, PersonSide, PersonSpec, Pose, PoseName, POSES, strideOf, Age, Era } from "./People";
+import { FeelName, GaitName, headCenter, headCenterSide, makePerson, mixPose, Mouth, Outfit, OUTFITS, Person, PersonBack, PersonSide, PersonSpec, Pose, PoseName, POSES, Stool, strideOf, Age, Era } from "./People";
 import { BEAM_DEFAULT, BeamFx, Fx, FX_KINDS, FlashFx, QuestionFx, SparksFx } from "./Fx";
 import { GAITS } from "./Character";
 import { SetName, SETS, SetStage } from "./Sets";
@@ -20,6 +20,11 @@ export type ActorCue = {
   feel?: FeelName;
   then?: { at: number; pose?: PoseName; feel?: FeelName }[]; // seconds into the shot
   face?: 1 | -1;
+  view?: "front" | "back"; // back = seen from behind (walkTo still draws the side view)
+  lieOn?: number; // pose "lie": height of the surface in metres (bed mattress 0.55, floor 0 = default)
+  headDir?: 1 | -1; // pose "lie": head towards +x (1, default) or -x (-1), whatever "face" says
+  eyes?: "open" | "closed"; // force the eyes; "lie" closes them unless "open"
+  stool?: boolean; // pose "sit": draw a simple 0.45 m stool under the actor
 };
 export type ShotScript = {
   set: SetName;
@@ -57,6 +62,15 @@ export const validateClip = (c: ClipScript) => {
       if (!(a.who in c.cast)) bad(`${at}: actor "${a.who}" is not in cast`);
       for (const p of [a.pose, ...(a.then ?? []).map((x) => x.pose)]) if (p && !(p in POSES)) bad(`${at}: unknown pose "${p}" (have: ${Object.keys(POSES).join(", ")})`);
       if (a.gait && !(a.gait in GAITS)) bad(`${at}: unknown gait "${a.gait}" (have: ${Object.keys(GAITS).join(", ")})`);
+      const who = `${at}: actor "${a.who}"`;
+      const poses = [a.pose, ...(a.then ?? []).map((x) => x.pose)];
+      if (a.view !== undefined && a.view !== "front" && a.view !== "back") bad(`${who}: view must be "front" or "back"`);
+      if (a.lieOn !== undefined && !(typeof a.lieOn === "number" && a.lieOn >= 0 && a.lieOn <= 2.5)) bad(`${who}: lieOn must be a height in metres, 0..2.5 (bed 0.55, floor 0)`);
+      if (a.headDir !== undefined && a.headDir !== 1 && a.headDir !== -1) bad(`${who}: headDir must be 1 or -1`);
+      if ((a.lieOn !== undefined || a.headDir !== undefined) && !poses.includes("lie")) bad(`${who}: lieOn / headDir need the pose "lie"`);
+      if (a.eyes !== undefined && a.eyes !== "open" && a.eyes !== "closed") bad(`${who}: eyes must be "open" or "closed"`);
+      if (a.stool !== undefined && typeof a.stool !== "boolean") bad(`${who}: stool must be true or false`);
+      if (a.stool && !poses.includes("sit")) bad(`${who}: stool needs the pose "sit"`);
     });
     if (typeof s.focus === "string") for (const n of s.focus.split("+")) if (!names.includes(n)) bad(`${at}: focus "${n}" is not an actor in this shot`);
     if (s.say && !names.includes(s.say)) bad(`${at}: say "${s.say}" is not an actor in this shot`);
@@ -193,13 +207,19 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
   for (const [name, c] of Object.entries(script.cast)) people[name] = makePerson(c.seed, c);
 
   const states = shot.actors.map((cue) => ({ cue, spec: people[cue.who], ...cueState(cue, people[cue.who], t, shot.dur) }));
+  // lying is drawn inside the actor's face-flipped group, so turn headDir into that frame
+  const lieOf = (s: (typeof states)[number]) => ({ on: s.cue.lieOn ?? 0, dir: ((s.cue.headDir ?? 1) * s.face) as 1 | -1 });
+  // close-ups look at the head: follow it down when the actor sits or lies (unchanged for standing poses)
+  // ...and sideways to the head of a lying actor
+  const headSide = (s: (typeof states)[number]) => (!s.walk && s.pose.lie > 0 ? s.face * headCenter(s.spec, s.pose, lieOf(s)).x : 0);
+  const headDrop = (s: (typeof states)[number]) => (s.walk ? 0 : headCenter(s.spec, POSES.stand).y - headCenter(s.spec, s.pose, lieOf(s)).y);
   // focus: a point, one actor, or "a+b" for the middle of several actors
   const names = typeof shot.focus === "string" ? shot.focus.split("+") : [];
   const focused = states.filter((s) => names.includes(s.cue.who));
   const focus: V3 = focused.length
     ? [
-        focused.reduce((n, s) => n + s.pos[0], 0) / focused.length,
-        shot.cam === "close" ? (focused[0].spec.h / 100) * 0.87 : 0,
+        focused.reduce((n, s) => n + s.pos[0], 0) / focused.length + (shot.cam === "close" ? headSide(focused[0]) : 0),
+        shot.cam === "close" ? (focused[0].spec.h / 100) * 0.87 - headDrop(focused[0]) : 0,
         focused.reduce((n, s) => n + s.pos[2], 0) / focused.length,
       ]
     : typeof shot.focus === "string" ? [0, 0, 0] : shot.focus;
@@ -216,7 +236,7 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
     const hit = placed.find((q) => q.s.cue.who === who);
     if (!hit) return null;
     const { s, pr } = hit;
-    const hc = s.walk ? headCenterSide(s.spec, GAITS[s.walk.gait]) : headCenter(s.spec, s.pose);
+    const hc = s.walk ? headCenterSide(s.spec, GAITS[s.walk.gait]) : headCenter(s.spec, s.pose, lieOf(s));
     return { x: pr.x + s.face * hc.x * pr.ppu, y: pr.y - (s.lift * pr.ppu) / 100 - hc.y * pr.ppu, ppu: pr.ppu, world: [s.pos[0], hc.y, s.pos[2]] as V3 };
   };
   const fx = shot.fx ?? [];
@@ -246,14 +266,20 @@ export const Clip: React.FC<{ script: ClipScript }> = ({ script }) => {
               {s.walk ? (
                 <PersonSide spec={s.spec} gait={GAITS[s.walk.gait]} phase={s.walk.phase} feel={s.feel} t={frame / FPS} blink={(frame + s.spec.seed * 11) % 96 < 4} />
               ) : (
-                <Person
-                  spec={s.spec}
-                  pose={s.pose}
-                  feel={s.feel}
-                  t={frame / FPS}
-                  blink={(frame + s.spec.seed * 11) % 96 < 4}
-                  mouth={shot.say === s.cue.who ? TALK[Math.floor(frame / 3 + s.spec.seed) % TALK.length] : undefined}
-                />
+                <>
+                  {s.cue.stool ? <g transform={`translate(0 ${s.lift})`}><Stool /></g> : null}
+                  {React.createElement(s.cue.view === "back" ? PersonBack : Person, {
+                    spec: s.spec,
+                    pose: s.pose,
+                    feel: s.feel,
+                    t: frame / FPS,
+                    blink: (frame + s.spec.seed * 11) % 96 < 4,
+                    mouth: shot.say === s.cue.who ? TALK[Math.floor(frame / 3 + s.spec.seed) % TALK.length] : undefined,
+                    eyes: s.cue.eyes ?? (s.pose.lie > 0.5 ? "closed" : undefined),
+                    lieOn: lieOf(s).on,
+                    headDir: lieOf(s).dir,
+                  })}
+                </>
               )}
             </g>
           ))}

@@ -1,6 +1,6 @@
 import React, { useId } from "react";
 import { AbsoluteFill } from "remotion";
-import { ensureFonts, lerp, rad, rng } from "./lib";
+import { clamp01, ensureFonts, lerp, rad, rng } from "./lib";
 import { Gait, GAITS } from "./Character";
 
 // Batch 1: seeded person generator + reusable pose / hand / mouth / emotion libraries.
@@ -71,7 +71,7 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
     wide: (age === "child" ? 0.92 : 1) * (0.9 + r() * 0.3) * (female ? 0.94 : 1.04),
     skin: pick(SKINS),
     hair: age === "elder" ? pick(["#c9c5c0", "#9a9692", "#e4e1dc"]) : dark,
-    hairStyle: Math.floor(r() * 6),
+    hairStyle: Math.floor(r() * 6), // 5 = thin/bald, only kept for elders (see below)
     top: pick(TOPS[era]),
     topKind: era === "old" ? pick<PersonSpec["topKind"]>(["shirt", "wrap", "tee"]) : pick<PersonSpec["topKind"]>(["tee", "shirt", "tee"]),
     pattern: pick<PersonSpec["pattern"]>(["plain", "plain", "stripes", "check", "dots"]),
@@ -81,6 +81,9 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
     shoe: era === "old" ? null : pick(["#2b2b2b", "#f4f4f4", "#8a4b2a", "#d94f70"]),
     extra: pick<PersonSpec["extra"]>(era === "old" ? ["none", "sash", "sash", "hat"] : era === "city" ? ["none", "glasses", "bag", "none"] : ["none", "hat", "bag", "none"]),
   };
+  // style 5 draws thin/bald hair on a grown-up male: keep it for elders only (children get a top knot, women a bun).
+  // No extra random draw, so every other seeded pick stays the same.
+  if (spec.hairStyle === 5 && age !== "elder" && age !== "child" && !female) spec.hairStyle = seed % 2;
   // outfits are applied after every seeded pick, so the same seed keeps the same face, hair and body
   if (want.outfit === "labcoat") {
     spec.outfit = "labcoat";
@@ -91,17 +94,59 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
   return spec;
 };
 
-/**
- * Centre of the head in metres above the ground point of a front-view Person in a given pose
- * (x is sideways for an actor facing right; mirror it for face -1). Matches the drawing in Person exactly.
- */
-export const headCenter = (s: PersonSpec, pose: Pose = POSES.stand) => {
+/** Seat height (units) of the `sit` pose: a chair or a bed edge. */
+export const SEAT = 45;
+/** Shared measurements (units) of a front/back-view person in a pose. hipH = hip joint above the ground. */
+const body = (s: PersonSpec, pose: Pose) => {
   const child = s.age === "child";
-  const R = s.h * (child ? 0.098 : 0.074);
+  const headR = s.h * (child ? 0.098 : 0.074);
   const legLen = s.h * (child ? 0.43 : 0.47) * (1 - pose.crouch * 0.55);
-  const d = s.h * (child ? 0.3 : 0.31) + R * 0.35 + R * 1.18;
+  const torso = s.h * (child ? 0.3 : 0.31);
+  const limb = s.h * 0.062 * (0.85 + s.wide * 0.2);
+  const sw = s.h * 0.105 * s.wide;
+  const hw = s.h * 0.085 * s.wide * (s.female ? 1.08 : 1);
+  let ws = clamp01(pose.sit), wf = clamp01(pose.cross);
+  if (ws + wf > 1) { const n = ws + wf; ws /= n; wf /= n; }
+  const w0 = 1 - ws - wf;
+  const hipSit = SEAT + limb * 0.6; // thighs rest on the seat
+  const hipFloor = limb; // cross-legged on the floor
+  const hipH = w0 * legLen + ws * hipSit + wf * hipFloor;
+  return { child, headR, legLen, torso, limb, sw, hw, ws, wf, w0, hipSit, hipFloor, hipH };
+};
+/**
+ * Lying: the drawing is turned 90 degrees around the middle of the body (s.h / 2 up) and lowered so the
+ * back of the body rests on a surface `on` metres high. dir 1 puts the head towards +x. k blends from standing.
+ */
+const lieXform = (s: PersonSpec, k: number, on: number, dir: number) => {
+  const b = body(s, POSES.lie);
+  const cy = s.h / 2;
+  const centre = on * 100 + b.hw + b.limb * 0.15; // hips and legs rest on the surface (hands are on the belly)
+  const T = lerp(cy, centre, k);
+  const deg = dir * 90 * k;
+  const c = Math.cos(rad(deg)), sn = Math.sin(rad(deg));
+  return {
+    svg: `translate(0 ${-T}) rotate(${deg}) translate(0 ${cy})`,
+    map: (x: number, y: number) => ({ x: x * c - (y + cy) * sn, y: x * sn + (y + cy) * c - T }),
+  };
+};
+export type LieOpts = { on?: number; dir?: 1 | -1 };
+
+/**
+ * Centre of the head in metres above the ground point of a front-view (or back-view) Person in a given pose
+ * (x is sideways for an actor facing right; mirror it for face -1). Matches the drawing in Person exactly,
+ * including sitting (seat 0.45 m), cross-legged on the floor and lying on a surface `lie.on` metres high.
+ */
+export const headCenter = (s: PersonSpec, pose: Pose = POSES.stand, lie: LieOpts = {}) => {
+  const b = body(s, pose);
+  const R = b.headR;
+  const d = b.torso + R * 0.35 + R * 1.18;
   const a = rad(pose.lean);
-  return { x: (d * Math.sin(a)) / 100, y: (legLen + d * Math.cos(a)) / 100 };
+  const x = d * Math.sin(a), y = b.hipH + d * Math.cos(a);
+  const k = clamp01(pose.lie);
+  if (k <= 0) return { x: x / 100, y: y / 100 };
+  // the lie transform works on drawing coordinates (ground origin, y down)
+  const p = lieXform(s, k, lie.on ?? 0, lie.dir ?? 1).map(x, -y);
+  return { x: p.x / 100, y: -p.y / 100 };
 };
 /** Same for the walking side view (PersonSide); x is forward. Approximate within ~1 cm. */
 export const headCenterSide = (s: PersonSpec, gait: Gait | null) => {
@@ -113,7 +158,7 @@ export const headCenterSide = (s: PersonSpec, gait: Gait | null) => {
   return { x: (R * 0.12 * Math.cos(a) + d * Math.sin(a)) / 100, y: (hip + d * Math.cos(a) - R * 0.12 * Math.sin(a)) / 100 };
 };
 /** Head-centre height (m) of a Person in a pose. */
-export const headHeight = (s: PersonSpec, pose: Pose = POSES.stand) => headCenter(s, pose).y;
+export const headHeight = (s: PersonSpec, pose: Pose = POSES.stand, lie: LieOpts = {}) => headCenter(s, pose, lie).y;
 
 // ---------- libraries ----------
 // Angles in degrees. Arms/legs: 0 = hanging down, + = away from the body (outward). Elbow: + bends the forearm up/in.
@@ -121,9 +166,11 @@ export type Hand = "open" | "fist" | "point" | "flat";
 export type Pose = {
   armL: number; elbowL: number; armR: number; elbowR: number;
   legL: number; legR: number; lean: number; head: number; crouch: number;
+  /** 0..1: sitting on a 0.45 m seat / cross-legged on the floor / lying (see lieXform). Blend like the angles. */
+  sit: number; cross: number; lie: number;
   handL: Hand; handR: Hand;
 };
-const P = (a: Partial<Pose>): Pose => ({ armL: 8, elbowL: 6, armR: 8, elbowR: 6, legL: 3, legR: 3, lean: 0, head: 0, crouch: 0, handL: "open", handR: "open", ...a });
+const P = (a: Partial<Pose>): Pose => ({ armL: 8, elbowL: 6, armR: 8, elbowR: 6, legL: 3, legR: 3, lean: 0, head: 0, crouch: 0, sit: 0, cross: 0, lie: 0, handL: "open", handR: "open", ...a });
 export const POSES = {
   stand: P({}),
   wai: P({ armL: 10, elbowL: 216, armR: 10, elbowR: 216, head: 6, lean: 4, handL: "flat", handR: "flat" }),
@@ -137,8 +184,14 @@ export const POSES = {
   cheer: P({ armL: 150, elbowL: 18, armR: 150, elbowR: 18, handL: "fist", handR: "fist", lean: -4, legL: 8, legR: 8 }),
   bow: P({ lean: 34, head: 16, armL: 4, armR: 4 }),
   squat: P({ crouch: 0.42, legL: 26, legR: 26, armL: 26, elbowL: 70, armR: 26, elbowR: 70 }),
+  // hands are placed on the thighs / knees / belly by Person, whatever the arm angles say
+  sit: P({ sit: 1, legL: 0, legR: 0 }),
+  sitfloor: P({ cross: 1, legL: 0, legR: 0 }),
+  lie: P({ lie: 1, legL: 1.5, legR: 1.5 }),
 } satisfies Record<string, Pose>;
 export type PoseName = keyof typeof POSES;
+/** Poses that are not standing; review sheets of standing poses leave these out. */
+export const REST_POSES: PoseName[] = ["sit", "sitfloor", "lie"];
 /** Blend two poses (hands switch halfway) so the script only names key poses. */
 export const mixPose = (a: Pose, b: Pose, t: number): Pose => {
   const o = {} as Record<string, number | Hand>;
@@ -239,39 +292,115 @@ const SideCover: React.FC<{ kind: Outfit; tw: number; shY: number; hem: number; 
     <path d={`M ${tw * 1.02} -3 L ${flare * 0.95} ${hem} L ${-flare} ${hem} L ${-tw * 1.06} -3 Z`} fill={GOWN} />
   );
 
-export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean }> = ({
-  spec: s, pose = POSES.stand, feel = "neutral", mouth, t = 0, blink = false,
+/** Open lab coat seen from behind: one back panel with a centre vent and a half belt. */
+const CoatBack: React.FC<{ sw: number; hw: number; shY: number; torso: number; hem: number }> = ({ sw, hw, shY, torso, hem }) => {
+  const W = Math.max(hw, sw * 0.82);
+  return (
+    <g strokeLinejoin="round">
+      <path d={`M ${-sw * 1.07} ${shY + 3} Q ${-sw} ${shY - 1.5} ${-sw * 0.4} ${shY - 1.5} L ${sw * 0.4} ${shY - 1.5} Q ${sw} ${shY - 1.5} ${sw * 1.07} ${shY + 3} L ${W * 1.12} -2 L ${W * 1.3} ${hem} L ${-W * 1.3} ${hem} L ${-W * 1.12} -2 Z`} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.3} />
+      <path d={`M 0 ${lerp(-2, hem, 0.45)} L 0 ${hem}`} stroke={COAT_EDGE} strokeWidth={1.4} />
+      <rect x={-W * 0.62} y={-torso * 0.14} width={W * 1.24} height={3.2} rx={1} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.1} />
+      {[-1, 1].map((k) => <circle key={k} cx={k * W * 0.48} cy={-torso * 0.14 + 1.6} r={1.1} fill={COAT_EDGE} />)}
+    </g>
+  );
+};
+/** Hospital gown from behind: open down the back, held by two ties. */
+const GownBack: React.FC<{ sw: number; hw: number; shY: number; torso: number; hem: number }> = ({ sw, hw, shY, torso, hem }) => {
+  const W = Math.max(hw, sw * 0.8);
+  return (
+    <g>
+      <path d={`M ${-sw} ${shY + 4} L ${-W * 1.08} -2 L ${-W * 1.24} ${hem} L ${W * 1.24} ${hem} L ${W * 1.08} -2 L ${sw} ${shY + 4} Z`} fill={GOWN} />
+      <path d={`M 0 ${shY} L 0 ${hem}`} stroke="#9fbcbe" strokeWidth={1.6} />
+      {[shY + torso * 0.22, -torso * 0.38].map((y) => (
+        <path key={y} d={`M -3 ${y - 1.5} L 0 ${y} L -3 ${y + 1.5} M 3 ${y - 1.5} L 0 ${y} L 3 ${y + 1.5}`} fill="none" stroke="#8fb0b2" strokeWidth={1.2} strokeLinecap="round" />
+      ))}
+    </g>
+  );
+};
+
+/** Angles (Person convention) that put the hand of an arm starting at `sh` on `target`; the elbow points outward. */
+const reach = (sh: Pt, target: Pt, sx: number, upper: number, fore: number) => {
+  const tx = (target.x - sh.x) * sx, ty = target.y - sh.y;
+  const d = Math.max(1, Math.min(Math.hypot(tx, ty), (upper + fore) * 0.995));
+  const phi = Math.atan2(tx, ty);
+  const alpha = Math.acos(Math.max(-1, Math.min(1, (upper * upper + d * d - fore * fore) / (2 * upper * d))));
+  const A = phi + alpha;
+  const B = Math.atan2(tx - Math.sin(A) * upper, ty - Math.cos(A) * upper);
+  return { arm: (A * 180) / Math.PI, elbow: ((B - A) * 180) / Math.PI };
+};
+
+type FigureProps = {
+  spec: PersonSpec; pose?: Pose; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean;
+  /** force closed eyes whatever the feel (brows, mouth, tears still follow the feel) */
+  eyes?: "open" | "closed";
+  /** lying poses: surface height in metres and which way the head points (+x = 1, in this drawing's frame) */
+  lieOn?: number; headDir?: 1 | -1;
+};
+
+const Figure: React.FC<FigureProps & { back: boolean }> = ({
+  spec: s, pose = POSES.stand, feel = "neutral", mouth, t = 0, blink = false, eyes, lieOn = 0, headDir = 1, back,
 }) => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const h = s.h;
-  const child = s.age === "child";
-  const headR = h * (child ? 0.098 : 0.074);
+  const B = body(s, pose);
+  const child = B.child;
+  const headR = B.headR;
   const headRy = headR * 1.18;
-  const legLen = h * (child ? 0.43 : 0.47) * (1 - pose.crouch * 0.55);
-  const torso = h * (child ? 0.3 : 0.31);
-  const sw = h * 0.105 * s.wide; // half shoulder width
-  const hw = h * 0.085 * s.wide * (s.female ? 1.08 : 1);
-  const limb = h * 0.062 * (0.85 + s.wide * 0.2);
+  const legLen = B.legLen;
+  const torso = B.torso;
+  const sw = B.sw; // half shoulder width
+  const hw = B.hw;
+  const limb = B.limb;
   const upper = h * 0.165;
   const fore = h * 0.155;
-  const hipY = -legLen;
+  const hipY = -B.hipH;
   const shY = -torso; // relative to hip
   const f = FEELS[feel] as Feel;
   const m: Mouth = mouth ?? f.mouth;
   const breathe = Math.sin(t * 2.2 + s.seed) * 0.6;
+  const { ws, wf, w0 } = B;
+  const seated = ws + wf;
+  const crossed = wf > 0.5;
 
+  // sitting legs: thighs come towards the camera (short on screen), shins hang down to the floor
+  const thigh = (h * (child ? 0.43 : 0.47)) / 2;
+  const shin = thigh - 3;
+  const kneeSit = thigh * 0.42; // the shin is foreshortened too, so the foot is simply held on the floor
+  const footSit = Math.min(B.hipSit - 3, kneeSit + shin); // a child on a 0.45 m seat really does dangle its feet
+  const kneeX = hw * 0.55 + thigh * 0.72; // cross-legged knee spread
   const leg = (sx: number, ang: number) => {
     const a = rad(ang) * sx;
     const k = pose.crouch > 0 ? rad(70 * pose.crouch) : 0;
     const half = legLen / 2 / Math.max(0.6, Math.cos(k));
     const knee = { x: sx * hw * 0.55 + Math.sin(a + sx * k) * half, y: Math.cos(k) * legLen * 0.5 };
     const foot = { x: sx * hw * 0.55 + Math.sin(a) * legLen * 0.35, y: legLen - 3 };
-    return { hip: { x: sx * hw * 0.55, y: 0 }, knee, foot };
+    const hip = { x: sx * hw * 0.55, y: 0 };
+    if (seated <= 0) return { hip, knee, foot };
+    const sk = { x: sx * hw * 0.78, y: kneeSit }, sf = { x: sx * hw * 0.8, y: footSit };
+    const ck = { x: sx * kneeX, y: B.hipFloor - limb * 0.55 }, cf = { x: -sx * hw * 0.3, y: B.hipFloor - limb * 0.45 - 1 };
+    const mix = (p: Pt, q: Pt, r: Pt) => ({ x: w0 * p.x + ws * q.x + wf * r.x, y: w0 * p.y + ws * q.y + wf * r.y });
+    return { hip, knee: mix(knee, sk, ck), foot: mix(foot, sf, cf) };
   };
   const arm = (sx: number, ang: number, elbow: number) => {
+    const sh = { x: sx * sw, y: shY + limb * 0.5 };
+    if (seated > 0) {
+      // hands rest on the thighs (chair) or on the knees (floor)
+      const st = { x: sx * hw * 0.8, y: kneeSit * 0.55 - limb * 0.2 };
+      const ct = { x: sx * kneeX * 0.95, y: B.hipFloor - limb * 1.2 };
+      const tg = { x: (ws * st.x + wf * ct.x) / seated, y: (ws * st.y + wf * ct.y) / seated };
+      const ik = reach(sh, tg, sx, upper, fore);
+      const k = Math.min(1, seated);
+      ang = lerp(ang, ik.arm, k);
+      elbow = lerp(elbow, ik.elbow, k);
+    } else if (pose.lie > 0) {
+      // a sleeper's arms lie along the body, hands resting on the front of the hips
+      const ik = reach(sh, { x: sx * hw * 0.62, y: 8 }, sx, upper, fore);
+      const k = clamp01(pose.lie);
+      ang = lerp(ang, ik.arm, k);
+      elbow = lerp(elbow, ik.elbow, k);
+    }
     const a = rad(ang) * sx;
     const b = a + rad(elbow) * sx;
-    const sh = { x: sx * sw, y: shY + limb * 0.5 };
     const el = { x: sh.x + Math.sin(a) * upper, y: sh.y + Math.cos(a) * upper };
     const hd = { x: el.x + Math.sin(b) * fore, y: el.y + Math.cos(b) * fore };
     return { sh, el, hd, rot: (-b * 180) / Math.PI };
@@ -281,13 +410,23 @@ export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; 
   const legSkin = s.bottomKind !== "pants";
   const sleeve = s.topKind === "tee" ? 0.45 : s.topKind === "wrap" ? 0 : 1;
 
-  const drawLeg = (l: ReturnType<typeof leg>) => (
-    <g>
-      <path d={`M ${l.hip.x} ${l.hip.y} L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`} fill="none" stroke={legSkin ? s.skin : s.bottom} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
-      {s.bottomKind === "shorts" && <path d={`M ${l.hip.x} ${l.hip.y} L ${lerp(l.hip.x, l.knee.x, 0.75)} ${lerp(l.hip.y, l.knee.y, 0.75)}`} stroke={s.bottom} strokeWidth={limb * 1.4} strokeLinecap="round" />}
-      <ellipse cx={l.foot.x} cy={l.foot.y + 1} rx={limb * 0.85} ry={limb * 0.42} fill={s.shoe ?? s.skin} />
-    </g>
-  );
+  const drawLeg = (l: ReturnType<typeof leg>, part: "all" | "thigh" | "shin" = "all") => {
+    const d = part === "all" ? `M ${l.hip.x} ${l.hip.y} L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}` : part === "thigh" ? `M ${l.hip.x} ${l.hip.y} L ${l.knee.x} ${l.knee.y}` : `M ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`;
+    return (
+      <g>
+        <path d={d} fill="none" stroke={legSkin ? s.skin : s.bottom} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
+        {s.bottomKind === "shorts" && part !== "shin" && <path d={`M ${l.hip.x} ${l.hip.y} L ${lerp(l.hip.x, l.knee.x, 0.75)} ${lerp(l.hip.y, l.knee.y, 0.75)}`} stroke={s.bottom} strokeWidth={limb * 1.4} strokeLinecap="round" />}
+        {/* knee coming towards the camera: a round cap and a soft shadow on the shin under it */}
+        {ws > 0.5 && part === "all" && !back && (
+          <>
+            <ellipse cx={l.knee.x} cy={l.knee.y + limb * 0.62} rx={limb * 0.5} ry={limb * 0.16} fill="rgba(0,0,0,.22)" />
+            <ellipse cx={l.knee.x} cy={l.knee.y} rx={limb * 0.64} ry={limb * 0.6} fill={s.bottomKind === "shorts" && legSkin ? s.skin : legSkin ? s.skin : s.bottom} />
+          </>
+        )}
+        {part !== "thigh" && <ellipse cx={l.foot.x} cy={l.foot.y + 1} rx={limb * 0.85} ry={limb * 0.42} fill={s.shoe ?? s.skin} />}
+      </g>
+    );
+  };
   const drawArm = (a: ReturnType<typeof arm>, hand: Hand) => (
     <g>
       <path d={`M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${a.hd.x} ${a.hd.y}`} fill="none" stroke={s.skin} strokeWidth={limb * 0.82} strokeLinecap="round" strokeLinejoin="round" />
@@ -322,7 +461,7 @@ export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; 
   // face
   const eye = (sx: number) => {
     const x = sx * headR * 0.42, y = headR * 0.08, w = headR * 0.2;
-    const kind = blink && (f.eyes === "open" || f.eyes === "narrow") ? "closed" : f.eyes;
+    const kind = eyes === "closed" ? "closed" : blink && (f.eyes === "open" || f.eyes === "narrow") ? "closed" : f.eyes;
     return (
       <g key={sx}>
         {kind === "open" || kind === "narrow" || kind === "wide" ? (
@@ -363,51 +502,152 @@ export const Person: React.FC<{ spec: PersonSpec; pose?: Pose; feel?: FeelName; 
   ];
   const style = s.female && (s.hairStyle === 0 || s.hairStyle === 5) && !child ? 2 : !s.female && s.hairStyle === 3 ? 1 : s.hairStyle;
 
-  return (
+  // back of the head: the hair covers it all (down to the nape), except the elder's thin/bald style
+  const cover = (nape: number, wide = 1.04) =>
+    `M ${-R * wide} ${Ry * 0.15} Q ${-R * (wide + 0.1)} ${-Ry * 1.2} 0 ${-Ry * 1.14} Q ${R * (wide + 0.1)} ${-Ry * 1.2} ${R * wide} ${Ry * 0.15} Q ${R * 0.85} ${Ry * nape} 0 ${Ry * (nape - 0.08)} Q ${-R * 0.85} ${Ry * nape} ${-R * wide} ${Ry * 0.15} Z`;
+  const backHair = () => {
+    const line = "rgba(0,0,0,.28)";
+    if (style === 3)
+      return <path d={`M ${-R * 1.12} ${Ry * 2.35} Q ${-R * 1.32} ${-Ry * 1.22} 0 ${-Ry * 1.15} Q ${R * 1.32} ${-Ry * 1.22} ${R * 1.12} ${Ry * 2.35} Q 0 ${Ry * 2.55} ${-R * 1.12} ${Ry * 2.35} Z`} />;
+    if (style === 4)
+      return <path d={`M ${-R * 1.13} ${Ry * 0.78} Q ${-R * 1.3} ${-Ry * 1.2} 0 ${-Ry * 1.15} Q ${R * 1.3} ${-Ry * 1.2} ${R * 1.13} ${Ry * 0.78} Q 0 ${Ry * 0.9} ${-R * 1.13} ${Ry * 0.78} Z`} />;
+    if (style === 5 && !child)
+      return <path d={`M ${-R * 1.03} ${-Ry * 0.28} Q 0 ${Ry * 0.02} ${R * 1.03} ${-Ry * 0.28} L ${R * 0.88} ${Ry * 0.52} Q 0 ${Ry * 1.08} ${-R * 0.88} ${Ry * 0.52} Z`} />;
+    return (
+      <g>
+        <path d={cover(style === 2 ? 0.62 : 0.55)} />
+        {style === 1 && <path d={`M ${R * 0.25} ${-Ry * 1.1} Q ${R * 0.35} ${-Ry * 0.7} ${R * 0.2} ${-Ry * 0.35}`} fill="none" stroke={line} strokeWidth={R * 0.06} strokeLinecap="round" />}
+        {style === 0 && <path d={`M ${-R * 0.15} ${-Ry * 0.75} q ${R * 0.2} ${-R * 0.15} ${R * 0.3} 0`} fill="none" stroke={line} strokeWidth={R * 0.05} strokeLinecap="round" />}
+        {style === 2 && <><circle cx={0} cy={-Ry * 0.82} r={R * 0.46} /><path d={`M ${-R * 0.4} ${-Ry * 0.6} Q 0 ${-Ry * 0.5} ${R * 0.4} ${-Ry * 0.6}`} fill="none" stroke={line} strokeWidth={R * 0.07} /></>}
+        {style === 5 && child && <circle cx={0} cy={-Ry * 1.2} r={R * 0.3} />}
+      </g>
+    );
+  };
+
+  // back view: arms whose hand ends in front of the body are hidden behind it (only the elbow shows)
+  const hidden = (a: ReturnType<typeof arm>) => Math.abs(a.hd.x) < sw * 0.95 && a.hd.y < 8;
+  const backArms = (behind: boolean) => (
+    // the person's own left/right swap sides on screen when seen from behind
+    <g transform="scale(-1 1)">
+      {hidden(AL) === behind && drawArm(AL, pose.handL)}
+      {hidden(AR) === behind && drawArm(AR, pose.handR)}
+    </g>
+  );
+  const coatHem = Math.max(LL.knee.y, LR.knee.y);
+
+  // skirt / sarong: hangs from the hip, drapes over the knees when sitting, covers the lap on the floor
+  const skirt = s.bottomKind === "skirt";
+  const cloth = s.bottomKind === "sarong" || skirt;
+  const clothLen = w0 * legLen * (skirt ? 0.5 : 0.82) + ws * (skirt ? kneeSit + limb * 0.55 : kneeSit + shin * 0.75) + wf * (B.hipFloor - 1);
+  const clothW = w0 * hw * (skirt ? 1.5 : 1.12) + ws * hw * (skirt ? 1.55 : 1.45) + wf * (skirt ? kneeX * 0.85 : kneeX + limb * 0.65);
+  const clothD = `M ${-hw} -3 L ${hw} -3 L ${clothW} ${clothLen} L ${-clothW} ${clothLen} Z`;
+
+  const fig = (
     <g transform={`translate(0 ${hipY})`}>
-      {drawLeg(LL)}
-      {drawLeg(LR)}
-      {(s.bottomKind === "sarong" || s.bottomKind === "skirt") && (
-        <path d={`M ${-hw} -3 L ${hw} -3 L ${hw * (s.bottomKind === "skirt" ? 1.5 : 1.12)} ${legLen * (s.bottomKind === "skirt" ? 0.5 : 0.82)} L ${-hw * (s.bottomKind === "skirt" ? 1.5 : 1.12)} ${legLen * (s.bottomKind === "skirt" ? 0.5 : 0.82)} Z`} fill={s.bottom} />
+      {back && seated > 0.5 && <ellipse cx={0} cy={4} rx={hw * 1.08} ry={limb * 0.75} fill={cloth ? s.bottom : s.outfit === "patient" ? GOWN : s.bottom} />}
+      {crossed ? (
+        <>
+          {drawLeg(LL, "thigh")}
+          {drawLeg(LR, "thigh")}
+          {cloth && <path d={clothD} fill={s.bottom} />}
+          {!(cloth && !skirt) ? <>{drawLeg(LR, "shin")}{drawLeg(LL, "shin")}</> : [LR, LL].map((l, i) => <ellipse key={i} cx={l.foot.x} cy={l.foot.y + 1} rx={limb * 0.85} ry={limb * 0.42} fill={s.shoe ?? s.skin} />)}
+        </>
+      ) : (
+        <>
+          {/* the lap: top of both thighs, seen from slightly above */}
+          {ws > 0.5 && !back && !cloth && <path d={`M ${-hw} -2 L ${hw} -2 L ${hw * 0.78 + limb * 0.5} ${kneeSit} L ${-hw * 0.78 - limb * 0.5} ${kneeSit} Z`} fill={s.bottom} />}
+          {drawLeg(LL)}
+          {drawLeg(LR)}
+          {cloth && <path d={clothD} fill={s.bottom} />}
+        </>
       )}
       <g transform={`rotate(${pose.lean})`}>
-        {s.extra === "bag" && <rect x={hw * 0.7} y={-torso * 0.35} width={hw * 0.9} height={torso * 0.42} rx={3} fill="#8a5a3a" />}
-        <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
-        <path d={torsoD} fill={s.top} transform={`scale(1 ${1 + breathe * 0.004})`} />
-        <g clipPath={`url(#c${id})`}>{pat()}</g>
-        {s.topKind === "shirt" && <line x1={0} x2={0} y1={shY} y2={3} stroke="rgba(0,0,0,.25)" strokeWidth={1.2} />}
-        {s.topKind === "wrap" && <path d={`M ${-sw * 0.5} ${shY - 1} L ${sw * 0.5} ${shY - 1} L ${-hw * 0.2} ${-torso * 0.35} Z`} fill={s.skin} />}
-        {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
-        {s.extra === "sash" && <path d={`M ${-sw * 0.9} ${shY} L ${-sw * 0.35} ${shY - 1} L ${hw} ${-torso * 0.1} L ${hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
-        {s.extra === "bag" && <line x1={-sw * 0.6} y1={shY} x2={hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
-        {s.outfit === "labcoat" && <CoatFront sw={sw} hw={hw} shY={shY} torso={torso} hem={Math.max(LL.knee.y, LR.knee.y) + limb * 0.5} />}
-        {s.outfit === "patient" && <GownFront sw={sw} hw={hw} shY={shY} torso={torso} hem={Math.max(LL.knee.y, LR.knee.y) + limb * 0.3} />}
-        {drawArm(AL, pose.handL)}
-        {drawArm(AR, pose.handR)}
-        <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
-        <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
-          {style === 3 || style === 4 ? <g fill={s.hair}>{hairs[style]}</g> : null}
-          <ellipse rx={R} ry={Ry} fill={s.skin} />
-          <ellipse cx={-R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
-          <ellipse cx={R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
-          {f.blush && <><ellipse cx={-R * 0.6} cy={R * 0.42} rx={R * 0.2} ry={R * 0.12} fill="#ef7a80" opacity={0.5} /><ellipse cx={R * 0.6} cy={R * 0.42} rx={R * 0.2} ry={R * 0.12} fill="#ef7a80" opacity={0.5} /></>}
-          {eye(-1)}{eye(1)}
-          <path d={`M 0 ${R * 0.18} l ${-R * 0.07} ${R * 0.24} l ${R * 0.13} ${R * 0.02}`} fill="none" stroke="rgba(60,30,20,.45)" strokeWidth={R * 0.06} strokeLinecap="round" />
-          {mouths[m]}
-          {s.age === "elder" && <path d={`M ${-R * 0.75} ${R * 0.5} q ${R * 0.1} ${R * 0.2} 0 ${R * 0.4} M ${R * 0.75} ${R * 0.5} q ${-R * 0.1} ${R * 0.2} 0 ${R * 0.4}`} fill="none" stroke="rgba(60,30,20,.35)" strokeWidth={R * 0.05} />}
-          {style !== 3 && style !== 4 ? <g fill={s.hair}>{hairs[style]}</g> : <g fill={s.hair}>{hairs[0]}</g>}
-          {s.extra === "glasses" && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={-R * 0.42} cy={R * 0.08} r={R * 0.3} /><circle cx={R * 0.42} cy={R * 0.08} r={R * 0.3} /><line x1={-R * 0.12} x2={R * 0.12} y1={R * 0.08} y2={R * 0.08} /></g>}
-          {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.32} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
-          {f.sweat && <path transform={`translate(${R * 1.05} ${-R * 0.4})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
-        </g>
+        {back ? (
+          <>
+            {s.extra === "bag" && <rect x={-hw * 1.6} y={-torso * 0.35} width={hw * 0.9} height={torso * 0.42} rx={3} fill="#8a5a3a" />}
+            {backArms(true)}
+            <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
+            <path d={torsoD} fill={s.top} transform={`scale(1 ${1 + breathe * 0.004})`} />
+            <g clipPath={`url(#c${id})`}>{pat()}</g>
+            {s.topKind === "shirt" && <path d={`M ${-sw * 0.85} ${shY + torso * 0.16} Q 0 ${shY + torso * 0.22} ${sw * 0.85} ${shY + torso * 0.16}`} fill="none" stroke="rgba(0,0,0,.2)" strokeWidth={1.2} />}
+            {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
+            {s.extra === "sash" && <path d={`M ${sw * 0.9} ${shY} L ${sw * 0.35} ${shY - 1} L ${-hw} ${-torso * 0.1} L ${-hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
+            {s.extra === "bag" && <line x1={sw * 0.6} y1={shY} x2={-hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
+            {s.outfit === "labcoat" && <CoatBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} />}
+            {s.outfit === "patient" && <GownBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} />}
+            {backArms(false)}
+            <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
+            {s.outfit === "labcoat" && <path d={`M ${-R * 0.55} ${shY + 1} Q 0 ${shY - R * 0.3} ${R * 0.55} ${shY + 1} L ${R * 0.5} ${shY - 2.5} Q 0 ${shY - R * 0.55} ${-R * 0.5} ${shY - 2.5} Z`} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.1} />}
+            <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
+              <ellipse cx={-R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
+              <ellipse cx={R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
+              <ellipse rx={R} ry={Ry} fill={s.skin} />
+              <g fill={s.hair}>{backHair()}</g>
+              {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.32} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+            </g>
+          </>
+        ) : (
+          <>
+            {s.extra === "bag" && <rect x={hw * 0.7} y={-torso * 0.35} width={hw * 0.9} height={torso * 0.42} rx={3} fill="#8a5a3a" />}
+            <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
+            <path d={torsoD} fill={s.top} transform={`scale(1 ${1 + breathe * 0.004})`} />
+            <g clipPath={`url(#c${id})`}>{pat()}</g>
+            {s.topKind === "shirt" && <line x1={0} x2={0} y1={shY} y2={3} stroke="rgba(0,0,0,.25)" strokeWidth={1.2} />}
+            {s.topKind === "wrap" && <path d={`M ${-sw * 0.5} ${shY - 1} L ${sw * 0.5} ${shY - 1} L ${-hw * 0.2} ${-torso * 0.35} Z`} fill={s.skin} />}
+            {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
+            {s.extra === "sash" && <path d={`M ${-sw * 0.9} ${shY} L ${-sw * 0.35} ${shY - 1} L ${hw} ${-torso * 0.1} L ${hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
+            {s.extra === "bag" && <line x1={-sw * 0.6} y1={shY} x2={hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
+            {s.outfit === "labcoat" && <CoatFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} />}
+            {s.outfit === "patient" && <GownFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} />}
+            {drawArm(AL, pose.handL)}
+            {drawArm(AR, pose.handR)}
+            <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
+            <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
+              {style === 3 || style === 4 ? <g fill={s.hair}>{hairs[style]}</g> : null}
+              <ellipse rx={R} ry={Ry} fill={s.skin} />
+              <ellipse cx={-R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
+              <ellipse cx={R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
+              {f.blush && <><ellipse cx={-R * 0.6} cy={R * 0.42} rx={R * 0.2} ry={R * 0.12} fill="#ef7a80" opacity={0.5} /><ellipse cx={R * 0.6} cy={R * 0.42} rx={R * 0.2} ry={R * 0.12} fill="#ef7a80" opacity={0.5} /></>}
+              {eye(-1)}{eye(1)}
+              <path d={`M 0 ${R * 0.18} l ${-R * 0.07} ${R * 0.24} l ${R * 0.13} ${R * 0.02}`} fill="none" stroke="rgba(60,30,20,.45)" strokeWidth={R * 0.06} strokeLinecap="round" />
+              {mouths[m]}
+              {s.age === "elder" && <path d={`M ${-R * 0.75} ${R * 0.5} q ${R * 0.1} ${R * 0.2} 0 ${R * 0.4} M ${R * 0.75} ${R * 0.5} q ${-R * 0.1} ${R * 0.2} 0 ${R * 0.4}`} fill="none" stroke="rgba(60,30,20,.35)" strokeWidth={R * 0.05} />}
+              {style !== 3 && style !== 4 ? <g fill={s.hair}>{hairs[style]}</g> : <g fill={s.hair}>{hairs[0]}</g>}
+              {s.extra === "glasses" && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={-R * 0.42} cy={R * 0.08} r={R * 0.3} /><circle cx={R * 0.42} cy={R * 0.08} r={R * 0.3} /><line x1={-R * 0.12} x2={R * 0.12} y1={R * 0.08} y2={R * 0.08} /></g>}
+              {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.32} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+              {f.sweat && <path transform={`translate(${R * 1.05} ${-R * 0.4})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
+            </g>
+          </>
+        )}
       </g>
+    </g>
+  );
+  const k = clamp01(pose.lie);
+  return k > 0 ? <g transform={lieXform(s, k, lieOn, headDir).svg}>{fig}</g> : fig;
+};
+
+/** Front view. 100 units = 1 m, origin on the ground between the feet. */
+export const Person: React.FC<FigureProps> = (p) => <Figure {...p} back={false} />;
+/** The same person seen from behind: no face, hair over the whole head, arms mirrored. Same skeleton as Person. */
+export const PersonBack: React.FC<FigureProps> = (p) => <Figure {...p} back />;
+
+/** Simple wooden stool, seat top at SEAT (0.45 m); draw it before (under) a sitting Person at the same origin. */
+export const Stool: React.FC<{ w?: number }> = ({ w = 46 }) => {
+  const y = -SEAT, wood = "#9a6a42", dark = "#6e4a2e";
+  return (
+    <g>
+      {[-1, 1].map((k) => <rect key={`b${k}`} x={k * (w / 2 - 7) - 1.8} y={y - 5} width={3.6} height={SEAT - 1} fill={dark} />)}
+      {[-1, 1].map((k) => <rect key={`f${k}`} x={k * (w / 2 - 3) - 2} y={y} width={4} height={SEAT} fill={wood} />)}
+      <rect x={-w / 2 + 2} y={y + SEAT * 0.55} width={w - 4} height={2.4} fill={dark} />
+      <path d={`M ${-w / 2} ${y} L ${w / 2} ${y} L ${w / 2 - 4} ${y - 6} L ${-w / 2 + 4} ${y - 6} Z`} fill="#b78456" />
+      <rect x={-w / 2} y={y} width={w} height={3.5} fill={wood} />
     </g>
   );
 };
 
 // ---------- review sheet: 30 random people across the pose and emotion libraries ----------
 export const PeopleSheet: React.FC = () => {
-  const poses = Object.keys(POSES) as PoseName[];
+  const poses = (Object.keys(POSES) as PoseName[]).filter((p) => !REST_POSES.includes(p));
   const feels = Object.keys(FEELS) as FeelName[];
   const cols = 5, rows = 6, cw = 1080 / cols, rh = 300;
   return (
@@ -598,6 +838,79 @@ export const WalkSheet: React.FC = () => {
                   <PersonSide spec={spec} gait={GAITS[g]} phase={i / 6} feel={feels[r]} />
                 </g>
               ))}
+            </g>
+          );
+        })}
+      </svg>
+    </AbsoluteFill>
+  );
+};
+
+// ---------- review sheet: front / back / sitting / lying on four people ----------
+export const PoseSheet: React.FC = () => {
+  const k = 1.25; // px per unit (cm)
+  const rows: { spec: PersonSpec; label: string; feel: FeelName }[] = [
+    { spec: makePerson(4, { age: "child", female: false, era: "rural" }), label: "เด็กชาย", feel: "happy" },
+    { spec: makePerson(12, { age: "adult", female: true, era: "rural" }), label: "ผู้หญิง", feel: "neutral" },
+    { spec: makePerson(15, { age: "adult", female: false, era: "city", outfit: "labcoat" }), label: "ผู้ชาย · เสื้อกาวน์", feel: "calm" },
+    { spec: makePerson(24), label: "ผู้สูงอายุ", feel: "sad" },
+  ];
+  const cols: { pose: PoseName; back?: boolean; label: string }[] = [
+    { pose: "stand", label: "ยืน" },
+    { pose: "stand", back: true, label: "มุมหลัง" },
+    { pose: "sit", label: "นั่ง · เก้าอี้ 0.45 ม." },
+    { pose: "sitfloor", label: "นั่งขัดสมาธิ" },
+  ];
+  const txt = (x: number, y: number, s: string, size = 28, fill = "#5a4f46", weight = 500, anchor: "middle" | "start" = "middle") => (
+    <text x={x} y={y} textAnchor={anchor} fontFamily="Kanit" fontWeight={weight} fontSize={size} fill={fill}>{s}</text>
+  );
+  // red cross = headCenter(): where a beam "through" this person would pass
+  const mark = (x: number, y: number) => <path d={`M ${x - 7} ${y} L ${x + 7} ${y} M ${x} ${y - 7} L ${x} ${y + 7}`} stroke="#e0262b" strokeWidth={2.5} />;
+  return (
+    <AbsoluteFill style={{ background: "#efe8dc", fontFamily: "Kanit" }}>
+      <div style={{ position: "absolute", left: 40, top: 22, fontSize: 44, fontWeight: 800, color: "#231c1a" }}>ท่านั่ง ท่านอน มุมหลัง</div>
+      <div style={{ position: "absolute", right: 40, top: 22, fontSize: 28, fontWeight: 500, color: "#6b5f55", textAlign: "right", lineHeight: 1.25 }}>เส้นประ = 1.7 ม.<br /><span style={{ color: "#e0262b" }}>+</span> = จุดกลางศีรษะ</div>
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
+        {rows.map((row, r) => {
+          const top = 115 + r * 450;
+          const gy = top + 255, ly = top + 437;
+          return (
+            <g key={r}>
+              <line x1={20} x2={1060} y1={gy} y2={gy} stroke="#cbbfae" strokeWidth={3} />
+              <line x1={20} x2={1060} y1={gy - 170 * k} y2={gy - 170 * k} stroke="#c9bca8" strokeWidth={2} strokeDasharray="6 8" />
+              {cols.map((c, i) => {
+                const x = 135 + i * 270;
+                const pose = POSES[c.pose];
+                const hc = headCenter(row.spec, pose);
+                return (
+                  <g key={i}>
+                    <g transform={`translate(${x} ${gy}) scale(${k})`}>
+                      {c.pose === "sit" && <Stool />}
+                      {c.back ? <PersonBack spec={row.spec} pose={pose} feel={row.feel} /> : <Person spec={row.spec} pose={pose} feel={row.feel} />}
+                    </g>
+                    {mark(x + hc.x * 100 * k, gy - hc.y * 100 * k)}
+                    {txt(x, gy + 34, c.label)}
+                  </g>
+                );
+              })}
+              <line x1={20} x2={1060} y1={ly} y2={ly} stroke="#cbbfae" strokeWidth={3} />
+              {([1, -1] as const).map((dir, i) => {
+                const x = 270 + i * 540;
+                const lie = { on: 0.55, dir };
+                const hc = headCenter(row.spec, POSES.lie, lie);
+                return (
+                  <g key={dir}>
+                    <rect x={x - 125} y={ly - 55 * k} width={250} height={55 * k} rx={6} fill="#8a6f58" />
+                    <rect x={x - 125} y={ly - 55 * k} width={250} height={10} rx={4} fill="#d9cfc2" />
+                    <g transform={`translate(${x} ${ly}) scale(${k})`}>
+                      <Person spec={row.spec} pose={POSES.lie} feel={row.feel} eyes="closed" lieOn={0.55} headDir={dir} />
+                    </g>
+                    {mark(x + hc.x * 100 * k, ly - hc.y * 100 * k)}
+                    {txt(x, ly - 14, dir === 1 ? "นอน · หัวไปขวา →" : "← นอน · หัวไปซ้าย", 28, "#fff6ea")}
+                  </g>
+                );
+              })}
+              {txt(540, ly - 30, row.label, 32, "#231c1a", 700)}
             </g>
           );
         })}

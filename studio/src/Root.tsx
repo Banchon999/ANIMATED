@@ -1,7 +1,7 @@
 import { Composition } from "remotion";
 import { Demo, TOTAL } from "./Demo";
 import { Night, NIGHT_TOTAL } from "./Night";
-import { PeopleSheet, WalkSheet } from "./People";
+import { PeopleSheet, PoseSheet, WalkSheet } from "./People";
 import { Clip, clipFrames, validateClip } from "./Clip";
 import { CLIPS } from "../clips";
 
@@ -12,6 +12,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Night" component={Night} durationInFrames={NIGHT_TOTAL} fps={30} width={1080} height={1920} />
       <Composition id="PeopleSheet" component={PeopleSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
       <Composition id="WalkSheet" component={WalkSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
+      <Composition id="PoseSheet" component={PoseSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
       {CLIPS.map(validateClip).map((c) => (
         <Composition key={c.id} id={`Clip-${c.id}`} component={Clip} defaultProps={{ script: c }} durationInFrames={clipFrames(c)} fps={30} width={1080} height={1920} />
       ))}

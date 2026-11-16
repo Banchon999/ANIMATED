@@ -1,0 +1,36 @@
+{
+  "id": "posetest",
+  "seed": 5,
+  "cast": {
+    "nok": { "seed": 12, "age": "adult", "female": true, "era": "rural" },
+    "dang": { "seed": 15, "age": "adult", "female": false, "era": "rural" },
+    "pa": { "seed": 33, "age": "adult", "female": false, "era": "old" },
+    "yai": { "seed": 27, "age": "elder", "female": true, "era": "old" }
+  },
+  "shots": [
+    {
+      "set": "village", "cam": "mid", "dur": 2.4, "focus": "nok+dang", "say": "nok",
+      "actors": [
+        { "who": "nok", "at": [-0.35, 1.9], "pose": "sit", "stool": true, "feel": "happy" },
+        { "who": "dang", "at": [0.55, 2.8], "view": "back", "pose": "stand", "then": [{ "at": 1.2, "pose": "point" }] }
+      ],
+      "caption": ["นั่งคุยกัน *มุมหลัง*"]
+    },
+    {
+      "set": "room", "cam": "wide", "dur": 2.4, "focus": [0.5, 0, 2.0],
+      "actors": [
+        { "who": "pa", "at": [0.68, 1.25], "pose": "lie", "lieOn": 0.55, "headDir": 1, "feel": "calm" },
+        { "who": "yai", "at": [-0.5, 2.7], "pose": "sitfloor", "feel": "sad" }
+      ],
+      "caption": ["พ่อ*หลับ*อยู่บนเตียง"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 2.0, "focus": "pa",
+      "actors": [
+        { "who": "pa", "at": [0.68, 1.25], "pose": "lie", "lieOn": 0.55, "headDir": 1, "feel": "sad" }
+      ],
+      "fx": [{ "kind": "beam", "through": "pa", "strength": 0.6 }],
+      "caption": ["ลำแสงผ่าน*กลางศีรษะ*"]
+    }
+  ]
+}

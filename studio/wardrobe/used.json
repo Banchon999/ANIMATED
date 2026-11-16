@@ -40,5 +40,140 @@
       "pattern": "plain"
     },
     "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep1",
+    "who": "fah",
+    "signature": "backpack+blouse+flipflops+shorts|#e9a23b,#2b2b2b,",
+    "wear": {
+      "top": "blouse",
+      "bottom": "shorts",
+      "acc": [
+        "backpack"
+      ],
+      "feet": "flipflops",
+      "colors": {
+        "top": "#e9a23b",
+        "top2": "#1f2530",
+        "bottom": "#2b2b2b",
+        "bottom2": "#1f2530",
+        "acc": "#5a4a3a",
+        "feet": "#f3c044"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep1",
+    "who": "sri",
+    "signature": "apron+mohom+pakhaoma_head+sandals+sin|#26304d,#26304a,#e98a3c",
+    "wear": {
+      "top": "mohom",
+      "bottom": "sin",
+      "outer": "apron",
+      "head": "pakhaoma_head",
+      "feet": "sandals",
+      "colors": {
+        "top": "#26304d",
+        "top2": "#d9c9a8",
+        "bottom": "#26304a",
+        "bottom2": "#a8443f",
+        "outer": "#e98a3c",
+        "head": "#3f8f4a",
+        "feet": "#5a3a22"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep2",
+    "who": "fah",
+    "signature": "backpack+blouse+jeans+leather|#e9a23b,#23304a,",
+    "wear": {
+      "top": "blouse",
+      "bottom": "jeans",
+      "acc": [
+        "backpack"
+      ],
+      "feet": "leather",
+      "colors": {
+        "top": "#e9a23b",
+        "top2": "#d8c7a0",
+        "bottom": "#23304a",
+        "bottom2": "#d8c7a0",
+        "acc": "#5a4a3a",
+        "feet": "#1f1f1f"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep2",
+    "who": "sri",
+    "signature": "bag+cardigan+floral+glasses+phathung+sandals|#c9a7c2,#5a3d52,#8a7a66",
+    "wear": {
+      "top": "floral",
+      "bottom": "phathung",
+      "outer": "cardigan",
+      "acc": [
+        "glasses",
+        "bag"
+      ],
+      "feet": "sandals",
+      "colors": {
+        "top": "#c9a7c2",
+        "top2": "#f4ead8",
+        "bottom": "#5a3d52",
+        "bottom2": "#e8d3a8",
+        "outer": "#8a7a66",
+        "acc": "#5a4a3a",
+        "feet": "#6b4a33"
+      },
+      "pattern": "floral"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep3",
+    "who": "fah",
+    "signature": "apron+blouse+leather+track|#22303c,#2b3f63,#c44536",
+    "wear": {
+      "top": "blouse",
+      "bottom": "track",
+      "outer": "apron",
+      "feet": "leather",
+      "colors": {
+        "top": "#22303c",
+        "top2": "#f4f4f4",
+        "bottom": "#2b3f63",
+        "bottom2": "#f4f4f4",
+        "outer": "#c44536",
+        "feet": "#5a3a22"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "mae-ep3",
+    "who": "sri",
+    "signature": "kokrachao+sin+sneakers|#b9c6d6,#6a3a2e,",
+    "wear": {
+      "top": "kokrachao",
+      "bottom": "sin",
+      "feet": "sneakers",
+      "colors": {
+        "top": "#b9c6d6",
+        "top2": "#fbf6ec",
+        "bottom": "#6a3a2e",
+        "bottom2": "#c9a56a",
+        "feet": "#c44536"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
   }
 ]

@@ -1,0 +1,1433 @@
+{
+  "id": "mae-ep3",
+  "seed": 201,
+  "mood": "drama",
+  "cast": {
+    "fah": {
+      "seed": 101,
+      "age": "adult",
+      "female": true,
+      "era": "city",
+      "lead": true,
+      "wear": {
+        "top": "blouse",
+        "bottom": "track",
+        "outer": "apron",
+        "feet": "leather",
+        "colors": {
+          "top": "#22303c",
+          "top2": "#f4f4f4",
+          "bottom": "#2b3f63",
+          "bottom2": "#f4f4f4",
+          "outer": "#c44536",
+          "feet": "#5a3a22"
+        },
+        "pattern": "plain"
+      }
+    },
+    "sri": {
+      "seed": 102,
+      "age": "elder",
+      "female": true,
+      "era": "rural",
+      "lead": true,
+      "wear": {
+        "top": "kokrachao",
+        "bottom": "sin",
+        "feet": "sneakers",
+        "colors": {
+          "top": "#b9c6d6",
+          "top2": "#fbf6ec",
+          "bottom": "#6a3a2e",
+          "bottom2": "#c9a56a",
+          "feet": "#c44536"
+        },
+        "pattern": "plain"
+      }
+    },
+    "daeng": {
+      "seed": 103,
+      "age": "adult",
+      "female": true,
+      "era": "rural"
+    },
+    "sri_young": {
+      "seed": 105,
+      "age": "adult",
+      "female": true,
+      "era": "old"
+    }
+  },
+  "shots": [
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "close",
+      "dur": 3.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "sad",
+          "hold": "phone",
+          "then": [
+            {
+              "at": 1.5,
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "เหลือเวลา",
+        "*สองวัน*"
+      ],
+      "card": {
+        "title": "เวลาที่เหลือ",
+        "value": 2,
+        "unit": "วัน"
+      }
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 3.0,
+      "focus": "daeng+fah",
+      "actors": [
+        {
+          "who": "daeng",
+          "at": [
+            -0.6,
+            2.7
+          ],
+          "pose": "carry",
+          "feel": "sad",
+          "hold": "notebook",
+          "then": [
+            {
+              "at": 1.5,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            0.6,
+            2.7
+          ],
+          "pose": "stand",
+          "feel": "sad",
+          "hold": "notebook",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "carry",
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "แม่ซ่อนเรื่องป่วย",
+        "ทั้งซอย*ช่วยกันปิด*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            -1.4,
+            3.1
+          ],
+          "walkTo": [
+            0.6,
+            3.1
+          ],
+          "gait": "stroll",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "wave",
+              "feel": "happy"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            -0.8,
+            2.4
+          ],
+          "walkTo": [
+            0.2,
+            2.4
+          ],
+          "gait": "sneak",
+          "feel": "neutral"
+        }
+      ],
+      "props": [
+        {
+          "kind": "plant",
+          "at": [
+            -1.7,
+            2.3
+          ]
+        }
+      ],
+      "caption": [
+        "เช้าถัดมา ฟ้า*ตามแม่*",
+        "เงียบ ๆ ทั้งวัน"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.7,
+            3.0
+          ],
+          "pose": "stand",
+          "feel": "happy",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "bow",
+              "feel": "calm"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.2
+          ],
+          "pose": "squat",
+          "feel": "calm"
+        }
+      ],
+      "props": [
+        {
+          "kind": "plant",
+          "at": [
+            -0.9,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "บ้านแรก แม่ถามถึง",
+        "เด็ก*ไข้ขึ้น*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "sri",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.4,
+            2.7
+          ],
+          "pose": "carry",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "broom",
+          "at": [
+            0.9,
+            2.3
+          ]
+        },
+        {
+          "kind": "chicken",
+          "at": [
+            -0.9,
+            2.5
+          ]
+        }
+      ],
+      "caption": [
+        "เจ้าของไม่อยู่",
+        "แม่ก็*กวาดให้*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.5,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.2
+          ],
+          "pose": "squat",
+          "feel": "shock",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "stand",
+              "feel": "sad"
+            }
+          ]
+        },
+        {
+          "who": "sri",
+          "at": [
+            0.6,
+            3.2
+          ],
+          "walkTo": [
+            1.8,
+            3.2
+          ],
+          "gait": "stroll",
+          "feel": "calm"
+        }
+      ],
+      "props": [
+        {
+          "kind": "plant",
+          "at": [
+            -1.1,
+            2.6
+          ]
+        },
+        {
+          "kind": "broom",
+          "at": [
+            1.5,
+            2.2
+          ]
+        }
+      ],
+      "caption": [
+        "แทบไม่มีใครเห็น",
+        "แต่ทุกอย่าง*เรียบร้อย*"
+      ]
+    },
+    {
+      "set": "market",
+      "time": "morning",
+      "cam": "wide",
+      "dur": 4.0,
+      "focus": "daeng+sri",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            -1.4,
+            2.6
+          ],
+          "walkTo": [
+            0.7,
+            2.6
+          ],
+          "gait": "stroll",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.5,
+              "pose": "stand",
+              "feel": "calm"
+            }
+          ]
+        },
+        {
+          "who": "daeng",
+          "at": [
+            -0.4,
+            2.5
+          ],
+          "pose": "stand",
+          "feel": "happy"
+        }
+      ],
+      "props": [
+        {
+          "kind": "table",
+          "at": [
+            0.15,
+            2.0
+          ]
+        }
+      ],
+      "caption": [
+        "ที่ตลาดป้าแดงลดราคา",
+        "ให้คนที่*เงินไม่พอ*"
+      ]
+    },
+    {
+      "set": "market",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.5,
+      "focus": "sri+daeng",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.5,
+            2.6
+          ],
+          "pose": "stand",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.5,
+              "pose": "bow",
+              "feel": "shy"
+            }
+          ]
+        },
+        {
+          "who": "daeng",
+          "at": [
+            -0.5,
+            2.5
+          ],
+          "pose": "stand",
+          "feel": "sad"
+        }
+      ],
+      "props": [
+        {
+          "kind": "table",
+          "at": [
+            0.15,
+            2.0
+          ]
+        },
+        {
+          "kind": "money",
+          "at": [
+            0.15,
+            2.0
+          ],
+          "on": 0.75
+        }
+      ],
+      "caption": [
+        "แม่จ่ายส่วนที่ขาด",
+        "*เอง* แล้วเดินจากไป"
+      ]
+    },
+    {
+      "set": "market",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.3,
+            3.4
+          ],
+          "pose": "stand",
+          "feel": "shock",
+          "hold": "phone",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "think",
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "ฟ้ามองแม่",
+        "เหมือน*ครั้งแรก*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "night",
+      "flashback": true,
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "sri_young",
+      "actors": [
+        {
+          "who": "sri_young",
+          "at": [
+            -0.3,
+            2.4
+          ],
+          "pose": "squat",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "think",
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -0.3,
+            2.0
+          ]
+        }
+      ],
+      "caption": [
+        "ย้อนไป*ยี่สิบปี*",
+        "แม่ก่อไฟตอนตีสี่"
+      ],
+      "card": {
+        "title": "ย้อนไป",
+        "value": 20,
+        "unit": "ปี"
+      }
+    },
+    {
+      "set": "village",
+      "time": "night",
+      "flashback": true,
+      "cam": "mid",
+      "dur": 4.5,
+      "focus": "sri_young",
+      "actors": [
+        {
+          "who": "sri_young",
+          "at": [
+            -1.4,
+            2.6
+          ],
+          "walkTo": [
+            0.0,
+            2.6
+          ],
+          "gait": "tired",
+          "feel": "calm"
+        }
+      ],
+      "props": [
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -0.3,
+            2.0
+          ]
+        },
+        {
+          "kind": "table",
+          "at": [
+            0.6,
+            1.9
+          ]
+        }
+      ],
+      "caption": [
+        "ตื่นมาข้าวก็สุกแล้ว",
+        "เหมือน*เกิดขึ้นเอง*"
+      ],
+      "card": {
+        "title": "เช้าตั้งแต่ฟ้าเกิด",
+        "value": 10585,
+        "unit": "เช้า"
+      }
+    },
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.2,
+            2.5
+          ],
+          "pose": "squat",
+          "feel": "calm",
+          "hold": "drawing",
+          "then": [
+            {
+              "at": 2.0,
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "*ภาพวาดเก่า*",
+        "ในลิ้นชักตู้ของแม่"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "sad",
+          "hold": "drawing",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "cry",
+              "feel": "sad"
+            }
+          ]
+        },
+        {
+          "who": "sri",
+          "at": [
+            1.2,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "shy"
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "ภาพที่ไม่มีใครชม",
+        "แม่*เก็บไว้* ยี่สิบปี"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "sri+fah",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            1.0,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.5,
+              "feel": "happy"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "sad",
+          "hold": "drawing"
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "“ไปเถอะลูก",
+        "*ไปให้สุด*”"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "cry",
+          "then": [
+            {
+              "at": 2.0,
+              "feel": "sad"
+            }
+          ]
+        },
+        {
+          "who": "sri",
+          "at": [
+            1.0,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "happy"
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "“แล้ว*ใครจะดูแม่*”",
+        "แม่ไม่ตอบ แค่ยิ้ม"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "night",
+      "cam": "mid",
+      "dur": 3.5,
+      "focus": "sri+fah",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.9,
+            2.5
+          ],
+          "pose": "stand",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 1.5,
+              "pose": "bow",
+              "feel": "happy"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "shy"
+        }
+      ],
+      "props": [
+        {
+          "kind": "lantern",
+          "at": [
+            -0.7,
+            2.6
+          ]
+        }
+      ],
+      "caption": [
+        "แม่ลูบหัวฟ้าเบา ๆ",
+        "เหมือน*ตอนเด็ก*"
+      ]
+    },
+    {
+      "set": "temple",
+      "time": "morning",
+      "cam": "wide",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.8
+          ],
+          "pose": "sit",
+          "stool": true,
+          "feel": "calm",
+          "hold": "phone",
+          "then": [
+            {
+              "at": 2.5,
+              "pose": "think",
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "วันสุดท้าย",
+        "ฟ้านั่ง*คนเดียว*"
+      ]
+    },
+    {
+      "set": "temple",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "daeng+fah",
+      "actors": [
+        {
+          "who": "daeng",
+          "at": [
+            1.8,
+            2.8
+          ],
+          "walkTo": [
+            0.9,
+            2.8
+          ],
+          "gait": "stroll",
+          "feel": "calm",
+          "hold": "bowl",
+          "then": [
+            {
+              "at": 2.5,
+              "pose": "sit",
+              "feel": "calm"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.8
+          ],
+          "pose": "sit",
+          "stool": true,
+          "feel": "sad"
+        }
+      ],
+      "props": [
+        {
+          "kind": "plastic_chair",
+          "at": [
+            0.9,
+            2.8
+          ]
+        }
+      ],
+      "caption": [
+        "ป้าแดงมานั่งข้างฟ้า",
+        "*ไม่ถามอะไร*"
+      ]
+    },
+    {
+      "set": "temple",
+      "time": "morning",
+      "cam": "close",
+      "dur": 3.5,
+      "focus": "daeng",
+      "actors": [
+        {
+          "who": "daeng",
+          "at": [
+            0.9,
+            2.8
+          ],
+          "pose": "sit",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 1.5,
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "plastic_chair",
+          "at": [
+            0.9,
+            2.8
+          ]
+        }
+      ],
+      "caption": [
+        "ป้ามองลานวัดนาน",
+        "แล้ว*พูดเบา ๆ*"
+      ]
+    },
+    {
+      "set": "temple",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "daeng+fah",
+      "actors": [
+        {
+          "who": "daeng",
+          "at": [
+            0.9,
+            2.8
+          ],
+          "pose": "sit",
+          "feel": "sad",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "cry",
+              "feel": "sad"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.8
+          ],
+          "pose": "sit",
+          "stool": true,
+          "feel": "shock"
+        }
+      ],
+      "props": [
+        {
+          "kind": "plastic_chair",
+          "at": [
+            0.9,
+            2.8
+          ]
+        }
+      ],
+      "caption": [
+        "ไม่มีใครเก่งเท่า",
+        "*แม่มึง* อีกแล้ว"
+      ]
+    },
+    {
+      "set": "temple",
+      "time": "morning",
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.2,
+            2.8
+          ],
+          "pose": "shock",
+          "feel": "shock",
+          "then": [
+            {
+              "at": 1.5,
+              "feel": "calm"
+            },
+            {
+              "at": 3.0,
+              "feel": "sad"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "ไม่ใช่*ไม้บรรทัด*",
+        "แต่แทนไม่ได้"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "evening",
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "sad",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "think",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "laptop",
+          "at": [
+            0.4,
+            1.3
+          ],
+          "on": 0.55
+        }
+      ],
+      "caption": [
+        "พิมพ์*อีเมล*",
+        "ถึงที่ทำงาน ทีละคำ"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "evening",
+      "cam": "close",
+      "dur": 4.5,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "think",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.0,
+              "feel": "sad"
+            },
+            {
+              "at": 3.5,
+              "feel": "shy"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "laptop",
+          "at": [
+            0.4,
+            1.3
+          ],
+          "on": 0.55
+        }
+      ],
+      "caption": [
+        "ขึ้นต้นว่า",
+        "“*ขอปฏิเสธ*”"
+      ]
+    },
+    {
+      "set": "room",
+      "time": "evening",
+      "cam": "close",
+      "dur": 3.5,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            0.4,
+            2.0
+          ],
+          "pose": "sit",
+          "feel": "shy",
+          "then": [
+            {
+              "at": 1.5,
+              "pose": "cry",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "laptop",
+          "at": [
+            0.4,
+            1.3
+          ],
+          "on": 0.55
+        }
+      ],
+      "caption": [
+        "แล้วเธอก็*กด*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "night",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.3,
+            2.4
+          ],
+          "pose": "squat",
+          "feel": "calm",
+          "hold": "pot",
+          "then": [
+            {
+              "at": 2.5,
+              "pose": "think",
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -0.3,
+            2.0
+          ]
+        },
+        {
+          "kind": "stool",
+          "at": [
+            0.8,
+            2.4
+          ]
+        },
+        {
+          "kind": "notebook",
+          "at": [
+            0.8,
+            2.4
+          ],
+          "on": 0.45
+        }
+      ],
+      "caption": [
+        "ตีสี่ ฟ้าก่อไฟ",
+        "ตาม*สมุดของแม่*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "night",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "sri+fah",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.8,
+            2.4
+          ],
+          "pose": "sit",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.5,
+              "feel": "happy"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            -0.3,
+            2.4
+          ],
+          "pose": "squat",
+          "feel": "neutral"
+        }
+      ],
+      "props": [
+        {
+          "kind": "stool",
+          "at": [
+            0.8,
+            2.4
+          ]
+        },
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -0.3,
+            2.0
+          ]
+        }
+      ],
+      "caption": [
+        "แม่นั่งดูอยู่ข้าง ๆ",
+        "*ไม่พูด ไม่ช่วย*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "night",
+      "cam": "close",
+      "dur": 4.0,
+      "focus": "fah",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.3,
+            2.4
+          ],
+          "pose": "carry",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 2.0,
+              "feel": "shock"
+            }
+          ]
+        }
+      ],
+      "props": [
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -0.3,
+            2.0
+          ]
+        }
+      ],
+      "caption": [
+        "ข้าวหม้อแรกของฟ้า",
+        "*แฉะ* ไปหน่อย"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "mid",
+      "dur": 4.0,
+      "focus": "daeng+fah",
+      "actors": [
+        {
+          "who": "daeng",
+          "at": [
+            -0.4,
+            2.5
+          ],
+          "pose": "stand",
+          "feel": "calm",
+          "hold": "bowl",
+          "then": [
+            {
+              "at": 2.0,
+              "pose": "think",
+              "feel": "calm"
+            }
+          ]
+        },
+        {
+          "who": "fah",
+          "at": [
+            0.7,
+            2.6
+          ],
+          "pose": "stand",
+          "feel": "shy"
+        }
+      ],
+      "props": [
+        {
+          "kind": "table",
+          "at": [
+            0.15,
+            1.8
+          ]
+        },
+        {
+          "kind": "plastic_chair",
+          "at": [
+            -1.1,
+            2.0
+          ]
+        }
+      ],
+      "caption": [
+        "ป้าแดงชิมแล้ว*เงียบ*",
+        "ไม่รู้ว่าดีไหม"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "close",
+      "dur": 4.5,
+      "focus": "sri",
+      "actors": [
+        {
+          "who": "sri",
+          "at": [
+            0.0,
+            2.8
+          ],
+          "pose": "stand",
+          "feel": "happy",
+          "then": [
+            {
+              "at": 1.5,
+              "feel": "sad"
+            },
+            {
+              "at": 3.0,
+              "feel": "calm"
+            }
+          ]
+        }
+      ],
+      "caption": [
+        "แม่มองลูก",
+        "ด้วย*สายตาอ่านไม่ออก*"
+      ]
+    },
+    {
+      "set": "village",
+      "time": "morning",
+      "cam": "wide",
+      "dur": 5.0,
+      "focus": "fah+sri",
+      "actors": [
+        {
+          "who": "fah",
+          "at": [
+            -0.6,
+            2.5
+          ],
+          "pose": "stand",
+          "feel": "calm",
+          "then": [
+            {
+              "at": 3.0,
+              "pose": "think",
+              "feel": "neutral"
+            }
+          ]
+        },
+        {
+          "who": "sri",
+          "at": [
+            1.0,
+            2.9
+          ],
+          "pose": "sit",
+          "stool": true,
+          "feel": "calm"
+        }
+      ],
+      "props": [
+        {
+          "kind": "charcoal_stove",
+          "at": [
+            -1.0,
+            2.0
+          ]
+        },
+        {
+          "kind": "songthaew",
+          "at": [
+            2.2,
+            -4.0
+          ]
+        },
+        {
+          "kind": "stool",
+          "at": [
+            1.6,
+            2.4
+          ]
+        },
+        {
+          "kind": "laptop",
+          "at": [
+            1.6,
+            2.4
+          ],
+          "on": 0.45
+        }
+      ],
+      "caption": [
+        "สิ่งที่ไม่มีใครเห็น",
+        "*คุณ*เห็นมันไหม?"
+      ]
+    }
+  ]
+}

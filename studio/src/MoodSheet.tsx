@@ -90,7 +90,7 @@ export const MoodSheet: React.FC<{ only?: number }> = ({ only }) => {
 export const ERA_DOT: Record<Era, string> = { old: "#c08a4a", rural: "#5aae5a", city: "#4a8ae8" };
 export const ERA_TH: Record<Era, string> = { old: "สมัยก่อน", rural: "ชนบท", city: "เมือง" };
 /** Small things are shown on a table (0.75 m) with a close-up inset. */
-const TABLE_TOP: PropKind[] = ["crt_tv", "radio", "phone", "laptop", "books", "money", "candle", "garland", "alms_bowl", "photo_frame", "lantern"];
+const TABLE_TOP: PropKind[] = ["crt_tv", "radio", "phone", "laptop", "books", "money", "candle", "garland", "alms_bowl", "photo_frame", "lantern", "slip", "drawing", "notebook"];
 const ROT: Partial<Record<PropKind, number>> = { bicycle: -25, motorbike: -30, buffalo: -25, dog: -25, tuktuk: -30, songthaew: -28, coffin: -20, mat: -15, plastic_chair: -30, table: -20, cat: -20, chicken: -30, laptop: -10, crt_tv: -15, radio: -10, flat_tv: -10 };
 
 export const PCW = 540;
@@ -139,7 +139,7 @@ export const PropCell: React.FC<{ i: number }> = ({ i }) => {
   const inCam: Cam | null = top || big < 0.5 ? (() => {
     const f: V3 = [0, (top ? 0.75 : 0) + d.size[1] * 0.5, 0];
     const half = Math.max(big, 0.12) * 0.85;
-    const el = rad(d.flat ? 45 : 22);
+    const el = rad(d.close ? d.close.el : d.flat ? 45 : 22);
     const dist = half / Math.tan(rad(15));
     return { pos: [0.15 * dist, f[1] + dist * Math.sin(el), dist * Math.cos(el)], target: f, fov: 30 };
   })() : null;
@@ -170,7 +170,8 @@ export const PropCell: React.FC<{ i: number }> = ({ i }) => {
 };
 
 /** Frame of the prop sheet: title, era legend, and one slot per prop (image 270 x 180 + Thai label). */
-export const PROP_SLOT = { x0: 0, y0: 160, w: 270, h: 220, img: 180, cols: 4 };
+// 9 rows of 4 (35 props); scripts/propsheet.sh places each 540 x 360 cell, scaled to 240 x 160, in its slot
+export const PROP_SLOT = { x0: 0, y0: 160, w: 270, h: 195, img: 164, cols: 4 };
 export const PropSheet: React.FC = () => {
   const S = PROP_SLOT;
   return (
@@ -191,8 +192,8 @@ export const PropSheet: React.FC = () => {
         const d = propDef(k);
         return (
           <div key={k} style={{ position: "absolute", left: x, top: y, width: S.w, height: S.h }}>
-            <div style={{ position: "absolute", left: 3, top: 3, width: S.w - 6, height: S.img - 4, background: "#3a4050", borderRadius: 6 }} />
-            <div style={{ position: "absolute", left: 0, right: 0, top: S.img, height: S.h - S.img, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 26, lineHeight: 1 }}>
+            <div style={{ position: "absolute", left: 13, top: 0, width: 244, height: S.img, background: "#3a4050", borderRadius: 6 }} />
+            <div style={{ position: "absolute", left: 0, right: 0, top: S.img, height: S.h - S.img, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 24, lineHeight: 1 }}>
               {d.label}
               <span style={{ marginLeft: 8, display: "inline-flex", gap: 3 }}>
                 {d.eras.map((e) => <span key={e} style={{ display: "inline-block", width: 11, height: 11, borderRadius: 6, background: ERA_DOT[e] }} />)}

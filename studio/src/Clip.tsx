@@ -7,6 +7,7 @@ import { PropCue, PROP_KINDS, PROPS, propCorners, propDef, propFocus } from "./P
 import { FlashbackWhoosh, gateWeave, gradeFilter, GroundFog, DustMotes, MOOD_NAMES, MoodCaption, MoodCard, moodCam, MoodCue, MoodGrade, MoodName, moodProgress, moodPunch, MOODS, ShadowFigure, shotMood, shotTime } from "./Mood";
 import { BEAM_DEFAULT, BeamFx, Fx, FX_KINDS, FlashFx, QuestionFx, SparksFx } from "./Fx";
 import { GAITS } from "./Character";
+import { HOLD_HANDS, HOLD_ITEMS, HoldHand, HoldItem, LIE_ITEMS } from "./Held";
 import { SetName, SETS, SetStage } from "./Sets";
 import { TimeOfDay, TIMES } from "./Light";
 import { buildCam, Cam, clamp01, easeInOut, easeOut, easeOutBack, ensureFonts, lerp, project, rad, rng, V3 } from "./lib";
@@ -29,6 +30,8 @@ export type ActorCue = {
   headDir?: 1 | -1; // pose "lie": head towards +x (1, default) or -x (-1), whatever "face" says
   eyes?: "open" | "closed"; // force the eyes; "lie" closes them unless "open"
   stool?: boolean; // pose "sit": draw a simple 0.45 m stool under the actor
+  hold?: HoldItem; // hand-held item (Held.tsx); "lie" may hold only phone or slip, resting on the chest
+  holdHand?: HoldHand; // default: pot and drawing in both hands when the pose allows, the rest in the right hand
 };
 export type ShotScript = {
   set: SetName;
@@ -139,6 +142,10 @@ export const validateClip = (c: ClipScript) => {
       if (a.eyes !== undefined && a.eyes !== "open" && a.eyes !== "closed") bad(`${who}: eyes must be "open" or "closed"`);
       if (a.stool !== undefined && typeof a.stool !== "boolean") bad(`${who}: stool must be true or false`);
       if (a.stool && !poses.includes("sit")) bad(`${who}: stool needs the pose "sit"`);
+      if (a.hold !== undefined && !HOLD_ITEMS.includes(a.hold)) bad(`${who}: unknown hold "${a.hold}" (have: ${HOLD_ITEMS.join(", ")})`);
+      if (a.holdHand !== undefined && !HOLD_HANDS.includes(a.holdHand)) bad(`${who}: holdHand must be ${HOLD_HANDS.map((h) => `"${h}"`).join(", ")}`);
+      if (a.holdHand !== undefined && a.hold === undefined) bad(`${who}: holdHand needs "hold"`);
+      if (a.hold && !LIE_ITEMS.includes(a.hold) && poses.includes("lie")) bad(`${who}: a lying actor can only hold ${LIE_ITEMS.join(" or ")} (resting on the chest), not "${a.hold}"`);
     });
     if (typeof s.focus === "string" && pi < 0) for (const n of s.focus.split("+")) if (!names.includes(n)) bad(`${at}: focus "${n}" is not an actor in this shot`);
     if (s.say && !names.includes(s.say)) bad(`${at}: say "${s.say}" is not an actor in this shot`);
@@ -223,13 +230,14 @@ export const propCam = (q: PropCue, p: number, r: () => number): { cam: Cam; blu
   const k = q.scale ?? 1;
   const f = propFocus(q);
   const big = Math.max(d.size[0], d.size[1], d.size[2]) * k;
-  const width = Math.max(0.3, Math.min(4, big * 1.9)); // metres across the frame
+  const width = d.close ? d.close.w * k : Math.max(0.3, Math.min(4, big * 1.9)); // metres across the frame
   const fov = 30;
   const dist = (width / (2 * Math.tan(rad(fov / 2)) * 0.5625)) * lerp(1.3, 1, easeInOut(p));
-  const el = rad(d.flat ? 42 : big < 0.6 ? 24 : 14);
-  const az = (r() - 0.5) * 0.5;
+  const el = rad(d.close ? d.close.el : d.flat ? 42 : big < 0.6 ? 24 : 14);
+  // readable things (papers) are seen almost square-on, so the text stays level
+  const az = (r() - 0.5) * (d.close ? 0.08 : 0.5) + (d.close ? rad(q.rot ?? 0) : 0);
   const y = Math.max(0.3, f[1] + dist * Math.sin(el));
-  return { cam: { pos: [f[0] + Math.sin(az) * dist * Math.cos(el), y, f[2] + Math.cos(az) * dist * Math.cos(el)], target: f, fov }, blur: 2 };
+  return { cam: { pos: [f[0] + Math.sin(az) * dist * Math.cos(el), y, f[2] + Math.cos(az) * dist * Math.cos(el)], target: f, fov }, blur: d.close ? 0 : 2 };
 };
 
 // ---------- camera presets: framing relative to the focus point, varied per shot by seed ----------
@@ -355,10 +363,12 @@ const cueState = (cue: ActorCue, spec: PersonSpec, t: number, dur: number) => {
   let pose: Pose = POSES[cue.pose ?? "stand"];
   let feel: FeelName = cue.feel ?? "neutral";
   let lastAt = -1;
+  let poseName: PoseName = cue.pose ?? "stand";
   for (const step of cue.then ?? []) {
     if (t < step.at) break;
     const k = easeOutBack((t - step.at) / 0.3);
     if (step.pose) pose = mixPose(pose, POSES[step.pose], Math.min(1.08, k));
+    if (step.pose) poseName = step.pose;
     if (step.feel) feel = step.feel;
     lastAt = step.at;
   }
@@ -376,7 +386,7 @@ const cueState = (cue: ActorCue, spec: PersonSpec, t: number, dur: number) => {
   }
   // a small hop when the pose or feeling changes
   const hop = lastAt >= 0 ? Math.max(0, 1 - (t - lastAt) / 0.25) * 5 : 0;
-  return { pose, feel, pos, face, lift: hop, walk };
+  return { pose, poseName, feel, pos, face, lift: hop, walk };
 };
 const TALK: Mouth[] = ["A", "M", "E", "O", "A", "U", "E", "M"];
 
@@ -523,7 +533,7 @@ export const ClipView: React.FC<{ script: ClipScript; frame: number; width: numb
           {placed.map(({ s, pr }, i) => (
             <g key={i} transform={`translate(${pr.x} ${pr.y - (s.lift * pr.ppu) / 100}) scale(${(pr.ppu / 100) * s.face} ${pr.ppu / 100})`}>
               {s.walk ? (
-                <PersonSide spec={s.spec} gait={GAITS[s.walk.gait]} phase={s.walk.phase} feel={s.feel} t={frame / FPS} blink={(frame + s.spec.seed * 11) % 96 < 4} />
+                <PersonSide spec={s.spec} gait={GAITS[s.walk.gait]} phase={s.walk.phase} feel={s.feel} t={frame / FPS} blink={(frame + s.spec.seed * 11) % 96 < 4} hold={s.cue.hold} holdHand={s.cue.holdHand} />
               ) : (
                 <>
                   {s.cue.stool ? <g transform={`translate(0 ${s.lift})`}><Stool /></g> : null}
@@ -537,6 +547,7 @@ export const ClipView: React.FC<{ script: ClipScript; frame: number; width: numb
                     eyes: s.cue.eyes ?? (s.pose.lie > 0.5 ? "closed" : undefined),
                     lieOn: lieOf(s).on,
                     headDir: lieOf(s).dir,
+                    ...(s.cue.hold ? { hold: s.cue.hold, holdHand: s.cue.holdHand, poseName: s.poseName, flip: s.face < 0 } : {}),
                   })}
                 </>
               )}

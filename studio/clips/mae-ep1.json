@@ -1,0 +1,320 @@
+{
+  "id": "mae-ep1",
+  "seed": 201,
+  "mood": "drama",
+  "cast": {
+    "fah": { "seed": 101, "age": "adult", "female": true, "era": "city", "lead": true, "wear": { "top": "blouse", "bottom": "shorts", "acc": ["backpack"], "feet": "flipflops", "colors": { "top": "#e9a23b", "top2": "#1f2530", "bottom": "#2b2b2b", "bottom2": "#1f2530", "acc": "#5a4a3a", "feet": "#f3c044" }, "pattern": "plain" } },
+    "sri": { "seed": 102, "age": "elder", "female": true, "era": "rural", "lead": true, "wear": { "top": "mohom", "bottom": "sin", "outer": "apron", "head": "pakhaoma_head", "feet": "sandals", "colors": { "top": "#26304d", "top2": "#d9c9a8", "bottom": "#26304a", "bottom2": "#a8443f", "outer": "#e98a3c", "head": "#3f8f4a", "feet": "#5a3a22" }, "pattern": "plain" } },
+    "daeng": { "seed": 103, "age": "adult", "female": true, "era": "rural" },
+    "fah_kid": { "seed": 104, "age": "child", "female": true, "era": "old" }
+  },
+  "shots": [
+    {
+      "set": "market", "time": "morning", "cam": "close", "dur": 4.0, "focus": "daeng",
+      "actors": [
+        { "who": "daeng", "at": [0.3, 3.0], "pose": "point", "feel": "happy", "then": [{ "at": 2.0, "pose": "cheer", "feel": "happy" }] }
+      ],
+      "caption": ["ไม่มีใครเก่งเท่า", "*แม่มึง* อีกแล้ว"]
+    },
+    {
+      "set": "market", "time": "morning", "cam": "mid", "dur": 4.0, "focus": "fah+daeng",
+      "actors": [
+        { "who": "fah", "at": [-0.4, 3.0], "pose": "stand", "feel": "neutral", "then": [{ "at": 1.5, "feel": "shy" }] },
+        { "who": "daeng", "at": [0.5, 3.0], "pose": "wave", "feel": "happy" }
+      ],
+      "caption": ["ได้ยินมา*ตั้งแต่เด็ก*", "จนจำขึ้นใจ"]
+    },
+    {
+      "set": "cityroom", "time": "night", "cam": "mid", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [-0.5, 2.4], "pose": "sit", "feel": "calm", "then": [{ "at": 2.0, "pose": "cheer", "feel": "happy" }] }
+      ],
+      "props": [
+        { "kind": "laptop", "at": [-0.9, 0.3], "on": 0.75 }
+      ],
+      "caption": ["*นักออกแบบ*", "ในกรุงเทพ"],
+      "card": { "title": "อายุของฟ้า", "value": 29, "unit": "ปี" }
+    },
+    {
+      "set": "cityroom", "time": "night", "cam": "close", "dur": 4.0, "focus": "prop:0",
+      "actors": [
+        { "who": "fah", "at": [-0.5, 2.4], "pose": "think", "feel": "neutral", "then": [{ "at": 1.5, "feel": "shock" }] }
+      ],
+      "props": [
+        { "kind": "phone", "at": [-0.3, 0.5], "on": 0.75 },
+        { "kind": "laptop", "at": [-0.9, 0.3], "on": 0.75 }
+      ],
+      "caption": ["แม่โทรมาชวนกลับบ้าน", "*งานผ้าป่า*"]
+    },
+    {
+      "set": "cityroom", "time": "night", "cam": "mid", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [-0.5, 2.4], "pose": "stand", "feel": "sad", "view": "back", "then": [{ "at": 2.0, "pose": "think", "feel": "neutral" }] }
+      ],
+      "props": [
+        { "kind": "laptop", "at": [-0.9, 0.3], "on": 0.75 }
+      ],
+      "caption": ["ฟ้า*ลังเล*", "กลับทีไรก็โดนเทียบ"]
+    },
+    {
+      "set": "village", "time": "evening", "cam": "wide", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [-0.6, 3.0], "walkTo": [0.6, 3.0], "gait": "tired", "feel": "neutral", "then": [{ "at": 3.0, "pose": "stand", "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "songthaew", "at": [0.0, 1.6] }
+      ],
+      "caption": ["แต่ก็*กลับมา*", "เสียงแม่ฟังเหนื่อย"]
+    },
+    {
+      "set": "village", "time": "evening", "cam": "mid", "dur": 3.5, "focus": "sri+fah",
+      "actors": [
+        { "who": "sri", "at": [-0.4, 3.0], "pose": "stand", "feel": "happy", "then": [{ "at": 1.5, "pose": "wave", "feel": "happy" }] },
+        { "who": "fah", "at": [0.6, 3.0], "pose": "stand", "feel": "shy" }
+      ],
+      "props": [
+        { "kind": "broom", "at": [-0.5, 2.7] }
+      ],
+      "caption": ["แม่ถามก่อนเลย", "“*กินข้าวยัง*”"]
+    },
+    {
+      "set": "village", "time": "evening", "cam": "wide", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.6, 3.0], "pose": "stand", "feel": "neutral", "then": [{ "at": 2.0, "pose": "think", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "bucket", "at": [-1.0, 2.6] },
+        { "kind": "water_jar", "at": [-1.6, 2.4] },
+        { "kind": "plant", "at": [1.4, 2.5] },
+        { "kind": "broom", "at": [-0.5, 2.7] }
+      ],
+      "caption": ["บ้าน*เรียบร้อย*ทุกมุม", "ไม่มีใครเห็นแม่ลงมือ"]
+    },
+    {
+      "set": "village", "time": "night", "cam": "close", "dur": 4.0, "focus": "prop:0",
+      "actors": [
+        { "who": "sri", "at": [0.3, 3.0], "pose": "squat", "feel": "calm", "hold": "pot", "then": [{ "at": 2.0, "pose": "carry", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "charcoal_stove", "at": [-0.5, 3.0] },
+        { "kind": "bucket", "at": [-1.1, 2.6] }
+      ],
+      "caption": ["ตีสี่ แม่ก็ตื่น", "หุงข้าวให้*งานวัด*"],
+      "card": { "title": "หม้อข้าวที่แม่หุง", "value": 6, "unit": "หม้อ" }
+    },
+    {
+      "set": "village", "time": "morning", "cam": "mid", "dur": 4.0, "focus": "sri+daeng", "mood": "comedy",
+      "actors": [
+        { "who": "sri", "at": [-0.3, 3.0], "pose": "point", "feel": "happy", "hold": "bowl", "then": [{ "at": 2.0, "pose": "wave", "feel": "happy" }] },
+        { "who": "daeng", "at": [0.7, 3.0], "pose": "shock", "feel": "shock", "then": [{ "at": 2.5, "pose": "cheer", "feel": "happy" }] }
+      ],
+      "props": [
+        { "kind": "table", "at": [-0.1, 2.3] },
+        { "kind": "plastic_chair", "at": [1.0, 2.2] }
+      ],
+      "caption": ["แม่รู้ว่าใคร*แพ้อะไร*", "ใครไม่กินเผ็ด"],
+      "card": { "title": "ชื่อคนที่แม่จำได้", "value": 87, "unit": "คน" }
+    },
+    {
+      "set": "village", "time": "morning", "cam": "mid", "dur": 4.5, "focus": "sri+fah",
+      "actors": [
+        { "who": "sri", "at": [-0.4, 3.0], "pose": "squat", "feel": "calm", "then": [{ "at": 2.0, "pose": "stand", "feel": "calm" }] },
+        { "who": "fah", "at": [0.6, 3.0], "pose": "stand", "feel": "neutral", "view": "back" }
+      ],
+      "props": [
+        { "kind": "water_jar", "at": [-1.2, 2.5] },
+        { "kind": "broom", "at": [-0.2, 2.6] },
+        { "kind": "bucket", "at": [-0.8, 2.2] }
+      ],
+      "caption": ["ที่ฟ้า*มองข้าม*", "แค่เรื่องธรรมดา"]
+    },
+    {
+      "set": "temple", "time": "morning", "cam": "wide", "dur": 4.0, "focus": "daeng",
+      "actors": [
+        { "who": "daeng", "at": [1.4, 3.0], "walkTo": [-1.2, 3.0], "gait": "stroll", "feel": "happy", "hold": "pot", "then": [{ "at": 2.0, "pose": "wave", "feel": "happy" }] }
+      ],
+      "props": [
+        { "kind": "table", "at": [0.5, 2.3] },
+        { "kind": "plastic_chair", "at": [1.3, 2.2] }
+      ],
+      "caption": ["ลานวัดเต็มไปด้วยคน", "ที่*เคยกินข้าวแม่*"]
+    },
+    {
+      "set": "temple", "time": "morning", "cam": "mid", "dur": 3.5, "focus": "fah+daeng",
+      "actors": [
+        { "who": "fah", "at": [0.2, 3.0], "pose": "wai", "feel": "shy", "then": [{ "at": 1.5, "pose": "bow", "feel": "shy" }] },
+        { "who": "daeng", "at": [-0.8, 3.0], "pose": "stand", "feel": "happy" }
+      ],
+      "caption": ["ทุกคน*ชมแม่*", "ต่อหน้าฟ้า ด้วยรัก"]
+    },
+    {
+      "set": "temple", "time": "morning", "cam": "close", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.2, 3.0], "pose": "stand", "feel": "shy", "then": [{ "at": 1.0, "feel": "sad" }, { "at": 2.5, "pose": "think", "feel": "sad" }] }
+      ],
+      "caption": ["ฟังแล้วเหมือนมี", "*ไม้บรรทัด* วางข้างตัว"]
+    },
+    {
+      "set": "school", "time": "day", "cam": "wide", "dur": 4.0, "flashback": true, "focus": "fah_kid",
+      "actors": [
+        { "who": "fah_kid", "at": [0.0, 2.6], "pose": "cheer", "feel": "happy", "hold": "drawing", "then": [{ "at": 2.5, "pose": "stand", "feel": "shy" }] }
+      ],
+      "props": [
+        { "kind": "books", "at": [-0.9, 2.0] }
+      ],
+      "caption": ["ตอนเด็ก ฟ้า*ชนะ*", "ประกวดวาดภาพ"]
+    },
+    {
+      "set": "school", "time": "day", "cam": "mid", "dur": 4.0, "flashback": true, "focus": "fah_kid",
+      "actors": [
+        { "who": "fah_kid", "at": [0.0, 2.6], "pose": "stand", "feel": "happy", "hold": "drawing", "then": [{ "at": 2.0, "pose": "cheer", "feel": "happy" }] }
+      ],
+      "props": [
+        { "kind": "books", "at": [-0.9, 2.0] }
+      ],
+      "caption": ["วาด*แม่หุงข้าว*", "อย่างภูมิใจ"]
+    },
+    {
+      "set": "school", "time": "day", "cam": "close", "dur": 4.0, "flashback": true, "focus": "fah_kid",
+      "actors": [
+        { "who": "fah_kid", "at": [0.0, 2.6], "pose": "stand", "feel": "happy", "hold": "drawing", "then": [{ "at": 2.0, "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "books", "at": [-0.9, 2.0] }
+      ],
+      "caption": ["ไม่มีใครเก่งเท่า", "*แม่มึง* อีกแล้ว"]
+    },
+    {
+      "set": "school", "time": "day", "cam": "mid", "dur": 4.0, "flashback": true, "focus": "fah_kid",
+      "actors": [
+        { "who": "fah_kid", "at": [0.0, 2.6], "pose": "sit", "feel": "sad", "hold": "drawing", "then": [{ "at": 2.0, "pose": "cry", "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "books", "at": [-0.9, 2.0] }
+      ],
+      "caption": ["รางวัลไม่มีใครพูดถึง", "มีแต่*แม่* ที่ถูกชม"]
+    },
+    {
+      "set": "room", "time": "night", "cam": "mid", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.68, 1.25], "pose": "lie", "feel": "sad", "lieOn": 0.55, "headDir": 1, "then": [{ "at": 2.0, "pose": "sit", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "lantern", "at": [-1.0, 1.4] },
+        { "kind": "mat", "at": [0.2, 2.6] }
+      ],
+      "caption": ["คืนนั้น ฟ้านอนคิดถึง", "*ประโยคนั้น*"]
+    },
+    {
+      "set": "room", "time": "night", "cam": "close", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.7, 1.9], "pose": "sit", "feel": "angry", "then": [{ "at": 1.5, "pose": "think", "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "lantern", "at": [-1.0, 1.4] }
+      ],
+      "caption": ["คิดว่า*สิ่งที่แม่ทำ*", "ใครก็ทำได้"]
+    },
+    {
+      "set": "room", "time": "night", "cam": "mid", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.7, 1.9], "pose": "sit", "feel": "sad", "then": [{ "at": 2.5, "pose": "cry", "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "lantern", "at": [-1.0, 1.4] }
+      ],
+      "caption": ["แต่ถ้าใครก็ทำได้", "ทำไมฟ้า*ไม่เคยเท่า*"]
+    },
+    {
+      "set": "village", "time": "morning", "cam": "wide", "dur": 4.0, "focus": "sri",
+      "actors": [
+        { "who": "sri", "at": [-1.6, 3.0], "walkTo": [0.0, 3.0], "gait": "stroll", "feel": "calm", "then": [{ "at": 2.0, "pose": "point", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "table", "at": [1.2, 2.4] },
+        { "kind": "charcoal_stove", "at": [1.4, 2.5], "on": 0.75 },
+        { "kind": "plastic_chair", "at": [-0.6, 2.2] }
+      ],
+      "caption": ["เช้าวันงาน", "ทุกคนช่วย*ยกหม้อ*"]
+    },
+    {
+      "set": "village", "time": "morning", "cam": "mid", "dur": 4.0, "focus": "sri+fah",
+      "actors": [
+        { "who": "sri", "at": [-0.3, 3.0], "pose": "carry", "feel": "happy", "hold": "pot", "then": [{ "at": 2.0, "pose": "stand", "feel": "calm" }] },
+        { "who": "fah", "at": [0.7, 3.0], "pose": "stand", "feel": "shy", "then": [{ "at": 2.0, "pose": "carry", "feel": "calm" }] }
+      ],
+      "caption": ["แม่ยื่น*หม้อข้าว*", "ให้ฟ้าช่วยยก"]
+    },
+    {
+      "set": "village", "time": "morning", "cam": "close", "dur": 4.0, "focus": "sri",
+      "actors": [
+        { "who": "sri", "at": [-0.3, 3.0], "pose": "stand", "feel": "calm", "hold": "pot", "then": [{ "at": 2.5, "feel": "sad" }] }
+      ],
+      "caption": ["*มือแม่สั่น* นิดเดียว", "เร็วจนฟ้าไม่ทันเห็น"]
+    },
+    {
+      "set": "village", "time": "morning", "cam": "mid", "dur": 4.0, "focus": "daeng+sri",
+      "actors": [
+        { "who": "daeng", "at": [0.9, 3.0], "walkTo": [0.4, 3.0], "gait": "hurry", "feel": "calm", "hold": "pot", "then": [{ "at": 1.5, "pose": "carry", "feel": "calm" }] },
+        { "who": "sri", "at": [-0.3, 3.0], "pose": "stand", "feel": "shy" }
+      ],
+      "caption": ["ป้าแดง*รับต่อ*ทันที", "เหมือนแค่ช่วยธรรมดา"]
+    },
+    {
+      "set": "village", "time": "morning", "cam": "mid", "dur": 4.0, "focus": "fah+sri",
+      "actors": [
+        { "who": "fah", "at": [-0.4, 3.0], "walkTo": [0.6, 3.0], "gait": "stroll", "feel": "neutral", "hold": "bowl" },
+        { "who": "sri", "at": [0.5, 2.4], "pose": "stand", "feel": "sad", "then": [{ "at": 2.0, "pose": "wave", "feel": "shy" }] }
+      ],
+      "props": [
+        { "kind": "table", "at": [0.3, 1.9] }
+      ],
+      "caption": ["ฟ้าเดินไปทางวัด", "*ไม่หันกลับ*"]
+    },
+    {
+      "set": "temple", "time": "day", "cam": "close", "dur": 4.0, "focus": "fah",
+      "actors": [
+        { "who": "fah", "at": [0.0, 2.95], "pose": "sit", "feel": "sad", "then": [{ "at": 1.5, "pose": "think", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "plastic_chair", "at": [0.0, 2.9] }
+      ],
+      "caption": ["ประโยคนั้น", "*ยังดังอยู่* ในหัว"]
+    },
+    {
+      "set": "village", "time": "evening", "cam": "close", "dur": 4.0, "focus": "sri",
+      "actors": [
+        { "who": "sri", "at": [0.0, 3.0], "pose": "sit", "feel": "calm", "then": [{ "at": 1.5, "feel": "sad" }, { "at": 3.0, "pose": "think", "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "charcoal_stove", "at": [-0.9, 2.8] },
+        { "kind": "stool", "at": [0.0, 2.95] }
+      ],
+      "caption": ["ส่วนแม่นั่งนิ่ง ๆ", "มอง*มือตัวเอง*"]
+    },
+    {
+      "set": "room", "time": "night", "cam": "close", "dur": 4.0, "focus": "prop:0",
+      "actors": [
+        { "who": "sri", "at": [0.2, 2.6], "pose": "lie", "feel": "calm", "view": "back", "then": [{ "at": 3.5, "pose": "sitfloor", "feel": "calm" }] }
+      ],
+      "props": [
+        { "kind": "slip", "at": [1.55, 1.2], "on": 0.55 },
+        { "kind": "mat", "at": [0.2, 2.6] },
+        { "kind": "lantern", "at": [-1.0, 1.4] }
+      ],
+      "caption": ["ใต้หมอนของแม่", "มี*ใบนัดหมอ* ซ่อนอยู่"]
+    },
+    {
+      "set": "room", "time": "night", "cam": "wide", "dur": 4.5, "focus": "fah+sri",
+      "actors": [
+        { "who": "fah", "at": [0.68, 1.25], "pose": "lie", "feel": "calm", "lieOn": 0.55, "headDir": 1 },
+        { "who": "sri", "at": [0.2, 2.6], "pose": "sitfloor", "feel": "calm", "then": [{ "at": 2.5, "feel": "sad" }] }
+      ],
+      "props": [
+        { "kind": "mat", "at": [0.2, 2.6] },
+        { "kind": "lantern", "at": [-1.0, 1.4] }
+      ],
+      "caption": ["ฟ้าหลับไป *ไม่รู้*", "ว่าแม่ยังตื่นอยู่"]
+    }
+  ]
+}

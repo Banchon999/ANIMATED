@@ -6,6 +6,7 @@ import {
   ACC, BOTTOM, AccBody, Cloth, Foot, Headwear, hidesBun, lookOf, OuterFront, OuterSide, PantsExtras, PantsLeg, Sleeves, TopFront, TopOverArms, TopSide,
   AccSide, AccSideBehind, usePaints, Waistband, finishWear, pickWear, Wear, WearSpec,
 } from "./Wardrobe";
+import { HeldFront, HeldSide, HoldHand, HoldItem, ITEMS, TWO_HANDED } from "./Held";
 
 // Batch 1: seeded person generator + reusable pose / hand / mouth / emotion libraries.
 // 100 units = 1 m, origin on the ground between the feet. See README for the scale table.
@@ -309,8 +310,26 @@ const reach = (sh: Pt, target: Pt, sx: number, upper: number, fore: number) => {
   return { arm: (A * 180) / Math.PI, elbow: ((B - A) * 180) / Math.PI };
 };
 
+/**
+ * Which hand(s) hold an item when the script does not say: pot and drawing (and a bowl in "carry") take both
+ * hands when the pose allows it; the rest go in the right hand, or the left one when the right is busy
+ * (pointing, at the chin in "think"). A lying actor holds with the right hand.
+ */
+export const defaultHoldHand = (item: HoldItem, pose: PoseName): HoldHand => {
+  const rightBusy = pose === "point" || pose === "think";
+  if (TWO_HANDED.includes(item) || (item === "bowl" && pose === "carry")) return pose === "point" ? "left" : pose === "lie" ? "right" : "both";
+  if (pose === "lie") return "right";
+  return rightBusy ? "left" : "right";
+};
+/** Poses whose holding arm is moved to the item; any other pose keeps its arm and the item sits in that hand. */
+const HOLD_POSES: PoseName[] = ["stand", "carry", "think", "point", "sit", "sitfloor", "cry", "lie"];
+
 type FigureProps = {
   spec: PersonSpec; pose?: Pose; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean;
+  /** hand-held item (Held.tsx) and the hand(s) holding it; poseName picks where it is held (default: from pose) */
+  hold?: HoldItem; holdHand?: HoldHand; poseName?: PoseName;
+  /** the actor is drawn mirrored (face -1): turns the item's artwork back so its text reads */
+  flip?: boolean;
   /** force closed eyes whatever the feel (brows, mouth, tears still follow the feel) */
   eyes?: "open" | "closed";
   /** lying poses: surface height in metres and which way the head points (+x = 1, in this drawing's frame) */
@@ -318,7 +337,7 @@ type FigureProps = {
 };
 
 const Figure: React.FC<FigureProps & { back: boolean }> = ({
-  spec: s, pose = POSES.stand, feel = "neutral", mouth, t = 0, blink = false, eyes, lieOn = 0, headDir = 1, back,
+  spec: s, pose = POSES.stand, feel = "neutral", mouth, t = 0, blink = false, eyes, lieOn = 0, headDir = 1, back, hold, holdHand, poseName, flip,
 }) => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const h = s.h;
@@ -386,7 +405,60 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
     return { sh, el, hd, rot: (-b * 180) / Math.PI };
   };
   const LL = leg(-1, pose.legL), LR = leg(1, pose.legR);
-  const AL = arm(-1, pose.armL, pose.elbowL), AR = arm(1, pose.armR, pose.elbowR);
+  const AL0 = arm(-1, pose.armL, pose.elbowL), AR0 = arm(1, pose.armR, pose.elbowR);
+  // ---- hand-held item: bend the holding arm(s) to the item, then draw it in the hand ----
+  const held = (() => {
+    if (!hold) return null;
+    const d = ITEMS[hold];
+    const pn: PoseName = poseName ?? (pose.lie > 0.5 ? "lie" : pose.sit > 0.5 ? "sit" : pose.cross > 0.5 ? "sitfloor" : "stand");
+    const hands = holdHand ?? defaultHoldHand(hold, pn);
+    /** Arm reaching a point: the upper arm hangs by the body and the forearm comes forward to the hand
+     * (foreshortened, as seen from the front); points out of that reach use the two-bone solution. */
+    const armTo = (sx: number, tg: Pt) => {
+      const sh = { x: sx * sw, y: shY + limb * 0.5 };
+      let el = { x: sh.x + sx * Math.sin(rad(9)) * upper * 0.95, y: sh.y + Math.cos(rad(9)) * upper * 0.95 };
+      if (Math.hypot(tg.x - el.x, tg.y - el.y) > fore) {
+        const ik = reach(sh, tg, sx, upper, fore);
+        const a = rad(ik.arm) * sx;
+        el = { x: sh.x + Math.sin(a) * upper, y: sh.y + Math.cos(a) * upper };
+      }
+      const b = Math.atan2(tg.x - el.x, tg.y - el.y);
+      return { sh, el, hd: tg, rot: (-b * 180) / Math.PI };
+    };
+    const lying = pn === "lie";
+    const sitting = pn === "sit" || pn === "sitfloor";
+    if (hands === "both") {
+      const k = lying ? 0.55 : sitting ? (hold === "drawing" ? 0.36 : 0.3) : pn === "carry" ? 0.6 : pn === "cry" ? 0.5 : hold === "pot" ? 0.45 : hold === "bowl" ? 0.5 : 0.42;
+      // seen from behind the item is held a little to the right, so one handle / edge shows past the body
+      const at = { x: back ? sw * 1.15 : 0, y: -torso * k };
+      const [gx, gy] = d.grip2;
+      const L = armTo(-1, { x: at.x - gx, y: at.y + gy }), R = armTo(1, { x: at.x + gx, y: at.y + gy });
+      return { L, R, at, rot: 0, grips: [L, R], under: false, pn };
+    }
+    const sx = hands === "right" ? 1 : -1;
+    const base = sx > 0 ? AR0 : AL0;
+    const keep = !HOLD_POSES.includes(pn) || (pn === "point" && sx > 0);
+    // where the holding hand goes, for each pose
+    const tgt: Pt = lying
+      ? { x: sx * sw * 0.45, y: -torso * 0.45 }
+      : sitting
+      ? hold === "bowl" ? { x: sx * hw * 0.55, y: -torso * 0.24 } : { x: sx * hw * 0.95, y: -torso * 0.2 }
+      : pn === "cry"
+      ? { x: sx * sw * 0.55, y: -torso * 0.48 }
+      : pn === "carry"
+      ? hold === "bowl" ? { x: sx * sw * 0.4, y: -torso * 0.55 } : { x: sx * sw * 0.7, y: -torso * 0.56 }
+      : hold === "bowl" ? { x: sx * sw * 0.55, y: -torso * 0.4 } : hold === "ladle" ? { x: sx * sw * 1.05, y: -torso * 0.34 } : hold === "pot" ? { x: sx * sw * 1.1, y: -torso * 0.12 } : { x: sx * sw * 0.95, y: -torso * 0.3 };
+    if (back && !lying) tgt.x += sx * 5; // from behind: a little out to the side, so its edge shows
+    const A = keep ? base : armTo(sx, tgt);
+    const rot = lying ? 0 : d.tilt * sx;
+    const c = Math.cos(rad(rot)), sn = Math.sin(rad(rot));
+    // from behind, a one-hand item hangs out past the hand (outward) so it is not lost behind the body
+    const gx = d.grip[0] * sx * (back && !lying ? -1 : 1), gy = d.grip[1];
+    const at = { x: A.hd.x - (gx * c - gy * sn), y: A.hd.y - (gx * sn + gy * c) };
+    return { L: sx < 0 ? A : AL0, R: sx > 0 ? A : AR0, at, rot, grips: [A], under: hold === "bowl", pn };
+  })();
+  const AL = held ? held.L : AL0, AR = held ? held.R : AR0;
+  const holdsL = !!held && held.grips.includes(AL), holdsR = !!held && held.grips.includes(AR);
   const L = lookOf(s.wear);
   const paint = usePaints(id, L);
   const bot = L.bottom;
@@ -496,11 +568,31 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
   const backArms = (behind: boolean) => (
     // the person's own left/right swap sides on screen when seen from behind
     <g transform="scale(-1 1)">
-      {hidden(AL) === behind && drawArm(AL, pose.handL, true)}
-      {hidden(AR) === behind && drawArm(AR, pose.handR, false)}
+      {hidden(AL) === behind && drawArm(AL, holdsL ? "fist" : pose.handL, true)}
+      {hidden(AR) === behind && drawArm(AR, holdsR ? "fist" : pose.handR, false)}
     </g>
   );
   const coatHem = Math.max(LL.knee.y, LR.knee.y);
+  // seen from behind, an item held in front of the body hides behind it (only what sticks out shows)
+  // an item held well below the chin is drawn over long hair hanging on the chest; one that could reach the
+  // face is drawn under the head, so it never covers the face
+  const overHair = !!held && !!hold && held.at.y - Math.hypot(ITEMS[hold].w, ITEMS[hold].h) / 2 > shY - headR * 0.2;
+  const heldBehind = !!held && (held.grips.length > 1 || Math.abs(held.at.x) < sw);
+  const heldItem = (fromBack: boolean) => {
+    if (!held || !hold) return null;
+    const item = (
+      <g transform={`translate(${held.at.x} ${held.at.y}) rotate(${held.rot})`}>
+        <HeldFront kind={hold} back={fromBack} mirror={!fromBack && flip} />
+      </g>
+    );
+    // the gripping hands close over the item's edge (a bowl sits on the palm instead)
+    const fists = fromBack && heldBehind ? null : held.grips.map((a, i) => (held.under ? null : (
+      <g key={i} transform={`translate(${a.hd.x} ${a.hd.y}) rotate(${a.rot})`}>
+        <HandShape kind="fist" r={limb * 0.5} skin={s.skin} />
+      </g>
+    )));
+    return fromBack ? <g transform="scale(-1 1)">{item}{fists}</g> : <g>{item}{fists}</g>;
+  };
 
   // tube skirt / pleated skirt: hangs from the hip, drapes over the knees when sitting, covers the lap on the floor
   const skirt = bot.shape === "skirt";
@@ -549,9 +641,11 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
         {back ? (
           <>
             <AccBody g={geo} L={L} paint={paint} back layer="under" lie={pose.lie} />
+            {held && heldBehind ? heldItem(true) : null}
             {backArms(true)}
             {torsoLayer}
             {backArms(false)}
+            {held && !heldBehind ? heldItem(true) : null}
             <TopOverArms g={geo} L={L} paint={paint} back />
             <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
             {s.outfit === "labcoat" && <path d={`M ${-R * 0.55} ${shY + 1} Q 0 ${shY - R * 0.3} ${R * 0.55} ${shY + 1} L ${R * 0.5} ${shY - 2.5} Q 0 ${shY - R * 0.55} ${-R * 0.5} ${shY - 2.5} Z`} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.1} />}
@@ -566,9 +660,10 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
         ) : (
           <>
             {torsoLayer}
-            {drawArm(AL, pose.handL, true)}
-            {drawArm(AR, pose.handR, false)}
+            {drawArm(AL, holdsL ? "fist" : pose.handL, true)}
+            {drawArm(AR, holdsR ? "fist" : pose.handR, false)}
             <TopOverArms g={geo} L={L} paint={paint} back={false} />
+            {held && !overHair ? heldItem(false) : null}
             <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
             <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
               {style === 3 || style === 4 ? <g fill={s.hair}>{hairs[style]}</g> : null}
@@ -585,6 +680,7 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
               {glasses}
               {f.sweat && <path transform={`translate(${R * 1.05} ${-R * 0.4})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
             </g>
+            {held && overHair ? heldItem(false) : null}
           </>
         )}
       </g>
@@ -650,8 +746,8 @@ export const strideOf = (spec: PersonSpec, gait: Gait) => 4 * spec.h * (spec.age
 /** Natural speed in metres per second, for choosing walk distances in a script. */
 export const gaitMps = (spec: PersonSpec, gait: Gait) => (strideOf(spec, gait) * gait.cadence) / 100;
 
-export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?: number; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean }> = ({
-  spec: s, gait = null, phase = 0, feel = "neutral", mouth, t = 0, blink = false,
+export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?: number; feel?: FeelName; mouth?: Mouth; t?: number; blink?: boolean; hold?: HoldItem; holdHand?: HoldHand }> = ({
+  spec: s, gait = null, phase = 0, feel = "neutral", mouth, t = 0, blink = false, hold, holdHand,
 }) => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const h = s.h;
@@ -686,7 +782,34 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
     const hd = { x: el.x + Math.sin(b) * fore, y: el.y + Math.cos(b) * fore };
     return { sh, el, hd };
   };
-  const armB = arm(Math.sin(phi)), armF = arm(-Math.sin(phi));
+  const armB0 = arm(Math.sin(phi)), armF0 = arm(-Math.sin(phi));
+  // hand-held item: the near arm (both arms for two-handed items) stops swinging and holds it in front
+  const held = (() => {
+    if (!hold) return null;
+    const d = ITEMS[hold];
+    const both = (holdHand ?? defaultHoldHand(hold, "stand")) === "both";
+    const sh = { x: 0, y: shY + limb * 0.5 };
+    const to = (tg: Pt, dx = 0) => {
+      // two-bone reach with the elbow down and back
+      const tx = tg.x + dx - sh.x, ty = tg.y - sh.y;
+      const dd = Math.max(1, Math.min(Math.hypot(tx, ty), (upper + fore) * 0.995));
+      const al = Math.acos(Math.max(-1, Math.min(1, (upper * upper + dd * dd - fore * fore) / (2 * upper * dd))));
+      const A = Math.atan2(tx, ty) - al;
+      const el = { x: sh.x + Math.sin(A) * upper, y: sh.y + Math.cos(A) * upper };
+      const B = Math.atan2(tg.x + dx - el.x, tg.y - el.y);
+      return { sh, el, hd: { x: el.x + Math.sin(B) * fore, y: el.y + Math.cos(B) * fore } };
+    };
+    if (both) {
+      const at = { x: tw + d.depth / 2 + (hold === "drawing" ? 9 : 3), y: -torso * (hold === "pot" ? 0.45 : 0.42) };
+      const tg = { x: at.x, y: at.y + d.grip2[1] };
+      return { at, rot: 0, F: to(tg), B: to(tg, -1.5) };
+    }
+    const hd = { x: tw + 7, y: -torso * 0.3 };
+    const F = to(hd);
+    const g = hold === "phone" || hold === "slip" || hold === "letter" || hold === "notebook" || hold === "drawing" ? [0, 4.5] : d.grip;
+    return { at: { x: F.hd.x - (hold === "ladle" || hold === "bowl" || hold === "pot" ? g[0] : 0), y: F.hd.y - g[1] }, rot: hold === "ladle" ? 8 : 0, F, B: null };
+  })();
+  const armB = held?.B ?? armB0, armF = held?.F ?? armF0;
   const look = lookOf(s.wear);
   const paint = usePaints(id, look);
   const bot = look.bottom;
@@ -779,6 +902,7 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
           {look.has("glasses") && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={ex} cy={ey + R * 0.02} r={R * 0.3} /><line x1={ex - R * 0.3} x2={-R * 0.15} y1={ey} y2={ey - R * 0.05} /></g>}
           {f.sweat && <path transform={`translate(${-R * 0.5} ${-R * 0.5})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
         </g>
+        {held && hold ? <g transform={`translate(${held.at.x} ${held.at.y}) rotate(${held.rot})`}><HeldSide kind={hold} /></g> : null}
         {drawArm(armF, false)}
       </g>
     </g>

@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { makeTex } from "./NightRoom";
 import type { Era } from "./People";
 import { V3 } from "./lib";
+import { PaperKind, PAPER_SIZE, usePaperTex } from "./Paper";
 
 // Shared prop library: low-poly props at real-world scale that any set can hold, placed by the script
 // (ShotScript.props, ClipScript.setProps). Every model is built around its own origin: the centre of its
@@ -24,6 +25,8 @@ type PropDef = {
   size: V3; // bounding box at scale 1: width (x), height (y), depth (z)
   focus: number; // height of the point the camera aims at ("prop:N")
   flat?: boolean; // lies flat: close-ups look down on it
+  /** close-up framing for readable things: frame width in metres at the end of the push-in, camera elevation in degrees */
+  close?: { w: number; el: number };
   Model: React.FC;
 };
 
@@ -658,6 +661,33 @@ const PhotoFrame: React.FC = () => {
   );
 };
 
+// ---------- story papers: the artwork is shared with the hand-held items (Paper.tsx, Held.tsx) ----------
+/** A sheet lying flat, its top edge away from the camera (rot 0), so it reads upright in a close-up. */
+const PaperSheet: React.FC<{ kind: PaperKind; lift?: number }> = ({ kind, lift = 0 }) => {
+  const tex = usePaperTex(kind);
+  const [w, d] = PAPER_SIZE[kind];
+  return (
+    <group position={[0, lift, 0]}>
+      <Bx p={[0, 0.0012, 0]} s={[w, 0.0008, d]} c="#e9e4d6" />
+      <mesh position={[0, 0.0018, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[w, d]} />
+        <meshLambertMaterial color={tex ? "#ffffff" : "#f4f1e8"} map={tex ?? undefined} />
+      </mesh>
+    </group>
+  );
+};
+const Slip: React.FC = () => <PaperSheet kind="slip" />;
+const Drawing: React.FC = () => <PaperSheet kind="drawing" />;
+const Notebook: React.FC = () => (
+  // open notebook: blue cover, two page blocks, the written spread on top
+  <group>
+    <Bx p={[0, 0.002, 0]} s={[0.312, 0.004, 0.218]} c="#24406e" />
+    <Bx p={[-0.076, 0.0075, 0]} s={[0.148, 0.007, 0.208]} c="#e6e0d0" />
+    <Bx p={[0.076, 0.0075, 0]} s={[0.148, 0.007, 0.208]} c="#e6e0d0" />
+    <PaperSheet kind="notebook" lift={0.0095} />
+  </group>
+);
+
 export const PROPS = {
   table: { label: "โต๊ะไม้", eras: ALL, size: [1.0, 0.75, 0.6], focus: 0.75, Model: Table },
   plastic_chair: { label: "เก้าอี้พลาสติก", eras: ["rural", "city"], size: [0.48, 0.84, 0.48], focus: 0.5, Model: PlasticChair },
@@ -691,6 +721,9 @@ export const PROPS = {
   plant: { label: "ต้นไม้ในกระถาง", eras: ALL, size: [0.5, 0.75, 0.5], focus: 0.45, Model: Plant },
   coffin: { label: "โลงศพ", eras: ALL, size: [2.0, 1.05, 0.66], focus: 0.8, Model: Coffin },
   photo_frame: { label: "กรอบรูปเก่า", eras: ALL, size: [0.21, 0.26, 0.12], focus: 0.13, Model: PhotoFrame },
+  slip: { label: "ใบนัดพบแพทย์", eras: ALL, size: [0.148, 0.003, 0.21], focus: 0.002, flat: true, close: { w: 0.2, el: 70 }, Model: Slip },
+  drawing: { label: "ภาพวาดเด็ก", eras: ALL, size: [0.297, 0.003, 0.21], focus: 0.002, flat: true, close: { w: 0.33, el: 68 }, Model: Drawing },
+  notebook: { label: "สมุดจด", eras: ALL, size: [0.312, 0.012, 0.218], focus: 0.012, flat: true, close: { w: 0.36, el: 68 }, Model: Notebook },
 } satisfies Record<string, PropDef>;
 export type PropKind = keyof typeof PROPS;
 export const PROP_KINDS = Object.keys(PROPS) as PropKind[];

@@ -1,0 +1,62 @@
+{
+  "id": "holdtest",
+  "seed": 5,
+  "cast": {
+    "mali": { "seed": 12, "age": "adult", "female": true, "era": "city" },
+    "yai": { "seed": 24, "age": "elder", "female": true, "era": "rural" }
+  },
+  "setProps": {
+    "room": [
+      { "kind": "slip", "at": [0.2, 1.77], "on": 0.55, "rot": 4 },
+      { "kind": "table", "at": [-1.15, 1.75] },
+      { "kind": "drawing", "at": [-1.38, 1.72], "on": 0.75, "rot": -3 },
+      { "kind": "notebook", "at": [-0.9, 1.74], "on": 0.75, "rot": 5 }
+    ]
+  },
+  "shots": [
+    {
+      "set": "room", "cam": "mid", "dur": 2, "focus": "mali",
+      "actors": [
+        { "who": "mali", "at": [0.65, 2.05], "pose": "sit", "feel": "sad", "hold": "slip" }
+      ],
+      "caption": ["หมอนัด*อีกแล้ว*"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 2, "focus": "prop:0",
+      "actors": [
+        { "who": "mali", "at": [0.65, 2.05], "pose": "sit", "feel": "sad", "hold": "slip" }
+      ]
+    },
+    {
+      "set": "room", "cam": "wide", "dur": 2, "focus": [-0.2, 0, 2.5],
+      "actors": [
+        { "who": "yai", "at": [-1.7, 2.7], "walkTo": [0.3, 2.7], "hold": "pot" },
+        { "who": "mali", "at": [0.65, 2.05], "pose": "sit", "feel": "sad", "hold": "slip" }
+      ],
+      "caption": ["ยายยก*หม้อแกง*มาให้"]
+    },
+    {
+      "set": "room", "cam": "mid", "dur": 2, "focus": "yai+mali", "say": "yai",
+      "actors": [
+        { "who": "yai", "at": [-0.1, 2.6], "pose": "carry", "feel": "happy", "hold": "pot" },
+        { "who": "mali", "at": [0.75, 2.4], "pose": "stand", "feel": "neutral", "face": -1, "hold": "drawing" }
+      ],
+      "caption": ["กินข้าวก่อนนะลูก"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 2, "focus": "prop:2",
+      "actors": [],
+      "caption": ["*แม่กับหนู*"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 2, "focus": "mali",
+      "actors": [
+        { "who": "mali", "at": [0.3, 2.5], "pose": "cry", "feel": "cry", "hold": "drawing", "face": -1 }
+      ]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 1.5, "focus": "prop:3",
+      "actors": []
+    }
+  ]
+}

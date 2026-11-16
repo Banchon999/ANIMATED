@@ -13,8 +13,9 @@ ins="-i $D/frame.png"; fl=""; last="0:v"
 for i in $(seq 0 $((N - 1))); do
   npx remotion still "$B" PropCell "$D/cell$i.png" --props="{\"i\":$i}" --image-format=png >/dev/null
   ins="$ins -i $D/cell$i.png"
-  x=$(( (i % 4) * 270 + 3 )); y=$(( 160 + (i / 4) * 220 + 3 ))
-  fl="$fl[$((i + 1)):v]scale=264:176[c$i];[$last][c$i]overlay=$x:$y[o$i];"; last="o$i"
+  # slots of PROP_SLOT in src/MoodSheet.tsx: 4 columns of 270, rows of 195 from y 160, image 240 x 160
+  x=$(( (i % 4) * 270 + 15 )); y=$(( 160 + (i / 4) * 195 + 2 ))
+  fl="$fl[$((i + 1)):v]scale=240:160[c$i];[$last][c$i]overlay=$x:$y[o$i];"; last="o$i"
 done
 ffmpeg -loglevel error -y $ins -filter_complex "${fl%;}" -map "[$last]" -q:v 2 out/PropSheet.jpg
 echo "out/PropSheet.jpg"

@@ -16,6 +16,7 @@ import { Street, STREET, streetCart, streetStore } from "./Street";
 import { School, SCHOOL } from "./School";
 import { Glow, Grade, INDOOR, KITS, SkyBack, TimeOfDay } from "./Light";
 import { Cam, project, rng, V3 } from "./lib";
+import { PropCue, PropModels } from "./Props";
 
 // Set kit: every set draws its 3D layers, takes the 2D actors as children, then adds its own light effects.
 // "time" is the set's default time of day; a shot may override it with ShotScript.time.
@@ -55,6 +56,7 @@ type StageProps = {
   time?: TimeOfDay; // defaults to the set's own time
   blobs: Blob[];
   behind?: React.ReactNode; // HTML/SVG layers drawn over the set but under the actors
+  props?: PropCue[]; // prop library models placed by the script, drawn inside the set's 3D canvas
   children: React.ReactNode; // SVG content: the actors
 };
 
@@ -328,8 +330,9 @@ const RoomFx: React.FC<Omit<StageProps, "children" | "set" | "blobs" | "seed" | 
   );
 };
 
-export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, time: timeIn, blobs, behind, children }) => {
+export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, time: timeIn, blobs, behind, props, children }) => {
   const time = timeIn ?? SETS[set].time;
+  const P = (list?: PropCue[]) => (list?.length ? <PropModels props={list} /> : null);
   const full: React.CSSProperties = { position: "absolute", inset: 0, overflow: "visible" };
   const blurStyle = blur > 0.2 ? { filter: `blur(${blur}px)` } : undefined;
   const filter = actorFilter(set, time);
@@ -341,6 +344,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           <ThreeCanvas width={width} height={height} shadows gl={{ antialias: true, alpha: true }}>
             <CameraRig cam={cam} />
             {set === "shop" ? <Shop seed={seed} time={time} frame={frame} blobs={blobs} /> : <School seed={seed} time={time} frame={frame} blobs={blobs} />}
+            {P(props)}
           </ThreeCanvas>
         </AbsoluteFill>
         {behind}
@@ -358,6 +362,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           <ThreeCanvas width={width} height={height} shadows gl={{ antialias: true, alpha: true }}>
             <CameraRig cam={cam} />
             {acc ? <Accelerator blobs={blobs} time={time} /> : set === "clinic" ? <Clinic blobs={blobs} time={time} /> : <Cityroom seed={seed} time={time} blobs={blobs} />}
+            {P(props)}
           </ThreeCanvas>
         </AbsoluteFill>
         {behind}
@@ -374,6 +379,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           <ThreeCanvas width={width} height={height} shadows gl={{ antialias: true, alpha: true }}>
             <CameraRig cam={cam} />
             <NightRoom layer="back" flicker={flicker} moon={1} time={time} />
+            {P(props)}
           </ThreeCanvas>
         </AbsoluteFill>
         <AbsoluteFill style={blurStyle}>
@@ -410,6 +416,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
           ) : (
             <Village seed={seed} kit={kit} blobs={blobs} />
           )}
+          {P(props)}
         </ThreeCanvas>
       </AbsoluteFill>
       {behind}

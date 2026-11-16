@@ -1,0 +1,72 @@
+{
+  "id": "moodtest",
+  "seed": 21,
+  "mood": { "kind": "horror", "time": true },
+  "cast": {
+    "nok": { "seed": 33, "age": "adult", "female": true, "era": "rural" },
+    "chai": { "seed": 18, "age": "adult", "female": false, "era": "city" }
+  },
+  "setProps": {
+    "room": [
+      { "kind": "table", "at": [-1.15, 1.75] },
+      { "kind": "photo_frame", "at": [-1.42, 1.7], "on": 0.75, "rot": 12 },
+      { "kind": "candle", "at": [-1.08, 1.6], "on": 0.75 },
+      { "kind": "water_jar", "at": [2.05, 1.95] }
+    ]
+  },
+  "shots": [
+    {
+      "set": "room", "cam": "wide", "dur": 1.8, "focus": [-0.1, 0, 2.7],
+      "actors": [
+        { "who": "nok", "at": [-0.7, 2.85], "pose": "shock", "feel": "shock" },
+        { "who": "chai", "at": [0.5, 2.75], "pose": "stand", "feel": "shock", "face": -1 }
+      ],
+      "caption": ["คืนนั้น", "มีเสียง*เคาะ*ดังมาจากโต๊ะ"]
+    },
+    {
+      "set": "room", "cam": "close", "dur": 1.2, "focus": "prop:1",
+      "actors": [
+        { "who": "nok", "at": [-0.7, 2.85], "pose": "shock", "feel": "shock" }
+      ],
+      "caption": ["*รูปเก่า*ล้มลงเอง"]
+    },
+    {
+      "set": "room", "cam": "mid", "dur": 3, "focus": "nok+chai", "mood": "comedy", "time": "day", "say": "chai",
+      "props": [
+        { "kind": "cat", "at": [0.0, 2.25], "rot": 20 },
+        { "kind": "plastic_chair", "at": [1.3, 2.25], "rot": -25 }
+      ],
+      "actors": [
+        { "who": "nok", "at": [-0.5, 2.85], "pose": "shock", "feel": "shock", "then": [{ "at": 1.2, "pose": "hips", "feel": "angry" }] },
+        { "who": "chai", "at": [0.5, 2.8], "pose": "point", "feel": "happy", "face": -1 }
+      ],
+      "caption": ["ที่แท้ก็", "*แมวของยาย*นี่เอง!"]
+    },
+    {
+      "set": "room", "cam": "mid", "dur": 3, "focus": "nok+chai", "mood": "drama", "flashback": true, "time": "evening", "say": "chai",
+      "props": [
+        { "kind": "mat", "at": [-0.35, 2.75] },
+        { "kind": "charcoal_stove", "at": [-1.15, 2.3] },
+        { "kind": "radio", "at": [1.15, 2.15], "rot": -15 }
+      ],
+      "actors": [
+        { "who": "nok", "at": [-0.45, 2.85], "pose": "sitfloor", "feel": "sad" },
+        { "who": "chai", "at": [0.5, 2.75], "pose": "stand", "feel": "calm", "face": -1 }
+      ],
+      "caption": ["สามสิบปีก่อน", "ยายเคย*นั่งรอตาอยู่ตรงนี้*"]
+    },
+    {
+      "set": "room", "cam": "mid", "dur": 3, "focus": "nok+chai", "mood": "explainer", "time": "day",
+      "props": [
+        { "kind": "laptop", "at": [-0.8, 1.8], "on": 0.75, "rot": 15 },
+        { "kind": "books", "at": [-1.3, 1.92], "on": 0.75, "rot": 10 }
+      ],
+      "actors": [
+        { "who": "nok", "at": [-0.45, 2.85], "pose": "think", "feel": "neutral" },
+        { "who": "chai", "at": [0.5, 2.8], "pose": "point", "feel": "happy", "face": -1 }
+      ],
+      "card": { "title": "บ้านไม้หลังนี้อายุ", "value": 80, "unit": "ปี" },
+      "caption": ["บ้านไม้เก่า*เก็บความทรงจำ*", "ไว้ในข้าวของทุกชิ้น"]
+    }
+  ]
+}

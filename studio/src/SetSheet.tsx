@@ -8,10 +8,12 @@ import { buildCam, ensureFonts, project, rng, V3 } from "./lib";
 
 ensureFonts();
 
-// Review sheet for the newer sets: each one by day and by night in the "wide" framing, with one seeded
+// Review sheets for the newer sets: each one by day and by night in the "wide" framing, with one seeded
 // standing adult for scale. 3 x 3 grid of portrait cells (360 x 640); the first cell is the title.
+// SetSheet: temple, market, ricefield, cityroom. SetSheet2: forest, shop, street, school.
 
-export const SHEET_CELLS: { set: SetName; time: TimeOfDay; z: number }[] = [
+type Cell = { set: SetName; time: TimeOfDay; z: number; x?: number };
+export const SHEET_CELLS: Cell[] = [
   { set: "temple", time: "day", z: 3.0 },
   { set: "temple", time: "night", z: 3.0 },
   { set: "market", time: "day", z: 3.0 },
@@ -21,12 +23,22 @@ export const SHEET_CELLS: { set: SetName; time: TimeOfDay; z: number }[] = [
   { set: "cityroom", time: "day", z: 2.9 },
   { set: "cityroom", time: "night", z: 2.9 },
 ];
+export const SHEET_CELLS2: Cell[] = [
+  { set: "forest", time: "day", z: 3.0 },
+  { set: "forest", time: "night", z: 3.0 },
+  { set: "shop", time: "day", z: 3.0, x: -0.4 },
+  { set: "shop", time: "night", z: 3.0, x: -0.4 },
+  { set: "street", time: "day", z: 3.0 },
+  { set: "street", time: "night", z: 3.0 },
+  { set: "school", time: "day", z: 2.3 },
+  { set: "school", time: "night", z: 2.3 },
+];
 const CW = 360;
 const CH = 640;
 const SEED = 11;
 
-export const SetCell: React.FC<{ set: SetName; time: TimeOfDay; z: number; i: number; width?: number; height?: number }> = ({ set, time, z, i, width = CW, height = CH }) => {
-  const x = set === "cityroom" ? -0.6 : 0;
+export const SetCell: React.FC<Cell & { i: number; width?: number; height?: number }> = ({ set, time, z, x: xIn, i, width = CW, height = CH }) => {
+  const x = xIn ?? (set === "cityroom" ? -0.6 : 0);
   const focus: V3 = [x, 0, z];
   const { cam, blur } = camPreset("wide", focus, 0.5, rng(SEED * 131 + 1), set);
   const cam3 = buildCam(cam, width / height);
@@ -49,20 +61,23 @@ export const SetCell: React.FC<{ set: SetName; time: TimeOfDay; z: number; i: nu
   );
 };
 
-/** Title cell and the eight set cells. `only` renders a single cell full size (fallback for stitching). */
-export const SetSheet: React.FC<{ only?: number }> = ({ only }) => {
+const Sheet: React.FC<{ cells: Cell[]; names: React.ReactNode; only?: number }> = ({ cells, names, only }) => {
   if (only !== undefined) {
-    const c = SHEET_CELLS[only];
+    const c = cells[only];
     return <SetCell {...c} i={only} width={1080} height={1920} />;
   }
   return (
     <AbsoluteFill style={{ background: "#1d2230", display: "flex", flexDirection: "row", flexWrap: "wrap", alignContent: "flex-start" }}>
       <div style={{ width: CW, height: CH, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", fontFamily: "Kanit", color: "#fff", textAlign: "center" }}>
         <div style={{ fontWeight: 800, fontSize: 52, lineHeight: 1.1 }}>ฉากใหม่</div>
-        <div style={{ fontWeight: 500, fontSize: 30, marginTop: 18, color: "#cfd8ea", lineHeight: 1.3 }}>วัด ตลาดสด ทุ่งนา<br />ห้องคอนโด</div>
+        <div style={{ fontWeight: 500, fontSize: 30, marginTop: 18, color: "#cfd8ea", lineHeight: 1.3 }}>{names}</div>
         <div style={{ fontWeight: 500, fontSize: 26, marginTop: 24, color: "#ffd84a" }}>กลางวัน / กลางคืน · มุมกว้าง</div>
       </div>
-      {SHEET_CELLS.map((c, i) => <SetCell key={i} {...c} i={i} />)}
+      {cells.map((c, i) => <SetCell key={i} {...c} i={i} />)}
     </AbsoluteFill>
   );
 };
+
+/** Title cell and the eight set cells. `only` renders a single cell full size (fallback for stitching). */
+export const SetSheet: React.FC<{ only?: number }> = ({ only }) => <Sheet cells={SHEET_CELLS} only={only} names={<>วัด ตลาดสด ทุ่งนา<br />ห้องคอนโด</>} />;
+export const SetSheet2: React.FC<{ only?: number }> = ({ only }) => <Sheet cells={SHEET_CELLS2} only={only} names={<>ป่า ร้านโชห่วย<br />ซอยในเมือง ห้องเรียน</>} />;

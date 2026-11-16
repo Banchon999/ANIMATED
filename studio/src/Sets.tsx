@@ -10,12 +10,16 @@ import { Temple, TEMPLE } from "./Temple";
 import { Market, MARKET } from "./Market";
 import { Ricefield, salaLamp } from "./Ricefield";
 import { Cityroom, CITYROOM } from "./Cityroom";
+import { Forest, forestFlies, forestShafts } from "./Forest";
+import { Shop, SHOP } from "./Shop";
+import { Street, STREET, streetCart, streetStore } from "./Street";
+import { School, SCHOOL } from "./School";
 import { Glow, Grade, INDOOR, KITS, SkyBack, TimeOfDay } from "./Light";
 import { Cam, project, rng, V3 } from "./lib";
 
 // Set kit: every set draws its 3D layers, takes the 2D actors as children, then adds its own light effects.
 // "time" is the set's default time of day; a shot may override it with ShotScript.time.
-export type SetName = "village" | "room" | "accelerator" | "clinic" | "temple" | "market" | "ricefield" | "cityroom";
+export type SetName = "village" | "room" | "accelerator" | "clinic" | "temple" | "market" | "ricefield" | "cityroom" | "forest" | "shop" | "street" | "school";
 export const SETS: Record<SetName, { label: string; dark: boolean; time: TimeOfDay; actorFilter?: string }> = {
   village: { label: "หมู่บ้าน", dark: false, time: "day" },
   room: { label: "ห้องเรือนไม้", dark: true, time: "night", actorFilter: "brightness(0.8) saturate(0.82)" },
@@ -25,13 +29,17 @@ export const SETS: Record<SetName, { label: string; dark: boolean; time: TimeOfD
   market: { label: "ตลาดสด", dark: false, time: "day" },
   ricefield: { label: "ทุ่งนา", dark: false, time: "day" },
   cityroom: { label: "ห้องคอนโด", dark: true, time: "night" },
+  forest: { label: "ป่า", dark: false, time: "day" },
+  shop: { label: "ร้านโชห่วย", dark: false, time: "day" },
+  street: { label: "ซอยในเมือง", dark: false, time: "day" },
+  school: { label: "ห้องเรียน", dark: false, time: "day" },
 };
+const INDOOR_SETS: SetName[] = ["accelerator", "clinic", "cityroom", "shop", "school"];
 
 /** CSS filter for the 2D actors of a set at a time of day (undefined = untouched). */
 const actorFilter = (set: SetName, time: TimeOfDay) => {
   if (set === "room") return time === "night" ? SETS.room.actorFilter : time === "evening" ? "brightness(0.9) saturate(0.9)" : undefined;
-  const indoor = set === "accelerator" || set === "clinic" || set === "cityroom";
-  if (indoor) return time === "night" ? "brightness(0.88) saturate(0.85)" : time === "evening" ? "sepia(0.08)" : undefined;
+  if (INDOOR_SETS.includes(set)) return time === "night" ? "brightness(0.88) saturate(0.85)" : time === "evening" ? "sepia(0.08)" : undefined;
   return KITS[time].actor;
 };
 
@@ -137,10 +145,117 @@ const OutdoorFx: React.FC<FxProps & { set: SetName; seed: number }> = ({ cam3, w
   const G = (p: V3, radius: number, strength: number, rgb = "255,200,120", maxR?: number) => (
     <Glow key={p.join()} cam3={cam3} width={width} height={height} p={p} radius={radius} strength={strength * on} rgb={rgb} maxR={maxR} />
   );
-  if (set === "temple") return <>{[...TEMPLE.lamps.map((p) => G(p, 0.7, 0.9)), G(TEMPLE.door, 1.6, 0.35, "255,200,120", 300)]}</>;
+  if (set === "temple") return <>{[...TEMPLE.lamps.map((p) => G(p, 0.7, 0.9)), G(TEMPLE.door, 1.6, time === "night" ? 0.2 : 0.35, "255,200,120", 300)]}</>;
   if (set === "market") return <>{MARKET.bulbs.map((p) => G(p, 0.55, 0.85, "255,226,160"))}</>;
   if (set === "ricefield") return <>{G(salaLamp(seed), 0.9, 0.9)}</>;
+  if (set === "street") {
+    const st = streetStore(seed);
+    return (
+      <>
+        {[...STREET.lamps.map((p) => G([p[0], p[1] - 0.15, p[2]], 1.2, 0.8, "255,214,150", 220)), G(st.glass, 2.2, time === "night" ? 0.55 : 0.3, "225,240,255", 260), G(streetCart(seed).bulb, 0.6, 0.8, "255,210,140")]}
+      </>
+    );
+  }
   return null;
+};
+
+
+/** Shop: daylight glow in the open front, tube lights at evening / night, then the indoor grade. */
+const ShopFx: React.FC<FxProps> = ({ cam3, width, height, time }) => {
+  const O = SHOP.opening;
+  const [rgb, k] = WINDOW_RGB[time];
+  const lamp = time === "night" ? 1 : time === "evening" ? 0.85 : 0;
+  return (
+    <>
+      <Glow cam3={cam3} width={width} height={height} p={[(O.x0 + O.x1) / 2, 1.4, -0.3]} radius={1.6} strength={time === "night" ? 0.12 : k * 0.8} rgb={rgb} maxR={420} />
+      {SHOP.tubes.map((p, i) => <Glow key={i} cam3={cam3} width={width} height={height} p={[p[0], p[1] - 0.06, p[2]]} radius={0.6} strength={0.35 * lamp} rgb="235,248,255" />)}
+      <Glow cam3={cam3} width={width} height={height} p={[(SHOP.fridge.x0 + SHOP.fridge.x1) / 2, 1.0, SHOP.fridge.z1]} radius={0.6} strength={time === "night" ? 0.35 : 0.15} rgb="210,235,255" />
+      {time === "day" ? (
+        <>
+          <AbsoluteFill style={{ background: "rgba(255,244,225,0.05)" }} />
+          <AbsoluteFill style={{ background: "radial-gradient(ellipse 82% 64% at 50% 46%, rgba(0,0,0,0) 56%, rgba(30,24,18,0.34) 100%)" }} />
+        </>
+      ) : (
+        <IndoorGrade time={time} edge="30,24,18" />
+      )}
+    </>
+  );
+};
+
+/** School: glow of the louvred windows by the board, tube lights at evening / night, then the indoor grade. */
+const SchoolFx: React.FC<FxProps> = ({ cam3, width, height, time }) => {
+  const [rgb, k] = WINDOW_RGB[time];
+  const lamp = time === "night" ? 1 : time === "evening" ? 0.85 : 0;
+  const W = SCHOOL.windows;
+  return (
+    <>
+      {[W.x, W.x2].map(([a, b], i) => <Glow key={i} cam3={cam3} width={width} height={height} p={[(a + b) / 2, (W.y0 + W.y1) / 2, 0.05]} radius={0.9} strength={k * 0.7} rgb={rgb} maxR={360} />)}
+      {[[-1.6, 2.0], [1.6, 2.0]].map(([x, z], i) => <Glow key={i} cam3={cam3} width={width} height={height} p={[x, SCHOOL.ceiling - 0.08, z]} radius={0.6} strength={0.3 * lamp} rgb="235,248,255" />)}
+      {time === "day" ? (
+        <>
+          <AbsoluteFill style={{ background: "rgba(240,246,240,0.05)" }} />
+          <AbsoluteFill style={{ background: "radial-gradient(ellipse 82% 64% at 50% 46%, rgba(0,0,0,0) 58%, rgba(20,26,24,0.3) 100%)" }} />
+        </>
+      ) : (
+        <IndoorGrade time={time} edge="20,26,24" />
+      )}
+    </>
+  );
+};
+
+/** Forest: light shafts through the canopy by day, fireflies at night (and a few at dusk). */
+const ForestFx: React.FC<FxProps & { seed: number; frame: number }> = ({ cam3, width, height, time, seed, frame }) => {
+  const t = frame / 30;
+  const P = (p: V3) => project(cam3, p, width, height);
+  const full: React.CSSProperties = { position: "absolute", inset: 0, overflow: "visible" };
+  const sun = time === "day" ? 1 : time === "morning" ? 1.15 : time === "evening" ? 0.75 : 0;
+  const tint = time === "morning" ? "#ffe2b0" : time === "evening" ? "#ffb878" : "#fff4d0";
+  const shafts = sun > 0 ? forestShafts(seed, time) : [];
+  const flies = time === "night" || time === "evening" ? forestFlies(seed).slice(0, time === "night" ? 46 : 14) : [];
+  return (
+    <>
+      {shafts.length ? (
+        <svg width={width} height={height} style={{ ...full, mixBlendMode: "screen", filter: `blur(${6 * (width / 1080)}px)` }}>
+          {shafts.map((s, i) => {
+            const a1 = P([s.top[0] - s.w / 2, s.top[1], s.top[2]]);
+            const a2 = P([s.top[0] + s.w / 2, s.top[1], s.top[2]]);
+            const b2 = P([s.foot[0] + s.w, 0, s.foot[2]]);
+            const b1 = P([s.foot[0] - s.w, 0, s.foot[2]]);
+            if (a1.depth < 0.5 || b1.depth < 0.5) return null;
+            const al = 0.32 * s.a * sun * (0.85 + 0.15 * Math.sin(t * 0.7 + i * 1.9));
+            return (
+              <g key={i}>
+                <linearGradient id={`fsh${i}`} gradientUnits="userSpaceOnUse" x1={(a1.x + a2.x) / 2} y1={a1.y} x2={(b1.x + b2.x) / 2} y2={b1.y}>
+                  <stop offset="0" stopColor={tint} stopOpacity={0} />
+                  <stop offset="0.25" stopColor={tint} stopOpacity={al} />
+                  <stop offset="0.85" stopColor={tint} stopOpacity={al * 0.7} />
+                  <stop offset="1" stopColor={tint} stopOpacity={al * 0.2} />
+                </linearGradient>
+                <polygon points={`${a1.x},${a1.y} ${a2.x},${a2.y} ${b2.x},${b2.y} ${b1.x},${b1.y}`} fill={`url(#fsh${i})`} />
+                <ellipse cx={(b1.x + b2.x) / 2} cy={b1.y} rx={Math.min(Math.abs(b2.x - b1.x) * 0.7, 300 * (width / 1080))} ry={Math.min(Math.abs(b2.x - b1.x) * 0.18, 70 * (width / 1080))} fill={tint} opacity={al * 0.9} />
+              </g>
+            );
+          })}
+        </svg>
+      ) : null}
+      {flies.length ? (
+        <svg width={width} height={height} style={{ ...full, mixBlendMode: "screen" }}>
+          {flies.map((f, i) => {
+            const pr = P([f.p[0] + Math.sin(t * f.sp + f.ph) * 0.35, f.p[1] + Math.sin(t * f.sp * 1.3 + f.ph * 2) * 0.2, f.p[2] + Math.cos(t * f.sp * 0.8 + f.ph) * 0.3]);
+            if (pr.depth < 0.6) return null;
+            const on = Math.max(0, Math.sin(t * 2.2 + f.ph * 3));
+            const r = Math.max(1.5, Math.min(5, 0.022 * pr.ppu)) * (width / 1080);
+            return (
+              <g key={i} opacity={0.25 + 0.75 * on}>
+                <circle cx={pr.x} cy={pr.y} r={r * 4} fill="#c8ff6a" opacity={0.18} />
+                <circle cx={pr.x} cy={pr.y} r={r} fill="#f0ffb8" />
+              </g>
+            );
+          })}
+        </svg>
+      ) : null}
+    </>
+  );
 };
 
 const RoomFx: React.FC<Omit<StageProps, "children" | "set" | "blobs" | "seed" | "blur" | "cam" | "time"> & { flicker: number; time: TimeOfDay }> = ({ cam3, width, height, frame, flicker, time }) => {
@@ -219,6 +334,21 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
   const blurStyle = blur > 0.2 ? { filter: `blur(${blur}px)` } : undefined;
   const filter = actorFilter(set, time);
   const actors = <svg width={width} height={height} style={filter ? { ...full, filter } : full}>{children}</svg>;
+  if (set === "shop" || set === "school") {
+    return (
+      <AbsoluteFill style={{ background: "#d8d4cc" }}>
+        <AbsoluteFill style={blurStyle}>
+          <ThreeCanvas width={width} height={height} shadows gl={{ antialias: true, alpha: true }}>
+            <CameraRig cam={cam} />
+            {set === "shop" ? <Shop seed={seed} time={time} frame={frame} blobs={blobs} /> : <School seed={seed} time={time} frame={frame} blobs={blobs} />}
+          </ThreeCanvas>
+        </AbsoluteFill>
+        {behind}
+        {actors}
+        {set === "shop" ? <ShopFx cam3={cam3} width={width} height={height} time={time} /> : <SchoolFx cam3={cam3} width={width} height={height} time={time} />}
+      </AbsoluteFill>
+    );
+  }
   if (set === "accelerator" || set === "clinic" || set === "cityroom") {
     const acc = set === "accelerator";
     const bg = acc ? (time === "night" ? "#10161a" : "#2c3430") : set === "clinic" ? "#cfdcd4" : "#d8d4cc";
@@ -273,6 +403,10 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
             <Market seed={seed} kit={kit} blobs={blobs} />
           ) : set === "ricefield" ? (
             <Ricefield seed={seed} kit={kit} blobs={blobs} />
+          ) : set === "forest" ? (
+            <Forest seed={seed} kit={kit} blobs={blobs} />
+          ) : set === "street" ? (
+            <Street seed={seed} kit={kit} blobs={blobs} />
           ) : (
             <Village seed={seed} kit={kit} blobs={blobs} />
           )}
@@ -281,6 +415,7 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
       {behind}
       {actors}
       <OutdoorFx cam3={cam3} width={width} height={height} time={time} set={set} seed={seed} />
+      {set === "forest" ? <ForestFx cam3={cam3} width={width} height={height} time={time} seed={seed} frame={frame} /> : null}
       <Grade kit={kit} />
     </AbsoluteFill>
   );

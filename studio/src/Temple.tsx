@@ -221,7 +221,11 @@ export const Temple: React.FC<{ seed: number; kit?: Kit; blobs?: Blob[] }> = ({ 
     [],
   );
   const lit = kit.lamps > 0;
-  const winC = lit ? "#ffcf7e" : L.door;
+  // white plaster and pale stone reflect a lot: at night the fill is lower than the kit's, so the
+  // courtyard sits with the other night sets instead of glowing lavender in mid shots and close-ups
+  const night = kit === KITS.night;
+  const doorC = night ? "#c98e4c" : "#ffcf7e";
+  const winC = lit ? doorC : L.door;
   const bx = T.base.x;
   const bd = T.base.z1 - T.base.z0;
   const bz = (T.base.z0 + T.base.z1) / 2;
@@ -231,11 +235,11 @@ export const Temple: React.FC<{ seed: number; kit?: Kit; blobs?: Blob[] }> = ({ 
 
   return (
     <>
-      <SkyLights kit={kit} box={30} far={90} />
+      <SkyLights kit={kit} box={30} far={90} fill={night ? 0.36 : 1} sunMul={night ? 0.6 : 1} />
       {lit ? (
         <>
-          {T.lamps.map((p, i) => <pointLight key={i} position={[p[0], p[1] + 0.1, p[2] + 0.3]} color="#ffc070" intensity={3.5 * kit.lamps} distance={7} decay={1.6} />)}
-          <pointLight position={[0, 3.0, -1.0]} color="#ffd8a0" intensity={3 * kit.lamps} distance={8} decay={1.6} />
+          {T.lamps.map((p, i) => <pointLight key={i} position={[p[0], p[1] + 0.1, p[2] + 0.3]} color="#ffc070" intensity={(night ? 2.2 : 3.5) * kit.lamps} distance={7} decay={1.6} />)}
+          <pointLight position={[0, 3.0, -1.0]} color="#ffd8a0" intensity={(night ? 1.2 : 3) * kit.lamps} distance={8} decay={1.6} />
         </>
       ) : null}
 
@@ -293,7 +297,7 @@ export const Temple: React.FC<{ seed: number; kit?: Kit; blobs?: Blob[] }> = ({ 
       {/* hall walls, door and windows */}
       <B p={[0, by + 1.7, -9.8]} s={[8.8, 3.4, 11.2]} c={L.wall} />
       <B p={[0, by + 1.4, -4.19]} s={[1.65, 3.05, 0.02]} c={GOLD} sh={false} />
-      <Lit p={[0, by + 1.4, -4.17]} s={[1.4, 2.8, 0.02]} c={lit ? "#ffcf7e" : L.door} />
+      <Lit p={[0, by + 1.4, -4.17]} s={[1.4, 2.8, 0.02]} c={lit ? doorC : L.door} />
       {lit ? null : <B p={[0, by + 1.4, -4.15]} s={[0.05, 2.8, 0.02]} c={GOLD} sh={false} />}
       {[-2.9, 2.9].map((x) => (
         <group key={x}>

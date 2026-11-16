@@ -133,6 +133,41 @@ export const camPreset = (kind: CamKind, f: V3, p: number, r: () => number, set:
     if (kind === "mid") return at(sx * 0.35 + lerp(-0.12, 0.12, e), 1.55, lerp(5.3, 4.9, e), 1.1, 36, 1.5); // ~1.9 m
     return at(sx * 0.2, 1.5, lerp(3.2, 2.95, e), f[1], 30, 3); // ~0.95 m
   }
+  if (set === "shop" || set === "school") {
+    // ceiling 3.0 m: "high" is a corner view from just under the ceiling, like the clinic
+    const school = set === "school";
+    if (kind === "high") {
+      const side = sx > 0 ? 1 : -1;
+      return school
+        ? { cam: { pos: [f[0] * 0.5 + side * lerp(2.6, 2.3, e), 2.62, f[2] + lerp(5.2, 4.7, e)], target: [f[0] - side * 0.2, 0.6, f[2] - 1.6], fov: 60 }, blur: 0 }
+        : { cam: { pos: [f[0] * 0.5 + side * lerp(1.5, 1.3, e), 2.8, f[2] + lerp(4.4, 4.0, e)], target: [f[0] - side * 0.1, 0.55, f[2] - 1.4], fov: 62 }, blur: 0 };
+    }
+    if (kind === "wide") return school ? at(sx * 0.3 + lerp(-0.15, 0.15, e), 1.65, lerp(8.0, 7.5, e), 1.35, 52) : at(sx * 0.3 + lerp(-0.15, 0.15, e), 1.6, lerp(7.4, 6.9, e), 1.3, 50); // ~4.4 / 4.0 m across
+    if (kind === "mid") return at(sx * 0.35 + lerp(-0.12, 0.12, e), 1.55, lerp(5.3, 4.9, e), 1.1, 36, 1.5); // ~1.9 m
+    return at(sx * 0.2, 1.5, lerp(3.2, 2.95, e), f[1], 30, 3); // ~0.95 m
+  }
+  if (set === "forest") {
+    if (kind === "high") {
+      // under the canopy (it closes at 14 m): looking down onto the trail between the trunks
+      const az = lerp(0.4, 0.18, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(11, 9.5, e);
+      return { cam: { pos: [f[0] + R * Math.sin(az), lerp(7.5, 6.8, e), f[2] + R * Math.cos(az)], target: [f[0], 0.8, f[2] - 1.5], fov: 50 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.5 + lerp(-0.25, 0.25, e), 1.75, lerp(8.6, 7.9, e), 1.6, 48); // ~4 m across, trunks rising out of the frame
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.6, lerp(5.6, 5.1, e), 1.15, 36, 2);
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 5);
+  }
+  if (set === "street") {
+    if (kind === "high") {
+      // from above the lane (over the road, never inside the shophouse rows), looking down the soi
+      const az = lerp(0.17, 0.08, e) * (sx > 0 ? 1 : -1);
+      const R = lerp(14, 12.5, e);
+      return { cam: { pos: [f[0] * 0.5 + R * Math.sin(az), lerp(9.2, 8.2, e), f[2] + R * Math.cos(az)], target: [f[0], 1.2, f[2] - 4], fov: 50 }, blur: 0 };
+    }
+    if (kind === "wide") return at(sx * 0.4 + lerp(-0.2, 0.2, e), 1.75, lerp(8.8, 8.1, e), 1.7, 48); // ~4 m across, wires overhead
+    if (kind === "mid") return at(sx * 0.45 + lerp(-0.15, 0.15, e), 1.6, lerp(5.6, 5.1, e), 1.15, 36, 2);
+    return at(sx * 0.25, 1.5, lerp(3.3, 3.0, e), f[1], 30, 5);
+  }
   if (set === "temple") {
     if (kind === "high") {
       // from above the courtyard: the hall roofs, chedi and bodhi tree around the actors

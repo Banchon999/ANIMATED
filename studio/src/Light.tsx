@@ -63,22 +63,23 @@ export const KITS: Record<TimeOfDay, Kit> = {
     wash: "rgba(255,196,150,0.06)",
     vignette: "rgba(40,26,14,.32)",
   },
+  // golden hour: warm low sun, but blue sky overhead and neutral (slightly cool) fill in the shadows
   evening: {
-    bg: "#e9a06c",
-    sky: "linear-gradient(#3a4682 0%, #b46a86 30%, #f2a35e 52%)",
-    skyCols: ["#3a4682", "#c0708a", "#f2a35e"],
-    body: { x: 0.78, y: 0.34, size: 0.15, color: "#ffd690", glow: "0 0 120px 70px rgba(255,150,70,.55)" },
+    bg: "#e6c6a4",
+    sky: "linear-gradient(#3b62a6 0%, #8eaed6 28%, #f2c88e 52%)",
+    skyCols: ["#3b62a6", "#9ab4d6", "#f2c88e"],
+    body: { x: 0.78, y: 0.34, size: 0.14, color: "#fff0c4", glow: "0 0 120px 70px rgba(255,196,110,.5)" },
     stars: 0,
-    sun: { dir: [21, 7, 11], color: "#ffaa70", intensity: 1.5 },
-    hemi: { sky: "#d8b0a0", ground: "#6a5060", intensity: 1.0 },
-    ambient: { color: "#ffb88a", intensity: 0.2 },
-    fog: { color: "#dc9c7c", near: 24, far: 88 },
+    sun: { dir: [21, 7, 11], color: "#ffbd72", intensity: 2.0 },
+    hemi: { sky: "#bcc2d8", ground: "#6e6256", intensity: 0.85 },
+    ambient: { color: "#d4dae8", intensity: 0.12 },
+    fog: { color: "#dcc2a2", near: 26, far: 92 },
     lamps: 1,
     litWindows: 0.45,
     grade: null,
-    wash: "rgba(255,130,70,0.07)",
-    vignette: "rgba(46,18,24,.44)",
-    actor: "sepia(0.12) saturate(1.05)",
+    wash: "rgba(255,176,96,0.07)",
+    vignette: "rgba(36,28,34,.40)",
+    actor: "sepia(0.08) saturate(1.05)",
   },
   night: {
     bg: "#0b1430",
@@ -125,12 +126,12 @@ export const SunLight: React.FC<{ kit: Kit; dist?: number; box?: number; far?: n
   );
 };
 
-/** Hemisphere + ambient + sun + fog of an outdoor set. */
-export const SkyLights: React.FC<{ kit: Kit; box?: number; far?: number; fogMul?: number }> = ({ kit, box, far, fogMul = 1 }) => (
+/** Hemisphere + ambient + sun + fog of an outdoor set. fill scales hemisphere + ambient, sunMul the sun (both 1 = the kit as is). */
+export const SkyLights: React.FC<{ kit: Kit; box?: number; far?: number; fogMul?: number; fill?: number; sunMul?: number }> = ({ kit, box, far, fogMul = 1, fill = 1, sunMul = 1 }) => (
   <>
-    <hemisphereLight args={[kit.hemi.sky, kit.hemi.ground, kit.hemi.intensity]} />
-    {kit.ambient.intensity > 0 ? <ambientLight color={kit.ambient.color} intensity={kit.ambient.intensity} /> : null}
-    <SunLight kit={kit} box={box} far={far} />
+    <hemisphereLight args={[kit.hemi.sky, kit.hemi.ground, kit.hemi.intensity * fill]} />
+    {kit.ambient.intensity > 0 ? <ambientLight color={kit.ambient.color} intensity={kit.ambient.intensity * fill} /> : null}
+    <SunLight kit={kit} box={box} far={far} mul={sunMul} />
     <fog attach="fog" args={[kit.fog.color, kit.fog.near * fogMul, kit.fog.far * fogMul]} />
   </>
 );

@@ -1,0 +1,44 @@
+[
+  {
+    "clip": "sample",
+    "who": "mali",
+    "signature": "bag+flipflops+kokrachao+phathung|#b9c6d6,#8a5a3a,",
+    "wear": {
+      "top": "kokrachao",
+      "bottom": "phathung",
+      "acc": [
+        "bag"
+      ],
+      "feet": "flipflops",
+      "colors": {
+        "top": "#b9c6d6",
+        "top2": "#fbf6ec",
+        "bottom": "#8a5a3a",
+        "bottom2": "#f4e4c6",
+        "acc": "#5a4a3a",
+        "feet": "#f3c044"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  },
+  {
+    "clip": "bugorski",
+    "who": "bugorski",
+    "signature": "jeans+sandals+tee|#5560c9,#33507c,",
+    "wear": {
+      "top": "tee",
+      "bottom": "jeans",
+      "feet": "sandals",
+      "colors": {
+        "top": "#5560c9",
+        "top2": "#d8c7a0",
+        "bottom": "#33507c",
+        "bottom2": "#d8c7a0",
+        "feet": "#2b2b2b"
+      },
+      "pattern": "plain"
+    },
+    "date": "2026-11-16"
+  }
+]

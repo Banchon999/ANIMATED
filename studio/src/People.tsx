@@ -2,6 +2,10 @@ import React, { useId } from "react";
 import { AbsoluteFill } from "remotion";
 import { clamp01, ensureFonts, lerp, rad, rng } from "./lib";
 import { Gait, GAITS } from "./Character";
+import {
+  ACC, BOTTOM, AccBody, Cloth, Foot, Headwear, hidesBun, lookOf, OuterFront, OuterSide, PantsExtras, PantsLeg, Sleeves, TopFront, TopOverArms, TopSide,
+  AccSide, AccSideBehind, usePaints, Waistband, finishWear, pickWear, Wear, WearSpec,
+} from "./Wardrobe";
 
 // Batch 1: seeded person generator + reusable pose / hand / mouth / emotion libraries.
 // 100 units = 1 m, origin on the ground between the feet. See README for the scale table.
@@ -22,15 +26,9 @@ export type PersonSpec = {
   skin: string;
   hair: string;
   hairStyle: number; // 0..5
-  top: string;
-  topKind: "tee" | "shirt" | "wrap";
-  pattern: "plain" | "stripes" | "check" | "dots";
-  patternColor: string;
-  bottom: string;
-  bottomKind: "pants" | "shorts" | "sarong" | "skirt";
-  shoe: string | null;
-  extra: "none" | "sash" | "hat" | "glasses" | "bag";
-  outfit?: Outfit; // worn over (or instead of) the seeded clothes
+  /** layered outfit from the wardrobe catalogue (Wardrobe.tsx): piece ids, colours, pattern */
+  wear: Wear;
+  outfit?: Outfit; // worn over (or instead of) the clothes
 };
 export type Outfit = "labcoat" | "patient";
 export const OUTFITS: Outfit[] = ["labcoat", "patient"];
@@ -39,18 +37,9 @@ const COAT_EDGE = "#b9c4c4";
 const GOWN = "#cfe2e3";
 
 const SKINS = ["#f0c9a4", "#e3b088", "#cf9a70", "#b98058", "#9c6844"];
-const TOPS: Record<Era, string[]> = {
-  old: ["#e8dcc6", "#34466e", "#7a3b3b", "#566b4a", "#c9a56a", "#5a4a6e"],
-  rural: ["#e4573f", "#3aa57c", "#f3c044", "#5b8cf0", "#f08fa8", "#8a6fd0", "#ffffff"],
-  city: ["#22303c", "#f4f4f4", "#c44536", "#2f6f8f", "#d8c7a0", "#6b7a8f", "#e9a23b"],
-};
-const BOTTOMS: Record<Era, string[]> = {
-  old: ["#2b2f3f", "#5a2f3a", "#3d4a36", "#4a3a2a"],
-  rural: ["#33507c", "#4a4038", "#7b4fa3", "#2f6f5a", "#8a5a3a"],
-  city: ["#1f2530", "#3a4660", "#6d5a4a", "#c9c2b4", "#2f3f3a"],
-};
 
-export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | "female" | "era" | "outfit">> = {}): PersonSpec => {
+export type PersonWant = Partial<Pick<PersonSpec, "age" | "female" | "era" | "outfit">> & { wear?: WearSpec };
+export const makePerson = (seed: number, want: PersonWant = {}): PersonSpec => {
   const r = rng(seed * 7919 + 13);
   const pick = <T,>(a: T[]) => a[Math.floor(r() * a.length)];
   const age = want.age ?? pick<Age>(["child", "teen", "adult", "adult", "adult", "elder"]);
@@ -58,41 +47,32 @@ export const makePerson = (seed: number, want: Partial<Pick<PersonSpec, "age" | 
   const era = want.era ?? pick<Era>(["old", "rural", "city"]);
   const base = { child: 118, teen: 150, adult: female ? 158 : 169, elder: female ? 151 : 161 }[age];
   const dark = pick(["#1d1614", "#2a1f1a", "#15131a", "#3a2a1e"]);
-  const bottomKind =
-    era === "old"
-      ? pick<PersonSpec["bottomKind"]>(female ? ["sarong", "sarong", "skirt"] : ["pants", "sarong", "shorts"])
-      : pick<PersonSpec["bottomKind"]>(female ? ["pants", "skirt", "sarong", "shorts"] : ["pants", "pants", "shorts"]);
-  const spec: PersonSpec = {
-    seed,
-    age,
-    female,
-    era,
-    h: base + (r() - 0.5) * 8,
-    wide: (age === "child" ? 0.92 : 1) * (0.9 + r() * 0.3) * (female ? 0.94 : 1.04),
-    skin: pick(SKINS),
-    hair: age === "elder" ? pick(["#c9c5c0", "#9a9692", "#e4e1dc"]) : dark,
-    hairStyle: Math.floor(r() * 6), // 5 = thin/bald, only kept for elders (see below)
-    top: pick(TOPS[era]),
-    topKind: era === "old" ? pick<PersonSpec["topKind"]>(["shirt", "wrap", "tee"]) : pick<PersonSpec["topKind"]>(["tee", "shirt", "tee"]),
-    pattern: pick<PersonSpec["pattern"]>(["plain", "plain", "stripes", "check", "dots"]),
-    patternColor: pick(["#ffffff", "#f6e7c8", "#1f2530", "#ffd15c"]),
-    bottom: pick(BOTTOMS[era]),
-    bottomKind,
-    shoe: era === "old" ? null : pick(["#2b2b2b", "#f4f4f4", "#8a4b2a", "#d94f70"]),
-    extra: pick<PersonSpec["extra"]>(era === "old" ? ["none", "sash", "sash", "hat"] : era === "city" ? ["none", "glasses", "bag", "none"] : ["none", "hat", "bag", "none"]),
-  };
+  r(); // was the bottom kind; kept so every seed keeps its body, face and hair from batch 1
+  const h = base + (r() - 0.5) * 8;
+  const wide = (age === "child" ? 0.92 : 1) * (0.9 + r() * 0.3) * (female ? 0.94 : 1.04);
+  const skin = pick(SKINS);
+  const hair = age === "elder" ? pick(["#c9c5c0", "#9a9692", "#e4e1dc"]) : dark;
+  const hairStyle = Math.floor(r() * 6); // 5 = thin/bald, only kept for elders (see below)
+  // clothes come from the wardrobe on their own random stream; a script's "wear" overrides the seeded pick
+  let wear = want.wear ? finishWear(want.wear, era, rng(seed * 31 + 7)) : pickWear(seed, era, female, age);
+  const spec: PersonSpec = { seed, age, female, era, h, wide, skin, hair, hairStyle, wear };
   // style 5 draws thin/bald hair on a grown-up male: keep it for elders only (children get a top knot, women a bun).
-  // No extra random draw, so every other seeded pick stays the same.
   if (spec.hairStyle === 5 && age !== "elder" && age !== "child" && !female) spec.hairStyle = seed % 2;
   // outfits are applied after every seeded pick, so the same seed keeps the same face, hair and body
   if (want.outfit === "labcoat") {
-    spec.outfit = "labcoat";
-    if (spec.extra === "sash" || spec.extra === "bag" || spec.extra === "hat") spec.extra = "none";
+    // the coat goes over the clothes: no other outer layer, hat or carried things
+    wear = { ...wear, outer: undefined, head: undefined, acc: wear.acc.filter((a) => !["bag", "backpack", "waistcloth"].includes(ACC[a]?.kind)) };
+    Object.assign(spec, { outfit: "labcoat", wear });
   } else if (want.outfit === "patient") {
-    Object.assign(spec, { outfit: "patient", top: GOWN, topKind: "tee", pattern: "plain", bottom: GOWN, bottomKind: "shorts", extra: spec.extra === "glasses" ? "glasses" : "none" });
+    const g = GOWN;
+    wear = { top: "tee", bottom: "shorts", feet: "barefoot", acc: wear.acc.filter((a) => a === "glasses"), pattern: "plain", colors: { top: g, top2: g, bottom: g, bottom2: g, outer: g, head: g, acc: g, feet: g } };
+    Object.assign(spec, { outfit: "patient", wear });
   }
   return spec;
 };
+
+/** A tube skirt (ผ้าซิ่น, ผ้าถุง, โสร่ง) shortens the step so the legs stay inside the cloth. */
+const stepK = (s: PersonSpec) => (BOTTOM[s.wear.bottom]?.shape === "tube" ? 0.55 : 1);
 
 /** Seat height (units) of the `sit` pose: a chair or a bed edge. */
 export const SEAT = 45;
@@ -152,7 +132,7 @@ export const headCenter = (s: PersonSpec, pose: Pose = POSES.stand, lie: LieOpts
 export const headCenterSide = (s: PersonSpec, gait: Gait | null) => {
   const child = s.age === "child";
   const R = s.h * (child ? 0.098 : 0.074);
-  const hip = s.h * (child ? 0.43 : 0.47) * (gait ? Math.cos(rad(gait.A * 0.7)) : 1) + s.h * 0.062 * 0.4;
+  const hip = s.h * (child ? 0.43 : 0.47) * (gait ? Math.cos(rad(gait.A * stepK(s) * 0.7)) : 1) + s.h * 0.062 * 0.4;
   const d = s.h * (child ? 0.3 : 0.31) + R * 0.35 + R * 1.18;
   const a = rad(gait ? gait.lean : 0);
   return { x: (R * 0.12 * Math.cos(a) + d * Math.sin(a)) / 100, y: (hip + d * Math.cos(a) - R * 0.12 * Math.sin(a)) / 100 };
@@ -407,35 +387,34 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
   };
   const LL = leg(-1, pose.legL), LR = leg(1, pose.legR);
   const AL = arm(-1, pose.armL, pose.elbowL), AR = arm(1, pose.armR, pose.elbowR);
-  const legSkin = s.bottomKind !== "pants";
-  const sleeve = s.topKind === "tee" ? 0.45 : s.topKind === "wrap" ? 0 : 1;
+  const L = lookOf(s.wear);
+  const paint = usePaints(id, L);
+  const bot = L.bottom;
+  const pantsF = (part: "all" | "thigh" | "shin") => (bot.shape !== "pants" ? 0 : part === "all" ? bot.len : part === "thigh" ? Math.min(1, bot.len * 2) : Math.max(0, bot.len * 2 - 1));
 
   const drawLeg = (l: ReturnType<typeof leg>, part: "all" | "thigh" | "shin" = "all") => {
-    const d = part === "all" ? `M ${l.hip.x} ${l.hip.y} L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}` : part === "thigh" ? `M ${l.hip.x} ${l.hip.y} L ${l.knee.x} ${l.knee.y}` : `M ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`;
+    const pts = part === "all" ? [l.hip, l.knee, l.foot] : part === "thigh" ? [l.hip, l.knee] : [l.knee, l.foot];
+    const d = pts.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" ");
+    const kneeCloth = bot.shape === "pants" && bot.len >= 0.5;
     return (
       <g>
-        <path d={d} fill="none" stroke={legSkin ? s.skin : s.bottom} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
-        {s.bottomKind === "shorts" && part !== "shin" && <path d={`M ${l.hip.x} ${l.hip.y} L ${lerp(l.hip.x, l.knee.x, 0.75)} ${lerp(l.hip.y, l.knee.y, 0.75)}`} stroke={s.bottom} strokeWidth={limb * 1.4} strokeLinecap="round" />}
+        <path d={d} fill="none" stroke={s.skin} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
+        <PantsLeg pts={pts} f={pantsF(part)} L={L} paint={paint} limb={limb} back={back} />
         {/* knee coming towards the camera: a round cap and a soft shadow on the shin under it */}
         {ws > 0.5 && part === "all" && !back && (
           <>
             <ellipse cx={l.knee.x} cy={l.knee.y + limb * 0.62} rx={limb * 0.5} ry={limb * 0.16} fill="rgba(0,0,0,.22)" />
-            <ellipse cx={l.knee.x} cy={l.knee.y} rx={limb * 0.64} ry={limb * 0.6} fill={s.bottomKind === "shorts" && legSkin ? s.skin : legSkin ? s.skin : s.bottom} />
+            <ellipse cx={l.knee.x} cy={l.knee.y} rx={limb * 0.64 * (kneeCloth ? Math.min(1.25, bot.wide) : 1)} ry={limb * 0.6} fill={kneeCloth ? paint.bottom : s.skin} />
           </>
         )}
-        {part !== "thigh" && <ellipse cx={l.foot.x} cy={l.foot.y + 1} rx={limb * 0.85} ry={limb * 0.42} fill={s.shoe ?? s.skin} />}
+        {part !== "thigh" && <Foot x={l.foot.x} y={l.foot.y} limb={limb} L={L} skin={s.skin} view={back ? "back" : "front"} />}
       </g>
     );
   };
-  const drawArm = (a: ReturnType<typeof arm>, hand: Hand) => (
+  const drawArm = (a: ReturnType<typeof arm>, hand: Hand, left: boolean) => (
     <g>
       <path d={`M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${a.hd.x} ${a.hd.y}`} fill="none" stroke={s.skin} strokeWidth={limb * 0.82} strokeLinecap="round" strokeLinejoin="round" />
-      {sleeve > 0 && (
-        <path
-          d={sleeve === 1 ? `M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${lerp(a.el.x, a.hd.x, 0.8)} ${lerp(a.el.y, a.hd.y, 0.8)}` : `M ${a.sh.x} ${a.sh.y} L ${lerp(a.sh.x, a.el.x, 0.55)} ${lerp(a.sh.y, a.el.y, 0.55)}`}
-          fill="none" stroke={s.top} strokeWidth={limb * 1.05} strokeLinecap="round" strokeLinejoin="round"
-        />
-      )}
+      <Sleeves a={a} L={L} paint={paint} limb={limb} watch={left && L.has("watch")} coat={!!s.outfit} face={!back} />
       {s.outfit === "labcoat" && <CoatSleeve a={a} limb={limb} />}
       <g transform={`translate(${a.hd.x} ${a.hd.y}) rotate(${a.rot})`}>
         <HandShape kind={hand} r={limb * 0.5} skin={s.skin} />
@@ -444,19 +423,7 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
   );
 
   const torsoD = `M ${-sw} ${shY + 4} Q ${-sw} ${shY} ${-sw * 0.55} ${shY - 1} L ${sw * 0.55} ${shY - 1} Q ${sw} ${shY} ${sw} ${shY + 4} L ${hw} ${-2} Q ${hw} 4 ${hw * 0.6} 4 L ${-hw * 0.6} 4 Q ${-hw} 4 ${-hw} ${-2} Z`;
-  const pat = () => {
-    const c = s.patternColor;
-    if (s.pattern === "stripes") return Array.from({ length: 9 }).map((_, i) => <rect key={i} x={-sw - 2} y={shY + i * (torso / 8)} width={sw * 2 + 4} height={torso / 20} fill={c} opacity={0.85} />);
-    if (s.pattern === "check")
-      return (
-        <g opacity={0.5} stroke={c} strokeWidth={1.4}>
-          {Array.from({ length: 8 }).map((_, i) => <line key={`h${i}`} x1={-sw - 2} x2={sw + 2} y1={shY + i * (torso / 7)} y2={shY + i * (torso / 7)} />)}
-          {Array.from({ length: 7 }).map((_, i) => <line key={`v${i}`} y1={shY - 2} y2={6} x1={-sw + i * (sw / 3)} x2={-sw + i * (sw / 3)} />)}
-        </g>
-      );
-    if (s.pattern === "dots") return Array.from({ length: 24 }).map((_, i) => <circle key={i} cx={-sw + 3 + (i % 4) * (sw / 1.7) + (Math.floor(i / 4) % 2) * 3} cy={shY + 5 + Math.floor(i / 4) * (torso / 6)} r={1.5} fill={c} />);
-    return null;
-  };
+  const geo = { sw, hw, shY, torso, limb, R: headR, legLen: h * (child ? 0.43 : 0.47), torsoD, clip: `c${id}`, seed: s.seed };
 
   // face
   const eye = (sx: number) => {
@@ -529,53 +496,63 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
   const backArms = (behind: boolean) => (
     // the person's own left/right swap sides on screen when seen from behind
     <g transform="scale(-1 1)">
-      {hidden(AL) === behind && drawArm(AL, pose.handL)}
-      {hidden(AR) === behind && drawArm(AR, pose.handR)}
+      {hidden(AL) === behind && drawArm(AL, pose.handL, true)}
+      {hidden(AR) === behind && drawArm(AR, pose.handR, false)}
     </g>
   );
   const coatHem = Math.max(LL.knee.y, LR.knee.y);
 
-  // skirt / sarong: hangs from the hip, drapes over the knees when sitting, covers the lap on the floor
-  const skirt = s.bottomKind === "skirt";
-  const cloth = s.bottomKind === "sarong" || skirt;
-  const clothLen = w0 * legLen * (skirt ? 0.5 : 0.82) + ws * (skirt ? kneeSit + limb * 0.55 : kneeSit + shin * 0.75) + wf * (B.hipFloor - 1);
-  const clothW = w0 * hw * (skirt ? 1.5 : 1.12) + ws * hw * (skirt ? 1.55 : 1.45) + wf * (skirt ? kneeX * 0.85 : kneeX + limb * 0.65);
-  const clothD = `M ${-hw} -3 L ${hw} -3 L ${clothW} ${clothLen} L ${-clothW} ${clothLen} Z`;
+  // tube skirt / pleated skirt: hangs from the hip, drapes over the knees when sitting, covers the lap on the floor
+  const skirt = bot.shape === "skirt";
+  const cloth = bot.shape !== "pants";
+  const clothLen = w0 * legLen * bot.len + ws * (skirt ? kneeSit + limb * 0.55 : kneeSit + shin * 0.75) + wf * (B.hipFloor - 1);
+  const clothW = w0 * hw * bot.wide + ws * hw * (skirt ? 1.55 : 1.45) + wf * (skirt ? kneeX * 0.85 : kneeX + limb * 0.65);
+  const clothEl = cloth ? <Cloth L={L} paint={paint} y0={-3} len={clothLen} wTop={hw} wBot={clothW} back={back} clip={`k${id}`} standing={w0} /> : null;
+  // hard hats come off in bed
+  const hatOn = !L.head || pose.lie < 0.5 || L.head.kind === "scarf" || L.head.kind === "band";
+  const glasses = L.has("glasses") && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={-R * 0.42} cy={R * 0.08} r={R * 0.3} /><circle cx={R * 0.42} cy={R * 0.08} r={R * 0.3} /><line x1={-R * 0.12} x2={R * 0.12} y1={R * 0.08} y2={R * 0.08} /></g>;
+  const torsoLayer = (
+    <>
+      <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
+      <g transform={`scale(1 ${1 + breathe * 0.004})`}><TopFront g={geo} L={L} paint={paint} skin={s.skin} back={back} /></g>
+      <Waistband L={L} paint={paint} hw={hw} back={back} />
+      <AccBody g={geo} L={L} paint={paint} back={back} layer="waist" lie={pose.lie} />
+      {s.outfit === "labcoat" && (back ? <CoatBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} /> : <CoatFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} />)}
+      {s.outfit === "patient" && (back ? <GownBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} /> : <GownFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} />)}
+      {!s.outfit && <OuterFront g={geo} L={L} hem={coatHem + limb * 0.5} back={back} seated={seated} />}
+      <AccBody g={geo} L={L} paint={paint} back={back} layer="over" lie={pose.lie} />
+    </>
+  );
 
   const fig = (
     <g transform={`translate(0 ${hipY})`}>
-      {back && seated > 0.5 && <ellipse cx={0} cy={4} rx={hw * 1.08} ry={limb * 0.75} fill={cloth ? s.bottom : s.outfit === "patient" ? GOWN : s.bottom} />}
+      {paint.defs}
+      {back && seated > 0.5 && <ellipse cx={0} cy={4} rx={hw * 1.08} ry={limb * 0.75} fill={paint.bottom} />}
       {crossed ? (
         <>
           {drawLeg(LL, "thigh")}
           {drawLeg(LR, "thigh")}
-          {cloth && <path d={clothD} fill={s.bottom} />}
-          {!(cloth && !skirt) ? <>{drawLeg(LR, "shin")}{drawLeg(LL, "shin")}</> : [LR, LL].map((l, i) => <ellipse key={i} cx={l.foot.x} cy={l.foot.y + 1} rx={limb * 0.85} ry={limb * 0.42} fill={s.shoe ?? s.skin} />)}
+          {clothEl}
+          {!(cloth && !skirt) ? <>{drawLeg(LR, "shin")}{drawLeg(LL, "shin")}</> : [LR, LL].map((l, i) => <Foot key={i} x={l.foot.x} y={l.foot.y} limb={limb} L={L} skin={s.skin} view={back ? "back" : "front"} />)}
         </>
       ) : (
         <>
           {/* the lap: top of both thighs, seen from slightly above */}
-          {ws > 0.5 && !back && !cloth && <path d={`M ${-hw} -2 L ${hw} -2 L ${hw * 0.78 + limb * 0.5} ${kneeSit} L ${-hw * 0.78 - limb * 0.5} ${kneeSit} Z`} fill={s.bottom} />}
+          {ws > 0.5 && !back && !cloth && <path d={`M ${-hw} -2 L ${hw} -2 L ${hw * 0.78 + limb * 0.5} ${kneeSit} L ${-hw * 0.78 - limb * 0.5} ${kneeSit} Z`} fill={paint.bottom} />}
           {drawLeg(LL)}
           {drawLeg(LR)}
-          {cloth && <path d={clothD} fill={s.bottom} />}
+          {clothEl}
+          <PantsExtras L={L} paint={paint} hw={hw} legLen={legLen} back={back} standing={w0} />
         </>
       )}
       <g transform={`rotate(${pose.lean})`}>
         {back ? (
           <>
-            {s.extra === "bag" && <rect x={-hw * 1.6} y={-torso * 0.35} width={hw * 0.9} height={torso * 0.42} rx={3} fill="#8a5a3a" />}
+            <AccBody g={geo} L={L} paint={paint} back layer="under" lie={pose.lie} />
             {backArms(true)}
-            <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
-            <path d={torsoD} fill={s.top} transform={`scale(1 ${1 + breathe * 0.004})`} />
-            <g clipPath={`url(#c${id})`}>{pat()}</g>
-            {s.topKind === "shirt" && <path d={`M ${-sw * 0.85} ${shY + torso * 0.16} Q 0 ${shY + torso * 0.22} ${sw * 0.85} ${shY + torso * 0.16}`} fill="none" stroke="rgba(0,0,0,.2)" strokeWidth={1.2} />}
-            {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
-            {s.extra === "sash" && <path d={`M ${sw * 0.9} ${shY} L ${sw * 0.35} ${shY - 1} L ${-hw} ${-torso * 0.1} L ${-hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
-            {s.extra === "bag" && <line x1={sw * 0.6} y1={shY} x2={-hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
-            {s.outfit === "labcoat" && <CoatBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} />}
-            {s.outfit === "patient" && <GownBack sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} />}
+            {torsoLayer}
             {backArms(false)}
+            <TopOverArms g={geo} L={L} paint={paint} back />
             <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
             {s.outfit === "labcoat" && <path d={`M ${-R * 0.55} ${shY + 1} Q 0 ${shY - R * 0.3} ${R * 0.55} ${shY + 1} L ${R * 0.5} ${shY - 2.5} Q 0 ${shY - R * 0.55} ${-R * 0.5} ${shY - 2.5} Z`} fill={COAT} stroke={COAT_EDGE} strokeWidth={1.1} />}
             <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
@@ -583,24 +560,15 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
               <ellipse cx={R} cy={Ry * 0.12} rx={R * 0.16} ry={R * 0.26} fill={s.skin} />
               <ellipse rx={R} ry={Ry} fill={s.skin} />
               <g fill={s.hair}>{backHair()}</g>
-              {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.32} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+              {hatOn && <Headwear L={L} paint={paint} R={R} Ry={Ry} view="back" />}
             </g>
           </>
         ) : (
           <>
-            {s.extra === "bag" && <rect x={hw * 0.7} y={-torso * 0.35} width={hw * 0.9} height={torso * 0.42} rx={3} fill="#8a5a3a" />}
-            <clipPath id={`c${id}`}><path d={torsoD} /></clipPath>
-            <path d={torsoD} fill={s.top} transform={`scale(1 ${1 + breathe * 0.004})`} />
-            <g clipPath={`url(#c${id})`}>{pat()}</g>
-            {s.topKind === "shirt" && <line x1={0} x2={0} y1={shY} y2={3} stroke="rgba(0,0,0,.25)" strokeWidth={1.2} />}
-            {s.topKind === "wrap" && <path d={`M ${-sw * 0.5} ${shY - 1} L ${sw * 0.5} ${shY - 1} L ${-hw * 0.2} ${-torso * 0.35} Z`} fill={s.skin} />}
-            {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-hw} -5 L ${hw} -5 L ${hw} 0 Q ${hw} 5 ${hw * 0.6} 5 L ${-hw * 0.6} 5 Q ${-hw} 5 ${-hw} 0 Z`} fill={s.bottom} />}
-            {s.extra === "sash" && <path d={`M ${-sw * 0.9} ${shY} L ${-sw * 0.35} ${shY - 1} L ${hw} ${-torso * 0.1} L ${hw * 0.5} 2 Z`} fill="#a8443f" opacity={0.95} />}
-            {s.extra === "bag" && <line x1={-sw * 0.6} y1={shY} x2={hw * 1.1} y2={-torso * 0.3} stroke="#8a5a3a" strokeWidth={2.4} />}
-            {s.outfit === "labcoat" && <CoatFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.5} />}
-            {s.outfit === "patient" && <GownFront sw={sw} hw={hw} shY={shY} torso={torso} hem={coatHem + limb * 0.3} />}
-            {drawArm(AL, pose.handL)}
-            {drawArm(AR, pose.handR)}
+            {torsoLayer}
+            {drawArm(AL, pose.handL, true)}
+            {drawArm(AR, pose.handR, false)}
+            <TopOverArms g={geo} L={L} paint={paint} back={false} />
             <rect x={-R * 0.3} y={shY - R * 0.5} width={R * 0.6} height={R * 0.7} fill={s.skin} />
             <g transform={`translate(0 ${shY - R * 0.35 - Ry}) rotate(${pose.head})`}>
               {style === 3 || style === 4 ? <g fill={s.hair}>{hairs[style]}</g> : null}
@@ -612,9 +580,9 @@ const Figure: React.FC<FigureProps & { back: boolean }> = ({
               <path d={`M 0 ${R * 0.18} l ${-R * 0.07} ${R * 0.24} l ${R * 0.13} ${R * 0.02}`} fill="none" stroke="rgba(60,30,20,.45)" strokeWidth={R * 0.06} strokeLinecap="round" />
               {mouths[m]}
               {s.age === "elder" && <path d={`M ${-R * 0.75} ${R * 0.5} q ${R * 0.1} ${R * 0.2} 0 ${R * 0.4} M ${R * 0.75} ${R * 0.5} q ${-R * 0.1} ${R * 0.2} 0 ${R * 0.4}`} fill="none" stroke="rgba(60,30,20,.35)" strokeWidth={R * 0.05} />}
-              {style !== 3 && style !== 4 ? <g fill={s.hair}>{hairs[style]}</g> : <g fill={s.hair}>{hairs[0]}</g>}
-              {s.extra === "glasses" && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={-R * 0.42} cy={R * 0.08} r={R * 0.3} /><circle cx={R * 0.42} cy={R * 0.08} r={R * 0.3} /><line x1={-R * 0.12} x2={R * 0.12} y1={R * 0.08} y2={R * 0.08} /></g>}
-              {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.32} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+              <g fill={s.hair}>{style === 3 || style === 4 || (style === 2 && hatOn && hidesBun(L)) ? hairs[0] : hairs[style]}</g>
+              {hatOn && <Headwear L={L} paint={paint} R={R} Ry={Ry} view="front" />}
+              {glasses}
               {f.sweat && <path transform={`translate(${R * 1.05} ${-R * 0.4})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
             </g>
           </>
@@ -678,7 +646,7 @@ export const PeopleSheet: React.FC = () => {
 // ---------- side view with real walk cycles (faces +x; flip with scale(-1,1)) ----------
 export type GaitName = keyof typeof GAITS;
 /** Ground covered by one full walk cycle (two steps), in units. Drive the phase by distance so feet never slide. */
-export const strideOf = (spec: PersonSpec, gait: Gait) => 4 * spec.h * (spec.age === "child" ? 0.43 : 0.47) * Math.sin(rad(gait.A));
+export const strideOf = (spec: PersonSpec, gait: Gait) => 4 * spec.h * (spec.age === "child" ? 0.43 : 0.47) * Math.sin(rad(gait.A * stepK(spec)));
 /** Natural speed in metres per second, for choosing walk distances in a script. */
 export const gaitMps = (spec: PersonSpec, gait: Gait) => (strideOf(spec, gait) * gait.cadence) / 100;
 
@@ -701,7 +669,7 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
   const phi = phase * 2 * Math.PI;
 
   const leg = (ph: number) => {
-    const th = gait ? rad(gait.A * Math.sin(ph)) : 0;
+    const th = gait ? rad(gait.A * stepK(s) * Math.sin(ph)) : 0;
     const k = gait ? rad(gait.k0 + gait.K * Math.max(0, Math.cos(ph))) : 0;
     const knee = { x: L * Math.sin(th), y: L * Math.cos(th) };
     const foot = { x: knee.x + L * Math.sin(th - k), y: knee.y + L * Math.cos(th - k) };
@@ -719,34 +687,39 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
     return { sh, el, hd };
   };
   const armB = arm(Math.sin(phi)), armF = arm(-Math.sin(phi));
-  const legSkin = s.bottomKind !== "pants";
-  const sleeve = s.topKind === "tee" ? 0.45 : s.topKind === "wrap" ? 0 : 1;
+  const look = lookOf(s.wear);
+  const paint = usePaints(id, look);
+  const bot = look.bottom;
   const dim = { filter: "brightness(0.8)" };
 
   const drawLeg = (l: ReturnType<typeof leg>, far: boolean) => (
     <g style={far ? dim : undefined}>
-      <path d={`M 0 0 L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`} fill="none" stroke={legSkin ? s.skin : s.bottom} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
-      {s.bottomKind === "shorts" && <path d={`M 0 0 L ${l.knee.x * 0.75} ${l.knee.y * 0.75}`} stroke={s.bottom} strokeWidth={limb * 1.4} strokeLinecap="round" />}
-      <ellipse cx={l.foot.x + limb * 0.45} cy={l.foot.y + 1} rx={limb * 0.95} ry={limb * 0.42} fill={s.shoe ?? s.skin} />
+      <path d={`M 0 0 L ${l.knee.x} ${l.knee.y} L ${l.foot.x} ${l.foot.y}`} fill="none" stroke={s.skin} strokeWidth={limb * 1.15} strokeLinecap="round" strokeLinejoin="round" />
+      <PantsLeg pts={[{ x: 0, y: 0 }, l.knee, l.foot]} f={bot.shape === "pants" ? bot.len : 0} L={look} paint={paint} limb={limb} />
+      <Foot x={l.foot.x} y={l.foot.y} limb={limb} L={look} skin={s.skin} view="side" />
     </g>
   );
   const drawArm = (a: ReturnType<typeof arm>, far: boolean) => (
     <g style={far ? dim : undefined}>
       <path d={`M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${a.hd.x} ${a.hd.y}`} fill="none" stroke={s.skin} strokeWidth={limb * 0.82} strokeLinecap="round" strokeLinejoin="round" />
-      {sleeve > 0 && (
-        <path
-          d={sleeve === 1 ? `M ${a.sh.x} ${a.sh.y} L ${a.el.x} ${a.el.y} L ${lerp(a.el.x, a.hd.x, 0.8)} ${lerp(a.el.y, a.hd.y, 0.8)}` : `M ${a.sh.x} ${a.sh.y} L ${lerp(a.sh.x, a.el.x, 0.55)} ${lerp(a.sh.y, a.el.y, 0.55)}`}
-          fill="none" stroke={s.top} strokeWidth={limb * 1.05} strokeLinecap="round" strokeLinejoin="round"
-        />
-      )}
+      <Sleeves a={a} L={look} paint={paint} limb={limb} watch={!far && look.has("watch")} coat={!!s.outfit} />
       {s.outfit === "labcoat" && <CoatSleeve a={a} limb={limb} />}
       <circle cx={a.hd.x} cy={a.hd.y} r={limb * 0.48} fill={s.skin} />
     </g>
   );
   const torsoD = `M ${-tw} ${shY + 5} Q ${-tw} ${shY - 1} 0 ${shY - 1} Q ${tw} ${shY - 1} ${tw} ${shY + 5} L ${tw * 1.05} -2 Q ${tw} 4 0 4 Q ${-tw} 4 ${-tw * 1.05} -2 Z`;
-  const longSkirt = s.bottomKind === "sarong";
-  const skirtLen = legLen * (longSkirt ? 0.8 : 0.48);
+  const skirtLen = legLen * bot.len;
   const spread = Math.max(Math.abs(back.knee.x), Math.abs(front.knee.x)) + limb * 0.75;
+  const sg = { tw, shY, torso, limb, R, L, torsoD, clip: `s${id}` };
+  // a tube skirt is wide enough at the hem to hold both legs where they cross the hem line
+  const atY = (l: ReturnType<typeof leg>, y: number) => {
+    const [a, b] = y <= l.knee.y ? [{ x: 0, y: 0 }, l.knee] : [l.knee, l.foot];
+    const u = Math.max(0, Math.min(1, (y - a.y) / ((b.y - a.y) || 1)));
+    return Math.abs(a.x + (b.x - a.x) * u);
+  };
+  const hemReach = Math.max(atY(back, skirtLen), atY(front, skirtLen));
+  const flare = Math.max(tw * 1.3, spread * 0.62);
+  const hatShown = !!look.head;
 
   // profile face
   const ex = R * 0.5, ey = R * 0.06, ew = R * 0.2;
@@ -760,26 +733,22 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
     <g transform={`translate(0 ${-hipH})`}>
       {drawLeg(back, true)}
       {drawLeg(front, false)}
-      {(s.bottomKind === "sarong" || s.bottomKind === "skirt") && (
-        <path d={`M ${-tw} -3 L ${tw} -3 L ${Math.max(tw * 1.15, spread * (skirtLen / L) * 0.55)} ${skirtLen} L ${-Math.max(tw * 1.15, spread * (skirtLen / L) * 0.55)} ${skirtLen} Z`} fill={s.bottom} />
-      )}
+      {bot.shape !== "pants" && <Cloth L={look} paint={paint} y0={-3} len={skirtLen} wTop={tw} wBot={Math.max(tw * (bot.shape === "skirt" ? 1.5 : 1.15), spread * (skirtLen / L) * 0.55, bot.shape === "tube" ? hemReach + limb * 0.62 : 0)} back clip={`k${id}`} standing={1} />}
+      {bot.jong && <path d={`M ${tw * 0.6} -2 Q ${tw * 1.5} ${L * 0.4} ${tw * 0.9} ${L * 0.8} L ${tw * 0.3} ${L * 0.7} Z`} fill={paint.bottom} stroke="rgba(0,0,0,.25)" strokeWidth={0.8} />}
       <g transform={`rotate(${gait ? gait.lean : 0})`}>
+        {paint.defs}
         {drawArm(armB, true)}
-        {s.extra === "bag" && <rect x={-tw * 1.9} y={-torso * 0.3} width={tw * 1.5} height={torso * 0.4} rx={3} fill="#8a5a3a" />}
+        <AccSideBehind g={sg} L={look} />
         <clipPath id={`s${id}`}><path d={torsoD} /></clipPath>
-        <path d={torsoD} fill={s.top} />
-        <g clipPath={`url(#s${id})`}>
-          {(s.pattern === "stripes" || s.pattern === "check") && Array.from({ length: 9 }).map((_, i) => <rect key={i} x={-tw - 2} y={shY + i * (torso / 8)} width={tw * 2 + 4} height={torso / 20} fill={s.patternColor} opacity={s.pattern === "check" ? 0.5 : 0.85} />)}
-          {s.pattern === "check" && Array.from({ length: 5 }).map((_, i) => <rect key={`v${i}`} x={-tw + i * (tw / 2)} y={shY - 2} width={1.4} height={torso + 8} fill={s.patternColor} opacity={0.5} />)}
-          {s.pattern === "dots" && Array.from({ length: 14 }).map((_, i) => <circle key={i} cx={-tw * 0.5 + (i % 2) * tw + (Math.floor(i / 2) % 2) * 2} cy={shY + 5 + Math.floor(i / 2) * (torso / 7)} r={1.5} fill={s.patternColor} />)}
-        </g>
-        {s.bottomKind !== "sarong" && s.bottomKind !== "skirt" && <path d={`M ${-tw * 1.05} -5 L ${tw * 1.05} -5 L ${tw * 1.05} 0 Q ${tw} 5 0 5 Q ${-tw} 5 ${-tw * 1.05} 0 Z`} fill={s.bottom} />}
-        {s.extra === "sash" && <path d={`M ${-tw} ${shY + 2} L ${tw * 0.2} ${shY - 1} L ${tw} ${-torso * 0.1} L ${tw * 0.2} 2 Z`} fill="#a8443f" opacity={0.95} />}
-        {s.outfit && <SideCover kind={s.outfit} tw={tw} shY={shY} hem={L * (s.outfit === "labcoat" ? 1.08 : 1.0)} flare={Math.max(tw * 1.3, spread * 0.62)} />}
+        <TopSide g={sg} L={look} paint={paint} skin={s.skin} />
+        {bot.shape === "pants" && <path d={`M ${-tw * 1.05} -5 L ${tw * 1.05} -5 L ${tw * 1.05} 0 Q ${tw} 5 0 5 Q ${-tw} 5 ${-tw * 1.05} 0 Z`} fill={paint.bottom} />}
+        {bot.jong && <path d={`M ${-tw * 1.05} -4 Q ${-tw * 1.6} 2 ${-tw * 1.0} 6 L ${-tw * 0.5} 3 Z`} fill={paint.bottom} stroke="rgba(0,0,0,.25)" strokeWidth={0.8} />}
+        <AccSide g={sg} L={look} paint={paint} />
+        {s.outfit ? <SideCover kind={s.outfit} tw={tw} shY={shY} hem={L * (s.outfit === "labcoat" ? 1.08 : 1.0)} flare={flare} /> : <OuterSide g={sg} L={look} hem={L * 1.08} flare={flare} />}
         <rect x={-R * 0.32} y={shY - R * 0.5} width={R * 0.64} height={R * 0.7} fill={s.skin} />
         <g transform={`translate(${R * 0.12} ${shY - R * 0.35 - Ry}) rotate(${gait ? gait.headTilt : 0})`}>
           <g fill={s.hair}>
-            {style === 2 && <circle cx={-R * 0.95} cy={-Ry * 0.75} r={R * 0.42} />}
+            {style === 2 && !(hatShown && look.head?.kind === "scarf") && <circle cx={-R * 0.95} cy={-Ry * 0.75} r={R * 0.42} />}
             {style === 3 && <path d={`M ${-R * 0.2} ${-Ry * 0.9} Q ${-R * 1.5} ${-Ry * 0.6} ${-R * 1.25} ${Ry * 2.3} L ${-R * 0.55} ${Ry * 2.2} L ${-R * 0.5} 0 Z`} />}
             {style === 4 && <path d={`M ${-R * 0.2} ${-Ry * 0.9} Q ${-R * 1.4} ${-Ry * 0.6} ${-R * 1.2} ${Ry * 0.8} L ${-R * 0.5} ${Ry * 0.75} L ${-R * 0.5} 0 Z`} />}
             {style === 5 && child && <circle cx={-R * 0.1} cy={-Ry * 1.2} r={R * 0.3} />}
@@ -806,8 +775,8 @@ export const PersonSide: React.FC<{ spec: PersonSpec; gait?: Gait | null; phase?
             <path d={m === "frown" ? `M ${mx - mw * 0.8} ${my + mw * 0.4} Q ${mx} ${my - mw * 0.3} ${mx + mw * 0.7} ${my + mw * 0.3}` : `M ${mx - mw * 0.7} ${my} Q ${mx} ${my + (m === "M" ? 0 : mw * 0.3)} ${mx + mw * 0.7} ${my}`} fill="none" stroke={INK} strokeWidth={R * 0.07} strokeLinecap="round" />
           )}
           {!(style === 5 && !child) ? <path d={cap} fill={s.hair} /> : <path d={`M ${-R * 1.05} ${Ry * 0.1} Q ${-R * 1.1} ${-Ry * 0.7} ${-R * 0.5} ${-Ry * 0.95} Q ${-R * 0.7} ${-Ry * 0.3} ${-R * 0.62} ${Ry * 0.28} Z`} fill={s.hair} />}
-          {s.extra === "glasses" && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={ex} cy={ey + R * 0.02} r={R * 0.3} /><line x1={ex - R * 0.3} x2={-R * 0.15} y1={ey} y2={ey - R * 0.05} /></g>}
-          {s.extra === "hat" && <g><ellipse cx={0} cy={-Ry * 0.72} rx={R * 1.75} ry={R * 0.3} fill="#e3c57c" /><path d={`M ${-R * 0.85} ${-Ry * 0.75} Q 0 ${-Ry * 1.9} ${R * 0.85} ${-Ry * 0.75} Z`} fill="#e3c57c" stroke="#b9963f" strokeWidth={1} /></g>}
+          <Headwear L={look} paint={paint} R={R} Ry={Ry} view="side" />
+          {look.has("glasses") && <g fill="none" stroke={INK} strokeWidth={R * 0.07}><circle cx={ex} cy={ey + R * 0.02} r={R * 0.3} /><line x1={ex - R * 0.3} x2={-R * 0.15} y1={ey} y2={ey - R * 0.05} /></g>}
           {f.sweat && <path transform={`translate(${-R * 0.5} ${-R * 0.5})`} d={`M 0 ${-R * 0.3} Q ${R * 0.25} ${R * 0.1} 0 ${R * 0.22} Q ${-R * 0.25} ${R * 0.1} 0 ${-R * 0.3} Z`} fill="#8fd0f2" />}
         </g>
         {drawArm(armF, false)}

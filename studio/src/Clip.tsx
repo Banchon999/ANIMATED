@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { Audio } from "@remotion/media";
 import { FeelName, GaitName, headCenter, headCenterSide, makePerson, mixPose, Mouth, Outfit, OUTFITS, Person, PersonBack, PersonSide, PersonSpec, Pose, PoseName, POSES, Stool, strideOf, Age, Era } from "./People";
+import { checkWear, WearSpec } from "./Wardrobe";
 import { BEAM_DEFAULT, BeamFx, Fx, FX_KINDS, FlashFx, QuestionFx, SparksFx } from "./Fx";
 import { GAITS } from "./Character";
 import { SetName, SETS, SetStage } from "./Sets";
@@ -40,7 +41,7 @@ export type ShotScript = {
 export type ClipScript = {
   id: string;
   seed: number;
-  cast: Record<string, { seed: number; age?: Age; female?: boolean; era?: Era; outfit?: Outfit }>;
+  cast: Record<string, { seed: number; age?: Age; female?: boolean; era?: Era; outfit?: Outfit; wear?: WearSpec; lead?: boolean }>;
   shots: ShotScript[];
   audio?: string; // file in public/audio/, plays from frame 0 for the whole clip
 };
@@ -50,7 +51,17 @@ export const clipFrames = (c: ClipScript) => c.shots.reduce((n, s) => n + Math.r
 /** Fail early, with a readable message, when a script names something the kit does not have. */
 export const validateClip = (c: ClipScript) => {
   const bad = (msg: string) => { throw new Error(`clips/${c.id}.json: ${msg}`); };
-  for (const [name, p] of Object.entries(c.cast)) if (p.outfit && !OUTFITS.includes(p.outfit)) bad(`cast "${name}": unknown outfit "${p.outfit}" (have: ${OUTFITS.join(", ")})`);
+  for (const [name, p] of Object.entries(c.cast)) {
+    if (p.outfit && !OUTFITS.includes(p.outfit)) bad(`cast "${name}": unknown outfit "${p.outfit}" (have: ${OUTFITS.join(", ")})`);
+    if (p.lead !== undefined && typeof p.lead !== "boolean") bad(`cast "${name}": lead must be true or false`);
+    if (p.wear !== undefined) {
+      if (!p.era) bad(`cast "${name}": a cast entry with "wear" needs "era" (old, rural or city) so the pieces can be checked`);
+      const problems = checkWear(p.wear, p.era!);
+      if (problems.length) bad(`cast "${name}": ${problems.join("; ")}`);
+    }
+    // the lead never wears the same outfit twice: dress.mjs picks an unused one and logs it in wardrobe/used.json
+    if (p.lead && !p.wear) bad(`cast "${name}" is a lead but has no "wear": run  node scripts/dress.mjs ${c.id}`);
+  }
   if (c.audio !== undefined && (typeof c.audio !== "string" || !c.audio)) bad(`audio must be a file name in public/audio/`);
   c.shots.forEach((s, i) => {
     const at = `shot ${i + 1}`;

@@ -2,7 +2,7 @@
   "id": "sample",
   "seed": 7,
   "cast": {
-    "mali": { "seed": 12, "age": "adult", "female": true, "era": "rural" },
+    "mali": { "seed": 12, "age": "adult", "female": true, "era": "rural", "lead": true, "wear": { "top": "kokrachao", "bottom": "phathung", "acc": ["bag"], "feet": "flipflops", "colors": { "top": "#b9c6d6", "top2": "#fbf6ec", "bottom": "#8a5a3a", "bottom2": "#f4e4c6", "acc": "#5a4a3a", "feet": "#f3c044" }, "pattern": "plain" } },
     "yai": { "seed": 27, "age": "elder", "female": true, "era": "old" },
     "ton": { "seed": 4, "age": "child", "female": false, "era": "rural" }
   },

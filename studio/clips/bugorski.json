@@ -8,7 +8,9 @@
       "age": "adult",
       "female": false,
       "era": "city",
-      "outfit": "labcoat"
+      "outfit": "labcoat",
+      "lead": true,
+      "wear": { "top": "tee", "bottom": "jeans", "feet": "sandals", "colors": { "top": "#5560c9", "top2": "#d8c7a0", "bottom": "#33507c", "bottom2": "#d8c7a0", "feet": "#2b2b2b" }, "pattern": "plain" }
     },
     "doctor": {
       "seed": 21,

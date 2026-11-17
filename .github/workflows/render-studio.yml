@@ -52,7 +52,7 @@ jobs:
         run: |
           mkdir -p out/parts
           for attempt in 1 2 3; do
-            if npx remotion render "${{ matrix.comp }}" "out/parts/${{ matrix.comp }}-${{ matrix.part }}.mp4" ${{ matrix.range }} --muted --crf=18; then
+            if npx remotion render "${{ matrix.comp }}" "out/parts/${{ matrix.comp }}-${{ matrix.part }}.mp4" ${{ matrix.range }} --muted --crf=18 --timeout=120000; then
               exit 0
             fi
             echo "::warning::attempt $attempt failed for ${{ matrix.comp }} part ${{ matrix.part }}"

@@ -63,7 +63,7 @@
       "set": "room",
       "time": "night",
       "cam": "close",
-      "dur": 3.0,
+      "dur": 2.6667,
       "focus": "fah",
       "actors": [
         {
@@ -77,7 +77,7 @@
           "hold": "phone",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.333,
               "feel": "shock"
             }
           ]
@@ -106,7 +106,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 3.0,
+      "dur": 3.8,
       "focus": "daeng+fah",
       "actors": [
         {
@@ -120,7 +120,7 @@
           "hold": "notebook",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.9,
               "pose": "stand",
               "feel": "calm"
             }
@@ -137,7 +137,7 @@
           "hold": "notebook",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.533,
               "pose": "carry",
               "feel": "shock"
             }
@@ -153,7 +153,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.8667,
       "focus": "fah+sri",
       "actors": [
         {
@@ -170,7 +170,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.433,
               "pose": "wave",
               "feel": "happy"
             }
@@ -208,7 +208,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.7667,
       "focus": "fah+sri",
       "actors": [
         {
@@ -221,7 +221,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.883,
               "pose": "bow",
               "feel": "calm"
             }
@@ -255,7 +255,7 @@
       "set": "village",
       "time": "morning",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.8667,
       "focus": "sri",
       "actors": [
         {
@@ -268,7 +268,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.933,
               "pose": "stand",
               "feel": "calm"
             }
@@ -300,7 +300,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.5,
+      "dur": 4.4667,
       "focus": "fah+sri",
       "actors": [
         {
@@ -313,7 +313,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.985,
               "pose": "stand",
               "feel": "sad"
             }
@@ -358,7 +358,7 @@
       "set": "market",
       "time": "morning",
       "cam": "wide",
-      "dur": 4.0,
+      "dur": 3.6333,
       "focus": "daeng+sri",
       "actors": [
         {
@@ -375,7 +375,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.271,
               "pose": "stand",
               "feel": "calm"
             }
@@ -409,7 +409,7 @@
       "set": "market",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.5,
+      "dur": 3.9333,
       "focus": "sri+daeng",
       "actors": [
         {
@@ -422,7 +422,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.185,
               "pose": "bow",
               "feel": "shy"
             }
@@ -464,7 +464,7 @@
       "set": "market",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 5.6,
       "focus": "fah",
       "actors": [
         {
@@ -478,7 +478,7 @@
           "hold": "phone",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.8,
               "pose": "think",
               "feel": "sad"
             }
@@ -495,7 +495,7 @@
       "time": "night",
       "flashback": true,
       "cam": "close",
-      "dur": 4.0,
+      "dur": 2.2,
       "focus": "sri_young",
       "actors": [
         {
@@ -508,7 +508,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.1,
               "pose": "think",
               "feel": "sad"
             }
@@ -539,7 +539,7 @@
       "time": "night",
       "flashback": true,
       "cam": "mid",
-      "dur": 4.5,
+      "dur": 5.0,
       "focus": "sri_young",
       "actors": [
         {
@@ -586,7 +586,7 @@
       "set": "room",
       "time": "night",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 5.4,
       "focus": "fah",
       "actors": [
         {
@@ -600,7 +600,7 @@
           "hold": "drawing",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.7,
               "feel": "shock"
             }
           ]
@@ -624,7 +624,7 @@
       "set": "room",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 2.2667,
       "focus": "fah+sri",
       "actors": [
         {
@@ -638,7 +638,7 @@
           "hold": "drawing",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.133,
               "pose": "cry",
               "feel": "sad"
             }
@@ -672,7 +672,7 @@
       "set": "room",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.4667,
       "focus": "sri+fah",
       "actors": [
         {
@@ -685,7 +685,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.792,
               "feel": "happy"
             }
           ]
@@ -719,7 +719,7 @@
       "set": "room",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.8,
       "focus": "fah+sri",
       "actors": [
         {
@@ -732,7 +732,7 @@
           "feel": "cry",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.4,
               "feel": "sad"
             }
           ]
@@ -765,7 +765,7 @@
       "set": "room",
       "time": "night",
       "cam": "mid",
-      "dur": 3.5,
+      "dur": 3.5667,
       "focus": "sri+fah",
       "actors": [
         {
@@ -778,7 +778,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.529,
               "pose": "bow",
               "feel": "happy"
             }
@@ -812,7 +812,7 @@
       "set": "temple",
       "time": "morning",
       "cam": "wide",
-      "dur": 4.0,
+      "dur": 3.3,
       "focus": "fah",
       "actors": [
         {
@@ -827,7 +827,7 @@
           "hold": "phone",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.062,
               "pose": "think",
               "feel": "sad"
             }
@@ -843,7 +843,7 @@
       "set": "temple",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.8667,
       "focus": "daeng+fah",
       "actors": [
         {
@@ -861,7 +861,7 @@
           "hold": "bowl",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.417,
               "pose": "sit",
               "feel": "calm"
             }
@@ -896,7 +896,7 @@
       "set": "temple",
       "time": "morning",
       "cam": "close",
-      "dur": 3.5,
+      "dur": 3.8333,
       "focus": "daeng",
       "actors": [
         {
@@ -909,7 +909,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.643,
               "feel": "sad"
             }
           ]
@@ -933,7 +933,7 @@
       "set": "temple",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 2.8667,
       "focus": "daeng+fah",
       "actors": [
         {
@@ -946,7 +946,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.433,
               "pose": "cry",
               "feel": "sad"
             }
@@ -981,7 +981,7 @@
       "set": "temple",
       "time": "morning",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.8667,
       "focus": "fah",
       "actors": [
         {
@@ -994,11 +994,11 @@
           "feel": "shock",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.45,
               "feel": "calm"
             },
             {
-              "at": 3.0,
+              "at": 2.9,
               "feel": "sad"
             }
           ]
@@ -1013,7 +1013,7 @@
       "set": "room",
       "time": "evening",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 5.1333,
       "focus": "fah",
       "actors": [
         {
@@ -1026,7 +1026,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.567,
               "pose": "think",
               "feel": "calm"
             }
@@ -1052,7 +1052,7 @@
       "set": "room",
       "time": "evening",
       "cam": "close",
-      "dur": 4.5,
+      "dur": 4.6333,
       "focus": "fah",
       "actors": [
         {
@@ -1065,11 +1065,11 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.059,
               "feel": "sad"
             },
             {
-              "at": 3.5,
+              "at": 3.604,
               "feel": "shy"
             }
           ]
@@ -1094,7 +1094,7 @@
       "set": "room",
       "time": "evening",
       "cam": "close",
-      "dur": 3.5,
+      "dur": 1.7333,
       "focus": "fah",
       "actors": [
         {
@@ -1107,7 +1107,7 @@
           "feel": "shy",
           "then": [
             {
-              "at": 1.5,
+              "at": 0.743,
               "pose": "cry",
               "feel": "calm"
             }
@@ -1132,7 +1132,7 @@
       "set": "village",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.9,
       "focus": "fah",
       "actors": [
         {
@@ -1146,7 +1146,7 @@
           "hold": "pot",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.438,
               "pose": "think",
               "feel": "calm"
             }
@@ -1186,7 +1186,7 @@
       "set": "village",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.2,
       "focus": "sri+fah",
       "actors": [
         {
@@ -1199,7 +1199,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.625,
               "feel": "happy"
             }
           ]
@@ -1239,7 +1239,7 @@
       "set": "village",
       "time": "night",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.3333,
       "focus": "fah",
       "actors": [
         {
@@ -1252,7 +1252,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.667,
               "feel": "shock"
             }
           ]
@@ -1276,7 +1276,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 5.3667,
       "focus": "daeng+fah",
       "actors": [
         {
@@ -1290,7 +1290,7 @@
           "hold": "bowl",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.683,
               "pose": "think",
               "feel": "calm"
             }
@@ -1331,7 +1331,7 @@
       "set": "village",
       "time": "morning",
       "cam": "close",
-      "dur": 4.5,
+      "dur": 4.3333,
       "focus": "sri",
       "actors": [
         {
@@ -1344,11 +1344,11 @@
           "feel": "happy",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.444,
               "feel": "sad"
             },
             {
-              "at": 3.0,
+              "at": 2.889,
               "feel": "calm"
             }
           ]
@@ -1363,7 +1363,7 @@
       "set": "village",
       "time": "morning",
       "cam": "wide",
-      "dur": 5.0,
+      "dur": 5.3333,
       "focus": "fah+sri",
       "actors": [
         {
@@ -1376,7 +1376,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 3.0,
+              "at": 3.2,
               "pose": "think",
               "feel": "neutral"
             }
@@ -1429,5 +1429,6 @@
         "*คุณ*เห็นมันไหม?"
       ]
     }
-  ]
+  ],
+  "audio": "mae-ep3.mp3"
 }

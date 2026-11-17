@@ -66,7 +66,7 @@
       "set": "market",
       "time": "morning",
       "cam": "close",
-      "dur": 3.0,
+      "dur": 3.8,
       "focus": "daeng",
       "actors": [
         {
@@ -79,7 +79,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.9,
               "pose": "cheer",
               "feel": "happy"
             }
@@ -95,7 +95,7 @@
       "set": "room",
       "time": "night",
       "cam": "close",
-      "dur": 3.0,
+      "dur": 2.8333,
       "focus": "prop:0",
       "props": [
         {
@@ -135,7 +135,7 @@
           "view": "back",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.417,
               "pose": "sitfloor",
               "feel": "calm"
             }
@@ -151,7 +151,7 @@
       "set": "room",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.5333,
       "focus": "fah",
       "props": [
         {
@@ -188,7 +188,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.833,
               "feel": "shock"
             }
           ]
@@ -203,7 +203,7 @@
       "set": "room",
       "time": "morning",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.3667,
       "focus": "fah",
       "actors": [
         {
@@ -217,7 +217,7 @@
           "hold": "slip",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.683,
               "pose": "stand",
               "feel": "sad"
             }
@@ -233,7 +233,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.9,
       "focus": "fah+daeng",
       "props": [
         {
@@ -260,7 +260,7 @@
           "hold": "slip",
           "then": [
             {
-              "at": 3.0,
+              "at": 2.925,
               "pose": "point",
               "feel": "angry"
             }
@@ -285,7 +285,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.6333,
       "focus": "fah+daeng",
       "props": [
         {
@@ -307,7 +307,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.317,
               "feel": "sad"
             }
           ]
@@ -322,7 +322,7 @@
           "feel": "angry",
           "then": [
             {
-              "at": 3.0,
+              "at": 3.475,
               "pose": "stand",
               "feel": "shock"
             }
@@ -338,7 +338,7 @@
       "set": "village",
       "time": "morning",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 4.3,
       "focus": "fah",
       "actors": [
         {
@@ -351,7 +351,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.612,
               "feel": "angry"
             }
           ]
@@ -366,7 +366,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 3.5,
+      "dur": 3.8333,
       "focus": "fah+daeng",
       "actors": [
         {
@@ -379,7 +379,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.19,
               "pose": "cry",
               "feel": "sad"
             }
@@ -395,7 +395,7 @@
           "feel": "angry",
           "then": [
             {
-              "at": 3.0,
+              "at": 3.286,
               "feel": "sad"
             }
           ]
@@ -410,7 +410,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 3.5,
+      "dur": 3.8,
       "focus": "fah+daeng",
       "actors": [
         {
@@ -423,7 +423,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.171,
               "pose": "stand",
               "feel": "sad"
             }
@@ -439,7 +439,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.714,
               "pose": "think",
               "feel": "sad"
             }
@@ -455,7 +455,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.4667,
       "focus": "fah+daeng",
       "actors": [
         {
@@ -469,7 +469,7 @@
           "hold": "notebook",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.733,
               "pose": "stand",
               "feel": "calm"
             }
@@ -485,7 +485,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.167,
               "pose": "carry",
               "feel": "shock"
             }
@@ -501,7 +501,7 @@
       "set": "village",
       "time": "day",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 2.9667,
       "focus": "prop:1",
       "props": [
         {
@@ -532,7 +532,7 @@
           "stool": true,
           "then": [
             {
-              "at": 2.0,
+              "at": 1.483,
               "pose": "think",
               "feel": "calm"
             }
@@ -553,7 +553,7 @@
       "set": "village",
       "time": "day",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 5.0667,
       "focus": "fah",
       "actors": [
         {
@@ -568,7 +568,7 @@
           "stool": true,
           "then": [
             {
-              "at": 2.5,
+              "at": 3.167,
               "pose": "cry",
               "feel": "sad"
             }
@@ -584,7 +584,7 @@
       "set": "village",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 2.0333,
       "focus": "fah",
       "props": [
         {
@@ -607,7 +607,7 @@
           "hold": "pot",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.017,
               "pose": "think",
               "feel": "neutral"
             }
@@ -623,7 +623,7 @@
       "set": "village",
       "time": "night",
       "cam": "close",
-      "dur": 3.5,
+      "dur": 5.1333,
       "focus": "prop:0",
       "mood": "comedy",
       "props": [
@@ -646,7 +646,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 1.5,
+              "at": 2.2,
               "pose": "cry",
               "feel": "shock"
             }
@@ -662,7 +662,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.5333,
       "focus": "daeng+fah",
       "mood": "comedy",
       "props": [
@@ -689,7 +689,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.767,
               "pose": "cheer",
               "feel": "happy"
             }
@@ -715,7 +715,7 @@
       "set": "village",
       "time": "morning",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.8667,
       "focus": "fah+daeng",
       "actors": [
         {
@@ -728,7 +728,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.433,
               "pose": "think",
               "feel": "calm"
             }
@@ -754,7 +754,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "wide",
-      "dur": 4.0,
+      "dur": 3.0,
       "focus": "sri+fah",
       "props": [
         {
@@ -780,7 +780,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.5,
+              "at": 1.875,
               "pose": "sit",
               "feel": "calm"
             }
@@ -809,7 +809,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.9333,
       "focus": "sri+fah",
       "props": [
         {
@@ -831,7 +831,7 @@
           "feel": "shy",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.467,
               "pose": "bow",
               "feel": "sad"
             }
@@ -857,7 +857,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 4.1,
       "focus": "sri",
       "props": [
         {
@@ -879,7 +879,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.05,
               "feel": "sad"
             }
           ]
@@ -894,7 +894,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 2.8,
       "focus": "sri+fah",
       "props": [
         {
@@ -916,7 +916,7 @@
           "feel": "shock",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.4,
               "feel": "sad"
             }
           ]
@@ -940,7 +940,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.9667,
       "focus": "fah",
       "actors": [
         {
@@ -953,7 +953,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 1.5,
+              "at": 1.488,
               "pose": "cry",
               "feel": "cry"
             }
@@ -969,7 +969,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 5.5,
       "focus": "fah",
       "actors": [
         {
@@ -983,7 +983,7 @@
           "hold": "phone",
           "then": [
             {
-              "at": 2.5,
+              "at": 3.438,
               "pose": "think",
               "feel": "neutral"
             }
@@ -999,7 +999,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.1667,
       "focus": "fah",
       "actors": [
         {
@@ -1013,7 +1013,7 @@
           "hold": "phone",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.583,
               "pose": "cry",
               "feel": "sad"
             }
@@ -1034,7 +1034,7 @@
       "set": "clinic",
       "time": "day",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.1333,
       "focus": "sri+fah",
       "actors": [
         {
@@ -1047,7 +1047,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.583,
               "feel": "shy"
             }
           ]
@@ -1071,7 +1071,7 @@
       "set": "street",
       "time": "evening",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.6,
       "focus": "sri+fah",
       "actors": [
         {
@@ -1101,7 +1101,7 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.875,
               "pose": "stand",
               "feel": "sad"
             }
@@ -1117,7 +1117,7 @@
       "set": "village",
       "time": "evening",
       "cam": "wide",
-      "dur": 4.0,
+      "dur": 2.5667,
       "focus": "sri+fah",
       "props": [
         {
@@ -1143,7 +1143,7 @@
           "feel": "happy",
           "then": [
             {
-              "at": 1.5,
+              "at": 0.963,
               "pose": "wave",
               "feel": "happy"
             }
@@ -1172,7 +1172,7 @@
       "set": "village",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 4.8,
       "focus": "sri+fah",
       "props": [
         {
@@ -1198,7 +1198,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 2.4,
               "pose": "wave",
               "feel": "shy"
             }
@@ -1223,7 +1223,7 @@
       "set": "room",
       "time": "night",
       "cam": "mid",
-      "dur": 4.0,
+      "dur": 3.7,
       "focus": "fah",
       "props": [
         {
@@ -1261,7 +1261,7 @@
           "feel": "calm",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.85,
               "pose": "think",
               "feel": "sad"
             }
@@ -1276,7 +1276,7 @@
     {
       "set": "room",
       "time": "night",
-      "cam": "close",
+      "cam": "mid",
       "dur": 3.5,
       "focus": "prop:0",
       "props": [
@@ -1301,8 +1301,8 @@
         {
           "who": "fah",
           "at": [
-            0.5,
-            1.5
+            -0.1,
+            1.0
           ],
           "pose": "sit",
           "feel": "sad",
@@ -1324,7 +1324,7 @@
       "set": "room",
       "time": "night",
       "cam": "close",
-      "dur": 4.0,
+      "dur": 3.5,
       "focus": "fah",
       "props": [
         {
@@ -1346,12 +1346,12 @@
           "feel": "sad",
           "then": [
             {
-              "at": 2.0,
+              "at": 1.75,
               "pose": "cry",
               "feel": "cry"
             },
             {
-              "at": 3.5,
+              "at": 3.062,
               "pose": "stand",
               "feel": "cry"
             }
@@ -1367,7 +1367,7 @@
       "set": "room",
       "time": "night",
       "cam": "wide",
-      "dur": 4.0,
+      "dur": 3.6667,
       "focus": "fah+sri",
       "props": [
         {
@@ -1397,7 +1397,7 @@
           "view": "back",
           "then": [
             {
-              "at": 2.5,
+              "at": 2.292,
               "pose": "think",
               "feel": "sad"
             }
@@ -1418,5 +1418,6 @@
         "ฟ้า*ยังไม่ได้นอน*"
       ]
     }
-  ]
+  ],
+  "audio": "mae-ep2.mp3"
 }

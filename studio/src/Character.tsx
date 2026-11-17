@@ -44,6 +44,8 @@ export const GAITS = {
   stroll: { A: 24, cadence: 0.95, K: 38, k0: 4, lean: 3, armSwing: 24, armBase: 0, elbow: 14, headTilt: 0 },
   hurry: { A: 44, cadence: 2.0, K: 80, k0: 12, lean: 17, armSwing: 58, armBase: 8, elbow: 88, headTilt: 4 },
   sneak: { A: 30, cadence: 0.62, K: 92, k0: 30, lean: 15, armSwing: 7, armBase: 62, elbow: 98, headTilt: -14 },
+  // small quiet steps, upright: following someone at a distance, walking in grief
+  slow: { A: 15, cadence: 0.62, K: 22, k0: 5, lean: 3, armSwing: 9, armBase: 3, elbow: 10, headTilt: 8 },
   tired: { A: 11, cadence: 0.55, K: 16, k0: 9, lean: 25, armSwing: 4, armBase: 24, elbow: 3, headTilt: 20 },
 } satisfies Record<string, Gait>;
 const L1 = 25;

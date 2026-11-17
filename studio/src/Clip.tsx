@@ -47,6 +47,29 @@ export type ShotScript = {
   mood?: MoodCue; // overrides the clip's mood for this shot
   flashback?: boolean; // sepia flashback treatment; the cast wear their "old" era clothes (or flashbackWear)
   props?: PropCue[]; // props of the prop library for this shot (listed before the set's setProps)
+  crowd?: Crowd; // background extras: random people standing behind the cast
+};
+/** Background extras. They stand between z[0] and z[1] (smaller z = farther from the camera), spread over x. */
+export type Crowd = { n: number; seed?: number; era?: Era; feel?: FeelName; poses?: PoseName[]; x?: [number, number]; z?: [number, number]; walk?: number };
+const crowdCues = (c: Crowd, shotSeed: number): { cues: ActorCue[]; people: Record<string, PersonSpec> } => {
+  const r = rng((c.seed ?? shotSeed) * 977 + 31);
+  const [x0, x1] = c.x ?? [-1.9, 1.9];
+  const [z0, z1] = c.z ?? [0.6, 1.8];
+  const poses = c.poses ?? ["stand", "stand", "wai", "think", "stand", "carry"];
+  const cues: ActorCue[] = [];
+  const people: Record<string, PersonSpec> = {};
+  for (let i = 0; i < c.n; i++) {
+    const who = `~crowd${i}`;
+    people[who] = makePerson((c.seed ?? shotSeed) * 101 + i * 7 + 5, { era: c.era, age: r() < 0.15 ? "child" : r() < 0.3 ? "elder" : "adult" });
+    const x = x0 + ((i + 0.5 + (r() - 0.5) * 0.6) / c.n) * (x1 - x0);
+    const z = z0 + r() * (z1 - z0);
+    const walking = i < (c.walk ?? 0);
+    cues.push({
+      who, at: [x, z], face: r() < 0.5 ? 1 : -1, feel: c.feel ?? (r() < 0.5 ? "happy" : "neutral"),
+      ...(walking ? { walkTo: [x + (r() < 0.5 ? -1 : 1) * (0.8 + r()), z] as [number, number], gait: "stroll" as GaitName } : { pose: poses[Math.floor(r() * poses.length)] }),
+    });
+  }
+  return { cues, people };
 };
 export type ClipScript = {
   id: string;
@@ -57,6 +80,10 @@ export type ClipScript = {
   mood?: MoodCue; // clip-wide mood: horror, comedy, drama, explainer (absent = the plain kit look)
   flashback?: [number, number]; // shot numbers (1-based, inclusive) shown as a flashback
   setProps?: Partial<Record<SetName, PropCue[]>>; // props standing in a set for every shot of the clip in that set
+  /** Subtitles timed to the narration (seconds on the clip timeline). When present they replace the shots' captions. */
+  subs?: { s: number; e: number; text: string }[];
+  /** Cover image: a frame of the clip with a title over it (composition Thumb-<id>). */
+  thumb?: { frame: number; title: string[]; tag?: string };
 };
 type CastEntry = ClipScript["cast"][string];
 
@@ -429,7 +456,7 @@ const figureZ = (set: SetName, fz: number) =>
   ({ room: 0.12, cityroom: 0.1, clinic: 0.1, school: 0.1, shop: -1.4, accelerator: -4.6, temple: -1.2, market: -2.2 } as Partial<Record<SetName, number>>)[set] ?? fz - 5;
 
 /** One frame of a clip script (also used by review sheets). */
-export const ClipView: React.FC<{ script: ClipScript; frame: number; width: number; height: number; audio?: boolean }> = ({ script, frame, width, height, audio = true }) => {
+export const ClipView: React.FC<{ script: ClipScript; frame: number; width: number; height: number; audio?: boolean; bare?: boolean }> = ({ script, frame, width, height, audio = true, bare = false }) => {
   let start = 0;
   let idx = 0;
   for (let i = 0; i < script.shots.length; i++) {
@@ -450,7 +477,9 @@ export const ClipView: React.FC<{ script: ClipScript; frame: number; width: numb
   const people: Record<string, PersonSpec> = {};
   for (const [name, c] of Object.entries(script.cast)) people[name] = makePerson(c.seed, fb ? flashbackCast(c) : c);
 
-  const states = shot.actors.map((cue) => ({ cue, spec: people[cue.who], ...cueState(cue, people[cue.who], t, shot.dur) }));
+  const crowd = shot.crowd ? crowdCues(shot.crowd, script.seed * 53 + idx) : { cues: [], people: {} };
+  Object.assign(people, crowd.people);
+  const states = [...crowd.cues, ...shot.actors].map((cue) => ({ cue, spec: people[cue.who], ...cueState(cue, people[cue.who], t, shot.dur) }));
   // lying is drawn inside the actor's face-flipped group, so turn headDir into that frame
   const lieOf = (s: (typeof states)[number]) => ({ on: s.cue.lieOn ?? 0, dir: ((s.cue.headDir ?? 1) * s.face) as 1 | -1 });
   // close-ups look at the head: follow it down when the actor sits or lies (unchanged for standing poses)
@@ -560,9 +589,37 @@ export const ClipView: React.FC<{ script: ClipScript; frame: number; width: numb
       {fx.map((f, i) => (f.kind === "flash" ? <FlashFx key={i} t={t} at={f.at} /> : null))}
       {fb && (fbStart || fbEnd) ? <FlashbackWhoosh t={t} dur={shot.dur} start={fbStart} end={fbEnd} width={width} height={height} /> : null}
       {shot.caption?.length && shade ? <AbsoluteFill style={{ background: "linear-gradient(rgba(0,0,0,0) 62%, rgba(0,0,0,0.38) 80%, rgba(0,0,0,0.08) 96%)" }} /> : null}
-      {shot.card ? (mood ? <MoodCard mood={mood} card={shot.card} t={t} frame={frame} /> : <Card card={shot.card} t={t} />) : null}
-      {shot.caption?.length ? (mood ? <MoodCaption mood={mood} lines={shot.caption} t={t} dur={shot.dur} frame={frame} /> : <Caption lines={shot.caption} t={t} dur={shot.dur} />) : null}
+      {!bare && shot.card ? (mood ? <MoodCard mood={mood} card={shot.card} t={t} frame={frame} /> : <Card card={shot.card} t={t} />) : null}
+      {bare ? null : script.subs ? (() => {
+        const gt = frame / FPS;
+        const sub = script.subs.find((x) => gt >= x.s && gt < x.e);
+        if (!sub) return null;
+        const st = gt - sub.s, sd = sub.e - sub.s;
+        return mood ? <MoodCaption key={sub.s} mood={mood} lines={[sub.text]} t={st} dur={sd} frame={frame} /> : <Caption key={sub.s} lines={[sub.text]} t={st} dur={sd} />;
+      })() : shot.caption?.length ? (mood ? <MoodCaption mood={mood} lines={shot.caption} t={t} dur={shot.dur} frame={frame} /> : <Caption lines={shot.caption} t={t} dur={shot.dur} />) : null}
       {script.audio && audio ? <Audio src={staticFile(`audio/${script.audio}`)} /> : null}
+    </AbsoluteFill>
+  );
+};
+
+/** Cover image for a clip: one frame without captions, a dark band and the title in large type. */
+export const Thumb: React.FC<{ script: ClipScript }> = ({ script }) => {
+  const { width, height } = useVideoConfig();
+  ensureFonts();
+  const th = script.thumb ?? { frame: 0, title: [script.id] };
+  const mark = (line: string) => line.split(/(\*[^*]+\*)/).map((p, i) => (p.startsWith("*") ? <span key={i} style={{ color: "#ffd23f" }}>{p.slice(1, -1)}</span> : <span key={i}>{p}</span>));
+  return (
+    <AbsoluteFill style={{ background: "#000" }}>
+      <ClipView script={script} frame={th.frame} width={width} height={height} audio={false} bare />
+      <AbsoluteFill style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 30%, rgba(0,0,0,0) 48%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.75) 100%)" }} />
+      <div style={{ position: "absolute", top: 150, left: 70, right: 70, fontFamily: "Kanit", fontWeight: 800, color: "#fff", fontSize: 118, lineHeight: 1.12, textAlign: "center", textShadow: "0 6px 0 rgba(0,0,0,0.55), 0 0 30px rgba(0,0,0,0.6)" }}>
+        {th.title.map((l, i) => <div key={i}>{mark(l)}</div>)}
+      </div>
+      {th.tag ? (
+        <div style={{ position: "absolute", bottom: 190, left: 0, right: 0, textAlign: "center" }}>
+          <span style={{ fontFamily: "Kanit", fontWeight: 700, fontSize: 64, color: "#1b1b1b", background: "#ffd23f", padding: "10px 34px", borderRadius: 18 }}>{th.tag}</span>
+        </div>
+      ) : null}
     </AbsoluteFill>
   );
 };

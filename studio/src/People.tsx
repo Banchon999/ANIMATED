@@ -165,6 +165,12 @@ export const POSES = {
   cheer: P({ armL: 150, elbowL: 18, armR: 150, elbowR: 18, handL: "fist", handR: "fist", lean: -4, legL: 8, legR: 8 }),
   bow: P({ lean: 34, head: 16, armL: 4, armR: 4 }),
   squat: P({ crouch: 0.42, legL: 26, legR: 26, armL: 26, elbowL: 70, armR: 26, elbowR: 70 }),
+  // knees together, hands forward to the fire / the floor: tending a stove, picking something up
+  crouch: P({ crouch: 0.4, legL: 7, legR: 7, armL: 20, elbowL: 48, armR: 20, elbowR: 48, lean: 10, head: 12 }),
+  // a gentle hand forward: patting a head, touching a shoulder, offering something small
+  reach: P({ armR: 42, elbowR: 38, armL: 8, elbowL: 10, lean: 7, head: 9 }),
+  // hands folded in front, head down a little: listening, waiting, quiet grief
+  still: P({ armL: 26, elbowL: 104, armR: 26, elbowR: 104, head: 10, handL: "flat", handR: "flat" }),
   // hands are placed on the thighs / knees / belly by Person, whatever the arm angles say
   sit: P({ sit: 1, legL: 0, legR: 0 }),
   sitfloor: P({ cross: 1, legL: 0, legR: 0 }),

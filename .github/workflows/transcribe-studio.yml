@@ -12,9 +12,24 @@ permissions:
   contents: write
 
 jobs:
+  list:
+    runs-on: ubuntu-24.04
+    outputs:
+      files: ${{ steps.l.outputs.files }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: l
+        run: echo "files=$(jq -c .files studio/transcribe.json)" >> "$GITHUB_OUTPUT"
+
+  # one job per audio file, in parallel
   whisper:
+    needs: list
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJSON(needs.list.outputs.files) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,13 +37,16 @@ jobs:
       - run: pip install -q faster-whisper==1.1.1 requests
       - name: Transcribe
         working-directory: studio
+        env:
+          FILE: ${{ matrix.file }}
         run: |
           mkdir -p clips/words
           python3 - <<'PY'
           import json
           from faster_whisper import WhisperModel
-          files = json.load(open('transcribe.json'))['files']
-          m = WhisperModel('large-v3', device='cpu', compute_type='int8')
+          import os
+          files = [os.environ['FILE']]
+          m = WhisperModel('large-v3-turbo', device='cpu', compute_type='int8', cpu_threads=os.cpu_count())
           for f in files:
               segs, info = m.transcribe(f'public/audio/{f}', language='th', word_timestamps=True, beam_size=5, vad_filter=False)
               words = [{'w': w.word, 's': round(w.start, 3), 'e': round(w.end, 3)} for s in segs for w in (s.words or [])]
@@ -42,5 +60,7 @@ jobs:
           git config user.email "studio-bot@users.noreply.github.com"
           git add studio/clips/words
           git commit -m "studio: whisper word timings" || exit 0
-          git pull --rebase origin claude/studio-2.5d
-          git push origin HEAD:claude/studio-2.5d
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin claude/studio-2.5d && git push origin HEAD:claude/studio-2.5d && break
+            sleep $((RANDOM % 10 + 3))
+          done

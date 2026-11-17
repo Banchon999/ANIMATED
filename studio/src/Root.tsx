@@ -7,7 +7,6 @@ import { SetSheet, SetSheet2 } from "./SetSheet";
 import { Clip, clipFrames, Thumb, validateClip } from "./Clip";
 import { MoodSheet, PCH, PCW, PropCell, PropSheet } from "./MoodSheet";
 import { HoldSheet } from "./HoldSheet";
-import { ToonTest } from "./Toon3D";
 import { CLIPS } from "../clips";
 
 export const RemotionRoot: React.FC = () => {
@@ -24,7 +23,6 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="PropSheet" component={PropSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
       <Composition id="PropCell" component={PropCell} defaultProps={{ i: 0 }} durationInFrames={1} fps={30} width={PCW} height={PCH} />
       <Composition id="PoseSheet" component={PoseSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
-      <Composition id="ToonTest" component={ToonTest} durationInFrames={300} fps={30} width={1080} height={1920} />
       <Composition id="HoldSheet" component={HoldSheet} durationInFrames={1} fps={30} width={1080} height={1920} />
       {CLIPS.map(validateClip).map((c) => (
         <Composition key={c.id} id={`Clip-${c.id}`} component={Clip} defaultProps={{ script: c }} durationInFrames={clipFrames(c)} fps={30} width={1080} height={1920} />

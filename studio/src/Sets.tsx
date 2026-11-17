@@ -45,8 +45,6 @@ const actorFilter = (set: SetName, time: TimeOfDay) => {
 };
 
 type StageProps = {
-  /** 3D models drawn inside the set's canvas (toon actors) */
-  inside?: React.ReactNode;
   set: SetName;
   cam: Cam;
   cam3: THREE.PerspectiveCamera;
@@ -332,7 +330,7 @@ const RoomFx: React.FC<Omit<StageProps, "children" | "set" | "blobs" | "seed" | 
   );
 };
 
-export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, time: timeIn, blobs, behind, props, children, inside }) => {
+export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, frame, blur, seed, time: timeIn, blobs, behind, props, children }) => {
   const time = timeIn ?? SETS[set].time;
   const P = (list?: PropCue[]) => (list?.length ? <PropModels props={list} /> : null);
   const full: React.CSSProperties = { position: "absolute", inset: 0, overflow: "visible" };
@@ -347,7 +345,6 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
             <CameraRig cam={cam} />
             {set === "shop" ? <Shop seed={seed} time={time} frame={frame} blobs={blobs} /> : <School seed={seed} time={time} frame={frame} blobs={blobs} />}
             {P(props)}
-            {inside}
           </ThreeCanvas>
         </AbsoluteFill>
         {behind}
@@ -366,7 +363,6 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
             <CameraRig cam={cam} />
             {acc ? <Accelerator blobs={blobs} time={time} /> : set === "clinic" ? <Clinic blobs={blobs} time={time} /> : <Cityroom seed={seed} time={time} blobs={blobs} />}
             {P(props)}
-            {inside}
           </ThreeCanvas>
         </AbsoluteFill>
         {behind}
@@ -384,7 +380,6 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
             <CameraRig cam={cam} />
             <NightRoom layer="back" flicker={flicker} moon={1} time={time} />
             {P(props)}
-            {inside}
           </ThreeCanvas>
         </AbsoluteFill>
         <AbsoluteFill style={blurStyle}>
@@ -422,7 +417,6 @@ export const SetStage: React.FC<StageProps> = ({ set, cam, cam3, width, height, 
             <Village seed={seed} kit={kit} blobs={blobs} />
           )}
           {P(props)}
-            {inside}
         </ThreeCanvas>
       </AbsoluteFill>
       {behind}

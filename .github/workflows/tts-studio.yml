@@ -1,0 +1,52 @@
+name: TTS Studio
+
+# Narration with edge-tts (free Microsoft voices) for beat scripts in studio/clips/drafts/<id>.script.json.
+# Push studio/tts.json ({"clips": ["smell-507"], "run": N}) to start. Bump "run" to redo the same clip.
+# Writes public/audio/<id>.mp3 and clips/words/<id>.json (line and word times) back to the branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/studio-2.5d]
+    paths: ['studio/tts.json']
+
+permissions:
+  contents: write
+
+jobs:
+  list:
+    runs-on: ubuntu-24.04
+    outputs:
+      clips: ${{ steps.l.outputs.clips }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: l
+        run: echo "clips=$(jq -c .clips studio/tts.json)" >> "$GITHUB_OUTPUT"
+
+  tts:
+    needs: list
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        clip: ${{ fromJSON(needs.list.outputs.clips) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -q edge-tts==7.3.1
+      - name: Install ffmpeg if missing
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+      - name: Speak
+        working-directory: studio
+        run: python3 scripts/tts.py "${{ matrix.clip }}"
+      - name: Commit audio and timings
+        run: |
+          git config user.name "studio-bot"
+          git config user.email "studio-bot@users.noreply.github.com"
+          git add studio/public/audio studio/clips/words
+          git commit -m "studio: edge-tts narration ${{ matrix.clip }}" || exit 0
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin claude/studio-2.5d && git push origin HEAD:claude/studio-2.5d && break
+            sleep $((RANDOM % 10 + 3))
+          done
